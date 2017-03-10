@@ -42,9 +42,9 @@ Suggested steps in Linux
 
 4.  Run the following command on the terminal after replacing the path
     to the location of HiCapTools.
-
-                export LD_LIBRARY_PATH=/path/to/HiCapTools/bamtools/:$LD_LIBRARY_PATH
-                
+```
+    export LD_LIBRARY_PATH=/path/to/HiCapTools/bamtools/:$LD_LIBRARY_PATH
+```                
 
 ##How to Run HiCapTools?
 

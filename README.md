@@ -51,7 +51,7 @@ Suggested steps in Linux
 HiCapTools is run with the following command
 
 ``` {fontsize="\small"}
-.\HiCapTools <option> [arguments]
+$ .\HiCapTools <option> [arguments]
 ```
 
 The options are `ProbeDesigner` and `ProximityDetector`.

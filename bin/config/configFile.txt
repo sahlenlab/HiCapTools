@@ -1,0 +1,32 @@
+/--The name of the file which contains the experiment details. Enter the experiment details in the predefined fields of this file. Change only if Experiment file is moved to another location--/
+Experiment File Name Path=config/ExperimentFile.txt
+
+/--The minimum number of supporting pairs to call interactions. Enter in format N where N is an integer. Default value is 2--/
+Minimum Number of Supporting Pairs=2
+
+/--The Minimum Junction Distance to call an interaction.Enter in format N where N is an integer. Default value is 1000--/
+Minimum Junction Distance=1000
+
+/--The Padding around the sequence capture probe. Enter an integer. Default value is 500--/
+Padding=500
+
+/--The Read Length. Enter in format N where N is an integer. The default value is 80--/
+Read Length=80
+
+/--A file name to which you want the results to be written. Enter in format 'FileName.' --/
+Base File Name=AnalyseRF
+
+/--To calculate p values based on interaction profile of negative control probes. Enter in format Yes or No. Negative control probe and region files must be entered if Calculate p_values is Yes--/
+Calculate p_values=No
+
+/--The distance bin size for averaging probe-distal proximities of negative probes. The default value is 1000 base pairs--/
+Bin Size for Probe-Distal=1000
+
+/--The window size for Probe-Distal interactions over which the rolling mean and standard deviation is calculated for smoothing. Enter in format N where N is an integer. Default is 101--/
+Window Size for Probe-Distal=101
+
+/--The distance bin size for averaging probe-probe proximities of negative probes. The default value is 20000 base pairs--/
+Bin Size for Probe-Probe=20000
+
+/--The window size for Probe-Probe interactions over which the rolling mean and standard deviation is calculated for smoothing. Enter in format N where N is an integer. Default is 3--/
+Window Size for Probe-Probe=3

@@ -1,0 +1,83 @@
+..............................................................................................................
+........................................Base Config...........................................................
+..............................................................................................................
+
+/--A name which which the output file names will start. Enter in format 'FileName' --/
+Base File Name=T1
+
+/--The file path to the Digested Genome File Name in txt format--/
+Digested Genome File=/pica/v16/b2015060_nobackup/ANALYSIS/checkBAM/Digest_hg19_HindIII_None_12-48-39_07-03-2017.txt
+
+/--The cut site motif of the restiction enzyme used to digest the genome in the following format with the cut site indicated by a '^'. X^XXX,EnzymeName. Eg. ^GATC,MboI ; A^AGCTT,HindIII--/
+RE cut site motif=A^AGCTT,HindIII
+
+/--The genome assembly build version in the format 'buildVersion,source'. Eg. hg19,UCSC --/
+Genome assembly=hg19,UCSC
+
+/--The file path to the Transcript List File in given format. Either Transcript List file or SNP List file is required. Both can be used together--/
+Transcript List File=/proj/b2015060/supplementaryFiles/hg19_transcriptList_020317.txt
+
+/--The file path to the SNV List File in BED format. Either Transcript List file or SNV List file is required. Both can be used together--/
+SNV List File=/proj/b2015060/supplementaryFiles/hg19.SNV.GWAS.sorted.bed
+
+/--The file path to the Repeat File in BED format. Leave the field empty if not used--/
+Repeat File=
+
+/--The file path to the Mappability File in bigWig format(.bw). Leave the field empty if not used--/
+Mappability File=
+
+/--The file path to the bigWigSummary executable. The path to executable for linux x86_64 included in the package is entered by default.--/
+bigWigSummary executable path=bigWig/bigWigSummary
+
+/--The length of a Probe in this design. Enter an integer. The default is 120 base pairs--/
+Probe Length=120
+
+/--The minimum distance allowed between two Probes in this design. Enter an integer. The default is 1000 base pairs--/
+Minimum distance between Probes=1000
+
+/--The maximum distance allowed from a Probe to the TSS of the promoter it targets. Enter an integer. The default is 2500 base pairs--/
+Maximum distance from Probe to feature start (TSS if the feature is transcript)=2500
+
+/--The distance within which two promoters, if they occur, will be clustered. Enter an integer. The default is 1200 base pairs--/
+Cluster Promoters=1200
+
+/--e number of allowed repeat elements within a probe. The default is 6 base pairs--/
+Extent of Repeat Overlaps=6
+
+/--The mappability threshold. The default is 0.7--/
+Mappability Threshold=0.7
+
+
+..............................................................................................................
+..................................Negative Control Probe Design...............................................
+..............................................................................................................
+
+/--Option to enable generation of negative control probes(intergenic, intronic, exonic). Enter Yes or No.--/
+Design negative probe set=No
+
+/--The minimum length of the restriction enzyme fragment for which negative control probes are designed. Enter an integer. The recommended value is 500 base pairs--/
+Minimum fragment length for negative probe=500
+
+/--The number of intergenic negative control fragments to place probes. Enter an integer. Two probes will be placed on each negative control fragment.--/
+Number of Intergenic Negative control fragments=500
+
+/--The number of intronic negative control fragments to place probes. Enter an integer. Two probes will be placed on each negative control fragment.--/
+Number of Intronic Negative control fragments=500
+
+/--The number of exonic negative control probes fragments to place probes. Enter an integer. Recommended value is 0. Two probes will be placed on each negative control fragment.--/
+Number of Exonic Negative control fragments=0
+
+/--The minimum distance around a promoter in which negative control probes will not be designed. Enter an integer. The recommended value is 50000 base pairs or higher--/
+Minimum distance to a known promoter for negative control probes=50000
+
+/--The minimum distance around a gene in which intergenic negative control probes will not be designed. Enter an integer. The recommended value is 50000 base pairs or higher--/
+Minimum distance to a known gene for intergenic negative control probes=50000
+
+/--Option to add genomic regions to avoid in the design of negative control probes. Enter Yes or No.--/
+Use user provided forbidden regions?=No
+
+/--The file path to the Regulatory regions file in bed format(.bed). These regions will be avoided while designing negative control probes--/
+User provided forbidden regions File=/pica/v16/b2015060/supplementaryFiles/somefile.bed
+
+/--The minimum distance around the provided regulatory regions in which negative control probes will not be designed. Enter an integer. The recommended value is 50000 base pairs or higher--/
+Minimum distance to any user provided forbidden region=50000

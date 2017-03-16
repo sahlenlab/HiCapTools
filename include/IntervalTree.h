@@ -1,5 +1,5 @@
-#ifndef _INTSUITE_INC_INTERVAL_TREE_H
-#define _INTSUITE_INC_INTERVAL_TREE_H
+#ifndef _HCT_INC_INTERVAL_TREE_H
+#define _HCT_INC_INTERVAL_TREE_H
 
 #include <vector>
 #include <algorithm>
@@ -208,4 +208,4 @@ public:
     
 };
 
-#endif //_INTSUITE_INC_INTERVAL_TREE_H
+#endif //_HCT_INC_INTERVAL_TREE_H

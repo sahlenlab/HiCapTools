@@ -1,12 +1,35 @@
+/*** 
+   HiCapTools.
+   Copyright (c) 2017 Pelin Sahlén <pelin.akan@scilifelab.se>
+
+	Permission is hereby granted, free of charge, to any person obtaining a 
+	copy of this software and associated documentation files (the "Software"), 
+	to deal in the Software with some restriction, including without limitation 
+	the rights to use, copy, modify, merge, publish, distribute the Software, 
+	and to permit persons to whom the Software is furnished to do so, subject to
+	the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all 
+	copies or substantial portions of the Software. The Software shall not be used 
+	for commercial purposes.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+***/
+
 //
 //  DesignProbes.h
-//  HiCap_ProbeDesigner
+//  HiCapTools
 //
-//  Created by Pelin Sahlen on 12/03/2015.
-//  Copyright (c) 2015 Pelin Sahlen. All rights reserved.
+//  Created by Pelin Sahlen and Anandashankar Anil.
 //
-#ifndef PRSUITE_INC_DESPR_H_
-#define PRSUITE_INC_DESPR_H_
+
+#ifndef HCT_PROBDES_INC_DESPR_H_
+#define HCT_PROBDES_INC_DESPR_H_
 
 #include "ProbeFeatureClass.h"
 #include "RepeatOverlaps.h"
@@ -46,4 +69,4 @@ private:
     
 };
 
-#endif //PRSUITE_INC_DESPR_H_
+#endif //HCT_PROBDES_INC_DESPR_H_

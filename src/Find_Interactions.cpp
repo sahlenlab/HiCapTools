@@ -1,3 +1,33 @@
+/*** 
+   HiCapTools.
+   Copyright (c) 2017 Pelin Sahlén <pelin.akan@scilifelab.se>
+
+	Permission is hereby granted, free of charge, to any person obtaining a 
+	copy of this software and associated documentation files (the "Software"), 
+	to deal in the Software with some restriction, including without limitation 
+	the rights to use, copy, modify, merge, publish, distribute the Software, 
+	and to permit persons to whom the Software is furnished to do so, subject to
+	the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all 
+	copies or substantial portions of the Software. The Software shall not be used 
+	for commercial purposes.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+***/
+
+//
+//  Find_Interactions.cpp
+//  HiCapTools
+//
+//  Created by Pelin Sahlen and Anandashankar Anil.
+//
+
 #include "Find_Interactions.h"
 #include "Global.h"
 #include <fstream>
@@ -335,7 +365,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
 
 void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(ProbeSet& prs, std::vector<DetermineBackgroundLevels> background, std::string BaseFileName, int NumberofExperiments, std::vector<std::string>& ExperimentNames, std::string whichchr, int BinSize, PrDes::RENFileInfo& reInfo){
 
-    fLog << "will print interactions of NegCtrls" << std::endl; ////////////////////
+    fLog << "will print interactions of NegCtrls" << std::endl; 
     //Probe to Distal Interactions
     std::string FileName, FileName2;
     int enoughpairs, count = 0;
@@ -346,7 +376,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
     FileName2.append(reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(',')));
 	FileName2.append(".");
     FileName2.append(whichchr);
-    FileName2.append(".Interactions.Probe_Distal.NegCtrls.");///////////////////////////////////
+    FileName2.append(".Interactions.Probe_Distal.NegCtrls.");
     FileName2.append(reInfo.currTime);
     FileName2.append(".txt");
     std::ofstream outf2(FileName2.c_str());
@@ -369,7 +399,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
 		auto featiter = Features.begin();
 		std::advance(featiter, i);
 		for (it = featiter->second.proximities.junctions.begin(); it != featiter->second.proximities.junctions.end(); ++it){
-            if(featiter->second.FeatureType == 3){///////////////////
+            if(featiter->second.FeatureType == 3){
                 it->second.reportit=0;
                 for (int t = 0; t < NumberofExperiments; ++t){
 					if (it->second.paircount[t] >= MinNumberofSupportingPairs){
@@ -392,7 +422,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
 		std::advance(featiter, i);
 		
 		for (it = featiter->second.proximities.junctions.begin(); it != featiter->second.proximities.junctions.end(); ++it){
-            if(featiter->second.FeatureType == 3){////////////////////////////////
+            if(featiter->second.FeatureType == 3){
                 
                 it->second.reportit=0;
                 for (int t = 0; t < NumberofExperiments; ++t){
@@ -404,7 +434,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
                 
                 if(it->second.reportit){
                     
-                    it->second.distance = it->first - featiter->second.start;/////////////////////////
+                    it->second.distance = it->first - featiter->second.start;
                     
                     int bin;
                     bin = abs(it->second.distance) / BinSize;

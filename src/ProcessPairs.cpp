@@ -1,3 +1,33 @@
+/*** 
+   HiCapTools.
+   Copyright (c) 2017 Pelin Sahlén <pelin.akan@scilifelab.se>
+
+	Permission is hereby granted, free of charge, to any person obtaining a 
+	copy of this software and associated documentation files (the "Software"), 
+	to deal in the Software with some restriction, including without limitation 
+	the rights to use, copy, modify, merge, publish, distribute the Software, 
+	and to permit persons to whom the Software is furnished to do so, subject to
+	the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all 
+	copies or substantial portions of the Software. The Software shall not be used 
+	for commercial purposes.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+***/
+
+//
+//  ProcessPairs.cpp
+//  HiCapTools
+//
+//  Created by Pelin Sahlen and Anandashankar Anil.
+//
+
 #include "ProcessPairs.h"
 #include "Global.h"
 
@@ -66,7 +96,7 @@ void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClas
     
     while (reader.GetNextAlignment(al)) {
 
-        totalNumberofPairs=totalNumberofPairs+1;
+       totalNumberofPairs=totalNumberofPairs+1;
     }
     
 	
@@ -74,8 +104,7 @@ void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClas
 		probeRefID = ChrNamestoRefID[Design_NegCtrl[DesignName].Probes[i].chr];
 		probeRegion.LeftRefID = probeRefID;
 		probeRegion.RightRefID = probeRefID;
-		//probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start - padding;
-		//probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end + padding;
+	
 		//left and right
 		if(Design_NegCtrl[DesignName].Probes[i].side=="L"){
 			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start;
@@ -183,9 +212,7 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 			probeRegion.LeftPosition =  Design[DesignName].Probes[i].start- padding;;
 			probeRegion.RightPosition =  Design[DesignName].Probes[i].end;
 		}
-		//probeRegion.LeftPosition =  Design[DesignName].Probes[i].start - padding;
-		//probeRegion.RightPosition =  Design[DesignName].Probes[i].end + padding;
-	
+		
 		reader.SetRegion(probeRegion);
 		while(reader.GetNextAlignmentCore(al)){
 		

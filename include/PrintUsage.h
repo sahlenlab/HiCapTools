@@ -1,13 +1,35 @@
+/*** 
+   HiCapTools.
+   Copyright (c) 2017 Pelin Sahlén <pelin.akan@scilifelab.se>
+
+	Permission is hereby granted, free of charge, to any person obtaining a 
+	copy of this software and associated documentation files (the "Software"), 
+	to deal in the Software with some restriction, including without limitation 
+	the rights to use, copy, modify, merge, publish, distribute the Software, 
+	and to permit persons to whom the Software is furnished to do so, subject to
+	the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all 
+	copies or substantial portions of the Software. The Software shall not be used 
+	for commercial purposes.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+***/
+
 //
 //  PrintUsage.h
-//  HiCap_ProbeDesigner
+//  HiCapTools
 //
-//  Created by Pelin Sahlen on 02/03/2016.
-//  Copyright © 2016 Pelin Sahlen. All rights reserved.
+//  Created by Pelin Sahlen and Anandashankar Anil.
 //
 
-#ifndef PrintUsage_h
-#define PrintUsage_h
+#ifndef HCT_PRINTUSE_INC_H_
+#define HCT_PRINTUSE_INC_H_
 
 #include <iostream>
 #include <iomanip>
@@ -16,10 +38,10 @@
 static int print_usage()
 {
     std::cerr<<std::endl;
-    std::cerr<<"Program: PrDe (A software suite for Probe Design and Proximity Detection for targeted chromosome conformation capture applications)"<<std::endl;
-    std::cerr<<"Contact: Pelin Akan <pelin.akan@scilifelab.se>"<<std::endl;
+    std::cerr<<"Program: HiCapTools (A software suite for Probe Design and Proximity Detection for targeted chromosome conformation capture applications)"<<std::endl;
+    std::cerr<<"Contact: Pelin Sahlén <pelin.akan@scilifelab.se>"<<std::endl;
     std::cerr<<std::endl;
-    std::cerr<<"Usage:  PrDe <option> [arguments]"<<std::endl;
+    std::cerr<<"Usage:  HiCapTools <option> [arguments]"<<std::endl;
     std::cerr<< "Options:  "<<std::endl;
     std::cerr<<std::endl;
     std::cerr<< "    ProbeDesigner"<<std::endl;
@@ -30,11 +52,9 @@ static int print_usage()
     std::cerr<< "    ProximityDetector"<<std::endl;
     std::cerr<< '\t'<<"Arguments:"<<std::endl;
     std::cerr<< '\t'<<std::left<< std::setw(25)<<"-c or --chr" <<"the Chromosome to process in the format chrN, where N can be the name/number of the chromosome or All if processing all available chromosomes"<<std::endl;
-    std::cerr<< '\t'<<std::left<< std::setw(25)<<"-p or --proximitytype "<<"'PrintProbeProximities' to find and print Probe proximities or 'PrintEnhancerProximities' to find and print Enhancer proximities"<<std::endl;
-    std::cerr<< '\t'<<std::left <<std::setw(25)<<"-d or --displaytype"<<"'ComputeStatsOnly' to compute only the stats or 'PrintProximities' to also find and print proximities (currently only for Probe proximities)"<<std::endl;
-    std::cerr<< '\t'<<std::left<< std::setw(25)<<"-n or --printtype"<<"'Neg' to print only negative control Probe proximities or 'NonNeg' to print only Feature Probe proximities or 'Both' to print both "<<'\n'<<'\t'<<std::setw(25)<<" "<<
-												"(currently only for Probe proximities). This option will be set to 'Both' if '-d' is 'ComputeStatsOnly'"<<std::endl;
+    std::cerr<< '\t'<<std::left <<std::setw(25)<<"-m or --outputmode"<<"'ComputeStatsOnly' to compute only the stats or 'PrintProximities' to also find and print proximities"<<std::endl;
+    std::cerr<< '\t'<<std::left<< std::setw(25)<<"-p or --proximitytype"<<"'Neg' to print only negative control Probe proximities or 'NonNeg' to print only Feature Probe proximities or 'Both' to print both "<<'\n'<<'\t'<<std::setw(25)<<" "<<std::endl;
     return 0;
 }
 
-#endif /* PrintUsage_h */
+#endif // HCT_PRINTUSE_INC_H_

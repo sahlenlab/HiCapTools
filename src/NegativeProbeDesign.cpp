@@ -1,3 +1,33 @@
+/*** 
+   HiCapTools.
+   Copyright (c) 2017 Pelin Sahlén <pelin.akan@scilifelab.se>
+
+	Permission is hereby granted, free of charge, to any person obtaining a 
+	copy of this software and associated documentation files (the "Software"), 
+	to deal in the Software with some restriction, including without limitation 
+	the rights to use, copy, modify, merge, publish, distribute the Software, 
+	and to permit persons to whom the Software is furnished to do so, subject to
+	the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all 
+	copies or substantial portions of the Software. The Software shall not be used 
+	for commercial purposes.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+***/
+
+//
+//  NegativeProbeDesign.cpp
+//  HiCapTools
+//
+//  Created by Pelin Sahlen and Anandashankar Anil.
+//
+
 #include <fstream>
 #include <random>
 #include <algorithm>
@@ -17,7 +47,6 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
 	fileName=reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".NegCtrlProbes."+reInfo.REName+"."+reInfo.currTime+".gff3";
 	reLeftCut = reInfo.leftOfCut;
 	reRightCut = reInfo.rightOfCut;
-	//dLog=dlog;
 	mapThreshold = reInfo.mappabilityThreshold;
 	ifRep = reInfo.ifRepeatAvail;
 	ifMap = reInfo.ifMapAvail;
@@ -113,7 +142,7 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
 				ifProm = FindOverlaps(Features.promIntTree, chr, exS, exE);
 				
 				if(ifProm=="null"){
-				//exon intervals added ===should check for same exons? using find to search through vector?
+				//exon intervals added 
 					if(exonchrIntervals.find(chr)!=exonchrIntervals.end())
 						exonchrIntervals[chr].push_back(Interval <std::string>(exE , exS, chr+":"+exonStarts.substr(pos11, pos12)+"-"+exonEnds.substr(pos21, pos22)));
 					else{
@@ -347,7 +376,7 @@ void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::vector
 	
 	bool leftEnd, rightEnd;
 	int loopIndex;
-	std::mt19937 rng;
+	std::mt19937_64 rng;
 	std::uniform_int_distribution<int> fragDist(0, whichgenPool.size());
 	std::vector<int> fragSeen;
 	
@@ -446,7 +475,7 @@ void NegativeProbeDesign::WritetoFile(){
 	for(auto it=chrToIndex.begin(); it!=chrToIndex.end(); ++it){
 		for(int ind : it->second){
 			//left side
-			//probeStart = ( toWriteSorted[ind].start - reLeftCut); /////check 1 based 0 based
+			
 			probeStart = ( toWriteSorted[ind].start ); /////check 1 based 0 based
 			probeEnd =probeStart+ProbeLen;
 			side="L";

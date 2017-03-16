@@ -1,3 +1,33 @@
+/*** 
+   HiCapTools.
+   Copyright (c) 2017 Pelin Sahlén <pelin.akan@scilifelab.se>
+
+	Permission is hereby granted, free of charge, to any person obtaining a 
+	copy of this software and associated documentation files (the "Software"), 
+	to deal in the Software with some restriction, including without limitation 
+	the rights to use, copy, modify, merge, publish, distribute the Software, 
+	and to permit persons to whom the Software is furnished to do so, subject to
+	the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all 
+	copies or substantial portions of the Software. The Software shall not be used 
+	for commercial purposes.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+***/
+
+//
+//  BackgroundInteractionFrequency.cpp
+//  HiCapTools
+//
+//  Created by Pelin Sahlen and Anandashankar Anil.
+//
+
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/rolling_mean.hpp>
@@ -53,11 +83,11 @@ void DetermineBackgroundLevels::CalculateMeanandStdRegress(std::string BaseFileN
 				
 				if((Features[feature_id].FeatureType == 3 && Features[(*iter).interacting_feature_id].FeatureType == 3) && Features[feature_id].TranscriptName != Features[(*iter).interacting_feature_id].TranscriptName && (abs(distance) >= MinimumJunctionDistance)){
             
-					int bin = abs(distance) / binsize; ////////
-					if(bglevelsloc.mean.find(bin) == bglevelsloc.mean.end())//////////
-						bglevelsloc.mean[bin] = (*iter).signal[ExperimentNo];///////////
+					int bin = abs(distance) / binsize; 
+					if(bglevelsloc.mean.find(bin) == bglevelsloc.mean.end())
+						bglevelsloc.mean[bin] = (*iter).signal[ExperimentNo];
 					else
-						bglevelsloc.mean[bin] = bglevelsloc.mean[bin] + (*iter).signal[ExperimentNo];////////////
+						bglevelsloc.mean[bin] = bglevelsloc.mean[bin] + (*iter).signal[ExperimentNo];
                 
 					if(nofentries_perBin.find(bin) == nofentries_perBin.end()){
 						nofentries_perBin[bin] = 1;
@@ -136,17 +166,22 @@ void DetermineBackgroundLevels::CalculateMeanandStdRegress(std::string BaseFileN
         boost::accumulators::accumulator_set<double, stats<tag::rolling_mean> > acc(tag::rolling_window::window_size = (WindowSizeloc));
         boost::accumulators::accumulator_set<double, stats<tag::rolling_mean> > acc2(tag::rolling_window::window_size = (WindowSizeloc));
         
-        if(w>(WindowSizeloc - 1)){
-			dwm.push_back(dm[s - 1]);
-			dws.push_back(ds[s - 1]);
-		}
+		dwm.push_back(dm[s - 1]);
+		dws.push_back(ds[s - 1]);
+		
 		
         for(z = 0; z < WindowSizeloc;++z){
             acc(dwm[z]);
             acc2(dws[z]);
         }
-        bglevelsloc.smoothed[db[w]] = rolling_mean(acc);
-        bglevelsloc.smoothed_stdev[db[w]] = rolling_mean(acc2);
+        if(w>WindowSizeloc-1){
+			bglevelsloc.smoothed[db[w]] = rolling_mean(acc);
+			bglevelsloc.smoothed_stdev[db[w]] = rolling_mean(acc2);
+        }
+        else{
+			bglevelsloc.smoothed[db[w]] = dm[w];
+			bglevelsloc.smoothed_stdev[db[w]] = ds[w] ;
+		}
         dwm.pop_front();
         dws.pop_front();
         ++s;

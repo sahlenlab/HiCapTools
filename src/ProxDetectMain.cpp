@@ -1,8 +1,40 @@
+/*** 
+   HiCapTools.
+   Copyright (c) 2017 Pelin Sahlén <pelin.akan@scilifelab.se>
+
+	Permission is hereby granted, free of charge, to any person obtaining a 
+	copy of this software and associated documentation files (the "Software"), 
+	to deal in the Software with some restriction, including without limitation 
+	the rights to use, copy, modify, merge, publish, distribute the Software, 
+	and to permit persons to whom the Software is furnished to do so, subject to
+	the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all 
+	copies or substantial portions of the Software. The Software shall not be used 
+	for commercial purposes.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+***/
+//
+//	ProxDetectMain.cpp
+//  HiCapTools
+//
+//  Created by Pelin Sahlen and Anandashankar Anil.
+//
+
+
 #include <cstdlib>
 #include <iostream>
 #include <ctime>
 #include <cstring>
 #include <fstream>
+#include <iomanip>
 using namespace std;
 
 #include "Global.h"
@@ -67,16 +99,18 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	std::time_t now_time = std::time(NULL);
     std::strftime(reFileInfo.currTime, sizeof(currTime), "%H.%M.%S_%F", std::localtime(&now_time));//Date and time when run starts
     
-    std::ofstream logFile(std::string("ProxDetLog_")+currTime+".log");
+    std::ofstream logFile(std::string("ProxDetLog_")+reFileInfo.currTime+".log");
     
     OutStream log;
     log.AddStreams(&std::cout, &logFile);
+	
+	log<<"READ IN INPUTS"<<std::endl;
 	
 	if(configFile.good()){
 		while (!configFile.eof()){
 			getline(configFile, line);
 			if(line.find("=")!=string::npos){
-				if(line.substr(0, line.find('=')).find("Experiment File Name Path")){
+				if(line.substr(0, line.find('=')).find("Experiment File Name Path")!=std::string::npos){
 					string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
@@ -86,33 +120,33 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					}
 					ExpFileName=s;
 				}
-				if(line.substr(0, line.find('=')).find("Minimum Number of Supporting Pairs")){
+				if(line.substr(0, line.find('=')).find("Minimum Number of Supporting Pairs")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						MinNumberofSupportingPairs=std::stoi(line.substr(line.find('=')+1));
 					else{
 						log<<"##Warning## : Minimum Number of Supporting Pairs is empty. Set to default : "<<MinNumberofSupportingPairs<<std::endl;
 					}
 				}
-				if(line.substr(0, line.find('=')).find("Minimum Junction Distance")){
+				if(line.substr(0, line.find('=')).find("Minimum Junction Distance")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						MinimumJunctionDistance=std::stoi(line.substr(line.find('=')+1));
 					else
 						log<<"##Warning## : Minimum Junction Distance is empty. Set to default : "<< MinimumJunctionDistance<<std::endl;
 				}
-				if(line.substr(0, line.find('=')).find("Padding")){
+				if(line.substr(0, line.find('=')).find("Padding")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						padding=std::stoi(line.substr(line.find('=')+1));
 					else
 						log<<"##Warning## : Padding is empty. Set to default : "<< padding<<std::endl;
 				}
-				if(line.substr(0, line.find('=')).find("Read Length")){
+				if(line.substr(0, line.find('=')).find("Read Length")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						ReadLen=std::stoi(line.substr(line.find('=')+1));
 					else
 						log<<"##Warning## : Read Length is empty. Set to default : "<< ReadLen<<std::endl;
 					
 				}
-				if(line.substr(0, line.find('=')).find("Base File Name")){
+				if(line.substr(0, line.find('=')).find("Base File Name")!=std::string::npos){
 					string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
@@ -122,7 +156,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					}
 					BaseFileName=s;
 				}
-				if(line.substr(0, line.find('=')).find("Calculate p_values")){
+				if(line.substr(0, line.find('=')).find("Calculate p_values")!=std::string::npos){
 					string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
@@ -135,25 +169,25 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 							log<<"##Note## : Calculate p values is empty. Set to default: No!" <<std::endl;
 					}
 				}
-				if(line.substr(0, line.find('=')).find("Bin Size for Probe-Distal")){
+				if(line.substr(0, line.find('=')).find("Bin Size for Probe-Distal")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						BinSize=std::stoi(line.substr(line.find('=')+1));
 					else
 						log<<"##Warning## :Bin Size for Probe-Distal is empty. Set to default : "<< BinSize<<std::endl;
 				}
-				if(line.substr(0, line.find('=')).find("Window Size for Probe-Distal")){
+				if(line.substr(0, line.find('=')).find("Window Size for Probe-Distal")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						WindowSize=std::stoi(line.substr(line.find('=')+1));
 					else
 						log<<"##Warning## :Window Size for Probe-Distal is empty. Set to default : "<< WindowSize<<std::endl;
 				}
-				if(line.substr(0, line.find('=')).find("Bin Size for Probe-Probe")){
+				if(line.substr(0, line.find('=')).find("Bin Size for Probe-Probe")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						BinSizeProbeProbe=std::stoi(line.substr(line.find('=')+1));
 					else
 						log<<"##Warning## :Bin Size for Probe-Probe is empty. Set to default : "<< BinSizeProbeProbe<<std::endl;
 				}
-				if(line.substr(0, line.find('=')).find("Window Size for Probe-Probe")){
+				if(line.substr(0, line.find('=')).find("Window Size for Probe-Probe")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						WindowSizeProbeProbe=std::stoi(line.substr(line.find('=')+1));
 					else
@@ -183,28 +217,28 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		}		
 	}
 
-	log << "Min Number of Supporting Pairs      " << MinNumberofSupportingPairs << std::endl;
-	log << "Min Junction Distance               " << MinimumJunctionDistance << std::endl;
-	log << "Padding around Probes               " << padding << std::endl;
-	log << "Calculate p values                  " ;
+	log << std::setw(35)<<std::left<<"Min Number of Supporting Pairs" << MinNumberofSupportingPairs << std::endl;
+	log << std::setw(35)<<"Min Junction Distance" << MinimumJunctionDistance << std::endl;
+	log << std::setw(35)<<"Padding around Probes" << padding << std::endl;
+	log << std::setw(35)<<"Calculate p values" ;
 	if(CALCULATE_P_VALUES)
 		log<< "Yes" << std::endl;
 	if(!CALCULATE_P_VALUES)
 		log<< "No" << std::endl;
 	
-	log << "Read Length                  "<<	ReadLen<<std::endl;
-	log << "Base File name                  "<<	BaseFileName<<std::endl;
-	log << "Bin Size for Probe-Distal                 "	<<BinSize<<std::endl;
-	log << "Window Size for Probe-Distal                  "	<<WindowSize<<std::endl;
-	log << "Bin Size for Probe-Probe                  "	<<BinSizeProbeProbe<<std::endl;
-	log << "Window Size for Probe-Probe                  "<<WindowSizeProbeProbe<<std::endl;
+	log << std::setw(35)<<"Read Length"<<	ReadLen<<std::endl;
+	log << std::setw(35)<<"Base File name"<<	BaseFileName<<std::endl;
+	log << std::setw(35)<<"Bin Size for Probe-Distal"	<<BinSize<<std::endl;
+	log << std::setw(35)<<"Window Size for Probe-Distal"	<<WindowSize<<std::endl;
+	log << std::setw(35)<<"Bin Size for Probe-Probe"	<<BinSizeProbeProbe<<std::endl;
+	log << std::setw(35)<<"Window Size for Probe-Probe"<<WindowSizeProbeProbe<<std::endl;
     
     ifstream ExpFile(ExpFileName.c_str());
     if(ExpFile.good()){
 		while (!ExpFile.eof()){
 			getline(ExpFile, line);
 			if(line.find("=")!=string::npos){
-				if(line.substr(0, line.find('=')).find("Feature Probe File")){
+				if(line.substr(0, line.find('=')).find("Feature Probe File")!=std::string::npos){
 					string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
@@ -214,7 +248,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					}
 					ProbeFileName = s;
 				}
-				if(line.substr(0, line.find('=')).find("Negative Control Probe File")){
+				if(line.substr(0, line.find('=')).find("Negative control Probe File")!=std::string::npos){
 					string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
@@ -224,7 +258,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					}
 					NegCtrlProbeFileName = s;
 				}
-				if(line.substr(0, line.find('=')).find("Digested Genome File")){
+				if(line.substr(0, line.find('=')).find("Digested Genome File")!=std::string::npos){
 					string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
@@ -234,7 +268,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					}
 					DigestedGenomeFileName = s;
 				}
-				if(line.substr(0, line.find('=')).find("Transcript List File")){
+				if(line.substr(0, line.find('=')).find("Transcript List File")!=std::string::npos){
 					string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
@@ -266,7 +300,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					}
 					negCtrlRegFile=s;
 				}
-				if(line.substr(0, line.find('=')).find("Promoters")){
+				if(line.substr(0, line.find('=')).find("Promoters")!=std::string::npos){
 					string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
@@ -277,7 +311,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					}
 					probeType["promoter"]=s;
 				}
-				if(line.substr(0, line.find('=')).find("SNVs")){
+				if(line.substr(0, line.find('=')).find("SNVs")!=std::string::npos){
 					string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
@@ -288,7 +322,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					}
 					probeType["SNP"]=s;
 				}
-				if(line.substr(0, line.find('=')).find("Negative controls")){
+				if(line.substr(0, line.find('=')).find("Negative controls")!=std::string::npos){
 					string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
@@ -299,7 +333,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					}
 					probeType["negctrl"]=s;
 				}
-				if(line.substr(0, line.find('=')).find("Other")){
+				if(line.substr(0, line.find('=')).find("Other")!=std::string::npos){
 					string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
@@ -310,10 +344,10 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					}
 					probeType["other"]=s;
 				}
-				if(line.substr(0, line.find('=')).find("Number of Experiments")){
+				if(line.substr(0, line.find('=')).find("Number of Experiments")!=std::string::npos){
 					NOFEXPERIMENTS=std::stoi(line.substr(line.find('=')+1));
 				}
-				if(line.substr(0, line.find('=')).find("Experiment BAM File Name Path")){
+				if(line.substr(0, line.find('=')).find("Experiment BAM File Name Path")!=std::string::npos){
 					
 					string s;
 					s=line.substr(line.find('=')+1);
@@ -343,24 +377,60 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		return 0;
 	}
 	
-	log << "Feature Probe File                  "<<ProbeFileName<<std::endl;
+	if(!CheckFile(ExpFileName)){
+		log<< "!!Error!! : Experiment File is not accessible"<<std::endl;
+		return 0;
+	}
+	if(!CheckFile(ProbeFileName)){
+		log<< "!!Error!! : Feature Probe File is not accessible"<<std::endl;
+		return 0;
+	}
+	if(CALCULATE_P_VALUES && !CheckFile(NegCtrlProbeFileName)){
+		log<< "!!Error!! : Negative control Probe File is not accessible"<<std::endl;
+		return 0;
+	}
+	if(!CheckFile(DigestedGenomeFileName)){
+		log<< "!!Error!! : Genome Digest File is not accessible"<<std::endl;
+		return 0;
+	}
+	if(!TranscriptListFileName.empty() && !CheckFile(TranscriptListFileName)){
+		log<<"!!Error!! : Transcript List File is not accessible " << std::endl;
+		return 0;
+	}
+	if(!SNPFile.empty() && !CheckFile(SNPFile)){
+		log<<"!!Error!! : SNV List File is not accessible " << std::endl;
+		return 0;
+	}
+	if(CALCULATE_P_VALUES && !CheckFile(negCtrlRegFile)){
+		log<< "!!Error!! : Negative control Regions File is not accessible"<<std::endl;
+		return 0;
+	}
+	
+	log <<std::setw(35)<< "Feature Probe File"<<ProbeFileName<<std::endl;
 	if(CALCULATE_P_VALUES)
-		log << "Negative Control Probe File                 "<<NegCtrlProbeFileName<<std::endl;
-	log << "Digested Genome File                  "<<DigestedGenomeFileName<<std::endl;
+		log << std::setw(35)<<"Negative Control Probe File"<<NegCtrlProbeFileName<<std::endl;
+	log << std::setw(35)<<"Digested Genome File"<<DigestedGenomeFileName<<std::endl;
 	if(!TranscriptListFileName.empty())
-		log << "Transcript List File                  "<<TranscriptListFileName<<std::endl;
+		log << std::setw(35)<<"Transcript List File"<<TranscriptListFileName<<std::endl;
 	if(!SNPFile.empty())
-		log << "SNV List File                  "<<SNPFile<<std::endl;
+		log << std::setw(35)<<"SNV List File"<<SNPFile<<std::endl;
 	if(CALCULATE_P_VALUES)
-		log << "Negative control region File                  "<<negCtrlRegFile<<std::endl;
-	for(auto i=probeType.begin(); i!=probeType.end();++i)
-		log << "Target-"<<i->first<<":                 "<<i->second<<std::endl;
-	log << "Number of Experiments                  "<<NOFEXPERIMENTS<<std::endl;
+		log << std::setw(35)<<"Negative control region File"<<negCtrlRegFile<<std::endl;
+	for(auto i=probeType.begin(); i!=probeType.end();++i){
+		std::string temp =  "Target-"+i->first +":";
+		log << std::setw(35)<<temp<<i->second<<std::endl;
+	}
+	log << std::setw(35)<<"Number of Experiments"<<NOFEXPERIMENTS<<std::endl;
 	for (unsigned i=0; i<Experiments.size(); ++i){ 
-		log<<"Experiment "<<i<<std::endl;
-		log << "BAM file path                  "<<Experiments[i].filepath<<std::endl;
-		log << "Experiment Name                  "<<Experiments[i].name<<std::endl;
-		log << "Probe Design Name                   "<<Experiments[i].designname<<std::endl;
+		log<<"EXPERIMENT "<<i+1<<std::endl;
+		log << std::setw(35)<<"BAM file path"<<Experiments[i].filepath<<std::endl;
+		if(!CheckFile(Experiments[i].filepath)){
+			log<< "!!Error!! : BAM File "<< i +1 <<" is not accessible"<<std::endl;
+			return 0;
+		}
+			
+		log << std::setw(35)<<"Experiment Name"<<Experiments[i].name<<std::endl;
+		log << std::setw(35)<<"Probe Design Name"<<Experiments[i].designname<<std::endl;
 	}
     
     //------------------------------------------------------------------------------------
@@ -383,7 +453,6 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	log << "Reading Feature files and annotating features: Starting!" << std::endl;
     proms.InitialiseData(ClusterPromoters, countFeatFiles+CALCULATE_P_VALUES);
     
-   // proms.ReadPromoterAnnotation(dpnII, TranscriptListFileName, ClusterPromoters);
     switch(featFileCount){
 		case 1:	
 			proms.ReadFeatureAnnotation(dpnII, SNPFile, "SNV");
@@ -421,7 +490,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
     vector < DetermineBackgroundLevels > background;
     
     ProximityClass proximities(NOFEXPERIMENTS);
-        
+       
 		
 	for (unsigned i=0; i<Experiments.size(); ++i){ // Reads all the pairs in each experiment and fills the interaction maps
 
@@ -487,6 +556,5 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		Interactions.CalculatePvalAndPrintInteractionsProbeProbe(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo);//Print all same type of interactions
 		Interactions.CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo); //Print all same type of interactions
 	}
-	
 
 }

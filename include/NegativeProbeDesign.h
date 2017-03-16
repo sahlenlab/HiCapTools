@@ -1,12 +1,35 @@
+/*** 
+   HiCapTools.
+   Copyright (c) 2017 Pelin Sahlén <pelin.akan@scilifelab.se>
+
+	Permission is hereby granted, free of charge, to any person obtaining a 
+	copy of this software and associated documentation files (the "Software"), 
+	to deal in the Software with some restriction, including without limitation 
+	the rights to use, copy, modify, merge, publish, distribute the Software, 
+	and to permit persons to whom the Software is furnished to do so, subject to
+	the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all 
+	copies or substantial portions of the Software. The Software shall not be used 
+	for commercial purposes.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+***/
+
 //
-//  DesignProbes.h
-//  HiCap_ProbeDesigner
+//  NegativeDesignProbes.h
+//  HiCapTools
 //
-//  Created by Pelin Sahlen on 12/03/2015.
-//  Copyright (c) 2015 Pelin Sahlen. All rights reserved.
+//  Created by Pelin Sahlen and Anandashankar Anil.
 //
-#ifndef PRSUITE_INC_NEGPRDES_H_
-#define PRSUITE_INC_NEGPRDES_H_
+
+#ifndef HCT_PROBDES_INC_NEGPRDES_H_
+#define HCT_PROBDES_INC_NEGPRDES_H_
 
 #include "DesignProbes.h"
 
@@ -47,8 +70,7 @@ private:
     std::string FindOverlaps( std::map< std::string, IntervalTree <std::string> >& , std::string, unsigned long int, unsigned long int);
     void chooseRandomProbesFromPool(int, std::vector<PrDes::FeatureStruct>&, Repeats&, std::ofstream &, std::string, std::ofstream &);
     bool CheckRepeatOverlaps(std::string, int&, bool, Repeats&);
-   // void WritetoFile(std::ofstream &, std::string, int, int, std::string, int);
     
 };
 
-#endif //PRSUITE_INC_NEGPRDES_H_
+#endif //HCT_PROBDES_INC_NEGPRDES_H_

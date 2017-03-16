@@ -1,3 +1,33 @@
+/*** 
+   HiCapTools.
+   Copyright (c) 2017 Pelin Sahlén <pelin.akan@scilifelab.se>
+
+	Permission is hereby granted, free of charge, to any person obtaining a 
+	copy of this software and associated documentation files (the "Software"), 
+	to deal in the Software with some restriction, including without limitation 
+	the rights to use, copy, modify, merge, publish, distribute the Software, 
+	and to permit persons to whom the Software is furnished to do so, subject to
+	the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all 
+	copies or substantial portions of the Software. The Software shall not be used 
+	for commercial purposes.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+***/
+
+//
+//  ProbeFeatureClass.cpp
+//  HiCapTools
+//
+//  Created by Pelin Sahlen and Anandashankar Anil.
+//
+
 #include "ProbeFeatureClass.h"
 #include <iostream>
 #include <sstream>
@@ -249,16 +279,6 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
                 promFeatures[feature_id].ProbeID.push_back(probe_ids_of_clustered[y]);
                 promFeatures[feature_id].FeatureType = tp[0].FeatureType;
                                 
-               // if( promFeatures[feature_id].strand == "+" ){
-               //     promFeatures[feature_id].start = clusteredcoords[y] - coreprom_upstream;
-                 //   promFeatures[feature_id].end = clusteredcoords[y] + coreprom_downstream;
-                //}
-               // else{
-                 //   promFeatures[feature_id].start = clusteredcoords[y] - coreprom_downstream;
-                   // promFeatures[feature_id].end = clusteredcoords[y] + coreprom_upstream;
-                //}
-             
-                
                 dpnIIsites.GettheREPositions(promFeatures[feature_id].chr, promFeatures[feature_id].TSS, promFeatures[feature_id].closestREsitenums);
             }
         }
@@ -288,17 +308,7 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
 				tempvector.push_back(Interval <std::string>((isoformprs[0] - promPadding),(isoformprs[0] + promPadding), feature_id));
 				chrIntervals.emplace(tp[0].chr, tempvector);
 			}
-		
-            
-            //if( promFeatures[feature_id].strand == "+" ){ //////////////ask
-              //  promFeatures[feature_id].start = isoformprs[0] - coreprom_upstream;
-               // promFeatures[feature_id].end = isoformprs[0] + coreprom_downstream;
-            //}
-            //else{
-              //  promFeatures[feature_id].start = isoformprs[0] - coreprom_downstream;
-               // promFeatures[feature_id].end = isoformprs[0] + coreprom_upstream;
-            //}
-            
+		        
             dpnIIsites.GettheREPositions(promFeatures[feature_id].chr, promFeatures[feature_id].TSS, promFeatures[feature_id].closestREsitenums);
         }
         

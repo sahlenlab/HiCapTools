@@ -1,3 +1,33 @@
+/*** 
+   HiCapTools.
+   Copyright (c) 2017 Pelin Sahlén <pelin.akan@scilifelab.se>
+
+	Permission is hereby granted, free of charge, to any person obtaining a 
+	copy of this software and associated documentation files (the "Software"), 
+	to deal in the Software with some restriction, including without limitation 
+	the rights to use, copy, modify, merge, publish, distribute the Software, 
+	and to permit persons to whom the Software is furnished to do so, subject to
+	the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all 
+	copies or substantial portions of the Software. The Software shall not be used 
+	for commercial purposes.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+***/
+
+//
+//  DesignProbes.cpp
+//  HiCapTools
+//
+//  Created by Pelin Sahlen and Anandashankar Anil.
+//
+
 #include "DesignProbes.h"
 #include <fstream>
 #include <cstdio>
@@ -300,8 +330,6 @@ bool DesignClass::WritetoFile(std::ofstream &outfile, std::string chr, int chrin
 	}
 	
 	else if(!direction){ // UPSTREAM - LEFT
-		//probestart = ( (repos+1) - reLeftCut );
-		//probeend =( (repos+1) + ProbeLen - reLeftCut); //+1 to select the right fragment
 		probestart = ( (repos+1) );
 		probeend =( (repos+1) + ProbeLen ); //+1 to select the right fragment
 		side = "L";
@@ -349,7 +377,6 @@ void DesignClass::MergeAllChrOutputs(ProbeFeatureClass& Feats, PrDes::RENFileInf
 	
 	for(auto &iChr : Feats.ChrNames_proms){
 		
-		//std::string fName=reInfo.desName+"_"+iChr+"."+reInfo.REName+"."+reInfo.currTime+".gff3";
 		std::string fName=reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+"_"+iChr+"."+reInfo.REName+"."+reInfo.currTime+".gff3";
 		std::ifstream readChrFiles(fName, std::ios_base::binary);
 		readChrFiles.seekg(20); //strip header

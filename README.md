@@ -25,7 +25,7 @@ Use CMake to compile the application.
 
 -   Cmake 3.0 or higher is required
 
--   Bamtools[@bamtools] is required.
+-   Bamtools is required.
 
 -   Zlib is required
 

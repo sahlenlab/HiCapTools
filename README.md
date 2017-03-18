@@ -1,7 +1,7 @@
 # HiCapTools
 
 
-##What is HiCapTools?
+## What is HiCapTools?
 
 HiCapTools (Probe Design and Proximity Detection) is a software package
 that can design sequence capture probes for targeted chromosome capture
@@ -13,7 +13,7 @@ targeted Hi-C data and detects proximities between probes and rest of
 the genome.
 
 
-##How to Compile HiCapTools?
+## How to Compile HiCapTools?
 
 #### Recommended
 
@@ -25,7 +25,7 @@ Use CMake to compile the application.
 
 -   Cmake 3.0 or higher is required
 
--   Bamtools[@bamtools] is required.
+-   Bamtools is required.
 
 -   Zlib is required
 
@@ -46,7 +46,7 @@ Suggested steps in Linux
     export LD_LIBRARY_PATH=/path/to/HiCapTools/bamtools/:$LD_LIBRARY_PATH
 ```                
 
-##How to Run HiCapTools?
+## How to Run HiCapTools?
 
 HiCapTools is run with the following command
 
@@ -56,7 +56,7 @@ $ .\HiCapTools <option> [arguments]
 
 The options are `ProbeDesigner` and `ProximityDetector`.
 
-###Running the ProbeDesigner
+### Running the ProbeDesigner
 
 To use the probe designer, run HiCapTools with the `ProbeDesigner` option.
 
@@ -129,7 +129,7 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 - Minimum distance to any user provided forbidden regions *(INTEGER: OPTIONAL)* : The minimum distance around the provided regulatory regions in which negative control probes will not be designed. The recommended value is 50000 base pairs(default) or higher. The default value will be used if field is empty.
 
 
-###Running the ProximityDetector
+### Running the ProximityDetector
 
 To use the proximity detector, run HiCapTools with the `ProximityDetector` option.
 
@@ -206,7 +206,7 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
 
 ### File Formats
 
-#####Transcript Files
+##### Transcript Files
 
 The transcript file can be constructed from the UCSC Table browser by choosing the ’Genes and Gene Predictions’ from group, ’refGene’ from table and getting the output. 
 After the file has been downloaded, cut out the relevant fields and reorder them in the below format. The file must then be sorted by gene name and the fields separated by tabs. The headers are as from the UCSC refGene
@@ -218,15 +218,15 @@ ACYP1   NM_001107	chr14   -   75519927    75530752    3   75519927,75530656,  75
 ACYP1   NM_001302616	chr14   -   75519927    75530752    3   75519927,75530674,  75520362,75530752,
 ```            
 
-#####SNV Files
+##### SNV Files
 
 The SNV files must be in the BED format with the additional optional field ‘name’. The file must have a single track line.
 
-#####Forbidden regulatory regions File
+##### Forbidden regulatory regions File
 
 This file must be in the standard BED format with minimum three fields.
 
-#####Probe File
+##### Probe File
 
 The Probe files outputted by the `ProbeDesigner` and required as input by the `ProximityDetector` are in the gff3 format with some custom
     tags in the Attributes field. The custom tags are
@@ -256,11 +256,11 @@ The Probe files outputted by the `ProbeDesigner` and required as input by the `P
  chr1 . probe 112298381 112298501 . . . Name=DDX20; side=R; target=promoter; design=T1; featuresinvicinity=none; targettss=112298189; distancetotss=312
  ```
 
-#####Negative control region File
+##### Negative control region File
 
 The Negative control region File outputted by the `ProbeDesigner`, and required as input by the `ProximityDetector` if P-values are to be calculated, are in the BED format with the additional optional field ‘name’.
 
 
-#####Experiment File
+##### Experiment File
 
 This file is required as input for the `ProximityDetector`. This should be in the BAM format.

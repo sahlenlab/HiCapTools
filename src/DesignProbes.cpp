@@ -364,13 +364,18 @@ bool DesignClass::WritetoFile(std::ofstream &outfile, std::string chr, int chrin
 void DesignClass::MergeAllChrOutputs(ProbeFeatureClass& Feats, PrDes::RENFileInfo& reInfo){
 	
 	std::string fnameAllChr = reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".AllProbes."+reInfo.REName+"."+reInfo.currTime+".gff3";    
+    std::string header;
     
     std::ofstream outfile;
     outfile.open(fnameAllChr, std::fstream::out);
 
-    outfile<<"##gff-version 3.2.1"<<std::endl;
-    outfile<<"##genome-build "<<reInfo.genomeAssembly.substr(reInfo.genomeAssembly.find_first_of(',')+1)<<" "<<reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(',')) <<std::endl;
-	
+	header.append("##gff-version 3.2.1");
+	header.append("\n");
+	header.append("##genome-build "<<reInfo.genomeAssembly.substr(reInfo.genomeAssembly.find_first_of(',')+1)<<" "<<reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(',')));
+	header.append("\n");
+    
+    outfile<<header;
+
 	outfile.close();
 	
 	outfile.open(fnameAllChr, std::ios_base::binary | std::ios_base::app);
@@ -379,14 +384,12 @@ void DesignClass::MergeAllChrOutputs(ProbeFeatureClass& Feats, PrDes::RENFileInf
 		
 		std::string fName=reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+"_"+iChr+"."+reInfo.REName+"."+reInfo.currTime+".gff3";
 		std::ifstream readChrFiles(fName, std::ios_base::binary);
-		readChrFiles.seekg(20); //strip header
+		readChrFiles.seekg(header.size()); //strip header
 		outfile << readChrFiles.rdbuf();
 		readChrFiles.close();
 		
 		remove(fName.c_str());
 		
 	}
-	
-	
 }
 

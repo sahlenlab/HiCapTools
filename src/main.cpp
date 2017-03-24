@@ -48,7 +48,7 @@ int main(int argc, const char * argv[]) {
 	
     if (argc < 2) {
         print_usage();
-        return -1;
+        return 1;
     }
     
     whichMod = argv[1];
@@ -56,7 +56,7 @@ int main(int argc, const char * argv[]) {
     if(whichMod=="ProbeDesigner"){
 		if (argc != 4) {
 			print_usage();
-			return -1;
+			return 1;
 		}
 		else{
 			if(std::string(argv[2])=="-c" || std::string(argv[2])=="--chr"){
@@ -65,7 +65,7 @@ int main(int argc, const char * argv[]) {
 			}
 			else{
 				print_usage();
-				return -1;
+				return 1;
 			}
 		}
 		
@@ -74,7 +74,7 @@ int main(int argc, const char * argv[]) {
 	else if(whichMod=="ProximityDetector"){
 		if (argc != 8) {
 			print_usage();
-			return -1;
+			return 1;
 		}
 		else{
 			for(int i=2; i<argc; i+=2){
@@ -87,7 +87,7 @@ int main(int argc, const char * argv[]) {
 					else{
 						std::cout<<"!!Error!! Invalid argument for -m"<<std::endl;
 						print_usage();
-						return -1;
+						return 1;
 					}
 				}
 				else if(std::string(argv[i])=="-p" || std::string(argv[i])=="--proximitytype"){
@@ -96,12 +96,12 @@ int main(int argc, const char * argv[]) {
 						else{
 						std::cout<<"!!Error!! Invalid argument for -p"<<std::endl;
 						print_usage();
-						return -1;
+						return 1;
 					}
 				}
 				else{
 					print_usage();
-					return -1;
+					return 1;
 				}
 			}
 			prde.ProxDetectMain(whichChr, statsOption, printOption);
@@ -111,6 +111,7 @@ int main(int argc, const char * argv[]) {
 	}
 	else{
 		print_usage();
-		return -1;
+		return 1;
 	}
+	return 0;
 }

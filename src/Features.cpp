@@ -79,12 +79,12 @@ void FeatureClass::GetTrFeats(std::stringstream &trx, temppars &tpars, std::stri
 		if(tpars.strand=="+"){
 			tpars.start=std::stoi(start);
 			tpars.end=std::stoi(end);
-			tpars.probe_id=tpars.tr_id+"."+start;
+			tpars.probe_id=tpars.name+"_"+start;
 		}
 		else{
 			tpars.start=std::stoi(end);
 			tpars.end=std::stoi(start);
-			tpars.probe_id=tpars.tr_id+"."+end;
+			tpars.probe_id=tpars.name+"_"+end;
 		}
 		 tpars.FeatureType = 1;
     }
@@ -102,7 +102,7 @@ void FeatureClass::GetTrFeats(std::stringstream &trx, temppars &tpars, std::stri
 		tpars.FeatureType = 2;
 	   if(option=="neg_ctrl")
 		tpars.FeatureType = 3;
-	   tpars.probe_id=tpars.tr_id+"."+start;
+	   tpars.probe_id=tpars.tr_id+"_"+start;
    }
 }
 

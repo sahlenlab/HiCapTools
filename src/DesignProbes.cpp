@@ -371,7 +371,7 @@ void DesignClass::MergeAllChrOutputs(ProbeFeatureClass& Feats, PrDes::RENFileInf
 
 	header.append("##gff-version 3.2.1");
 	header.append("\n");
-	header.append("##genome-build "<<reInfo.genomeAssembly.substr(reInfo.genomeAssembly.find_first_of(',')+1)<<" "<<reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(',')));
+	header.append("##genome-build "+reInfo.genomeAssembly.substr(reInfo.genomeAssembly.find_first_of(',')+1)+" "+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(',')));
 	header.append("\n");
     
     outfile<<header;

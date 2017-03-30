@@ -340,7 +340,7 @@ bool DesignClass::WritetoFile(std::ofstream &outfile, std::string chr, int chrin
     
     outfile <<probestart << '\t' << probeend << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
         
-    outfile << "Name="<<feats.promFeatures[values[0]].genes[0]<<"; " << "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<design<<"; "<< "featuresinvicinity=";
+    outfile << "Name="<<feats.promFeatures[values[0]].genes[0]<<"; " <<"transcriptid="<< feats.promFeatures[values[0]].transcripts[0]<<"; "<< "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<design<<"; "<< "featuresinvicinity=";
         
     //check for multiple promoters
     if(values.size()>1){
@@ -357,6 +357,18 @@ bool DesignClass::WritetoFile(std::ofstream &outfile, std::string chr, int chrin
 	}
 	
 	outfile<< "targettss="<<feats.promFeatures[values[0]].TSS<<"; "<<"distancetotss="<<disttotss<< std::endl;
+	
+	int offset=0;
+	if(side=="L")
+		offset=1; // subtract 1 for bioio coordinates on Left side
+	BaseProbe t;
+	t.chr=chr;
+	t.start=probestart-offset;
+	t.end=probeend-offset;
+	t.strand="+";
+	t.feature=feats.promFeatures[values[0]].genes[0];
+    
+    probeList.push_back(t);
     
     return true;
 }
@@ -390,6 +402,30 @@ void DesignClass::MergeAllChrOutputs(ProbeFeatureClass& Feats, PrDes::RENFileInf
 		
 		remove(fName.c_str());
 		
+	}	
+}
+
+
+bool DesignClass::ConstructSeq(PrDes::RENFileInfo& reInfo, bioioMod& getSeq){
+	
+	std::string fname = reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".ProbeSequences."+reInfo.REName+"."+reInfo.currTime+".txt";    
+    std::string header;
+    
+    std::ofstream outfile;
+    outfile.open(fname, std::fstream::app);
+
+	
+	for(auto &probeVar : probeList){
+		
+		std::string toFas = getSeq.GetFasta(probeVar.chr+":"+std::to_string(probeVar.start)+"-"+std::to_string(probeVar.end));
+		
+		if(toFas!="Error"){
+			outfile<<probeVar.chr<<'\t'<<probeVar.start<<'\t'<<probeVar.end<<'\t'<<probeVar.strand<<'\t'<<probeVar.feature<<'\t'<<toFas<<std::endl;
+		}
+		else
+			return false;	
 	}
+	
+	return true;	
 }
 

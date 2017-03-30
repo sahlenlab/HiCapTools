@@ -33,6 +33,7 @@
 
 #include "ProbeFeatureClass.h"
 #include "RepeatOverlaps.h"
+#include "bioioMod.h"
 
 class DesignClass{ //Design probe class
     friend class ProbeFeatureClass;
@@ -43,6 +44,7 @@ public:
     void InitialiseDesign(ProbeFeatureClass&, std::vector< PrDes::REPosMap >&);
     void DesignProbes(ProbeFeatureClass&, RESitesClass&, Repeats, std::string, std::string, std::string, int, int, PrDes::RENFileInfo&, int);
     void MergeAllChrOutputs(ProbeFeatureClass&, PrDes::RENFileInfo&);
+    bool ConstructSeq(PrDes::RENFileInfo&, bioioMod&);
     DesignClass(OutStream& dlog) : dLog (dlog) {}
     
 protected:
@@ -52,9 +54,17 @@ protected:
 	OutStream& dLog;
 	double mapThreshold;
 	int BUFSIZE;
+	struct BaseProbe{
+		std::string chr;
+		int start;
+		int end;
+		std::string strand;
+		std::string feature;
+	};
+	std::vector<BaseProbe> probeList;
 	
     bool overlap(RESitesClass&, Repeats, int&, int, int, std::string, int, int, bool, bool);
-    double BigWigSummary(std::string, int, int);
+    double BigWigSummary(std::string, int, int);   
     
 private:
 	

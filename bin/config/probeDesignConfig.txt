@@ -2,14 +2,14 @@
 ........................................Base Config...........................................................
 ..............................................................................................................
 
-/--A name which which the output file names will start. Enter in format 'FileName' --/
+/--A name which which the output file names will start. Enter in format /path/to/FileName to write the output to a different directory than bin--/
 Base File Name=T1
 
-/--The file path to the Digested Genome File Name in txt format--/
-Digested Genome File=/pica/v16/b2015060_nobackup/ANALYSIS/checkBAM/Digest_hg19_HindIII_None_12-48-39_07-03-2017.txt
+/--The file path to the Digested Genome File Name in txt format--//pica/v16/b2015060_nobackup/ANALYSIS/checkBAM/Digest_hg19_HindIII_None_12-48-39_07-03-2017.txt
+Digested Genome File=/pica/v16/b2015060/supplementaryFiles/Digest_hg19_MboI_None_11-39-03_22-01-2016.txt
 
 /--The cut site motif of the restiction enzyme used to digest the genome in the following format with the cut site indicated by a '^'. X^XXX,EnzymeName. Eg. ^GATC,MboI ; A^AGCTT,HindIII--/
-RE cut site motif=A^AGCTT,HindIII
+RE cut site motif=^GATC,MboI
 
 /--The genome assembly build version in the format 'buildVersion,source'. Eg. hg19,UCSC --/
 Genome assembly=hg19,UCSC
@@ -41,11 +41,17 @@ Maximum distance from Probe to feature start (TSS if the feature is transcript)=
 /--The distance within which two promoters, if they occur, will be clustered. Enter an integer. The default is 1200 base pairs--/
 Cluster Promoters=1200
 
-/--e number of allowed repeat elements within a probe. The default is 6 base pairs--/
+/--The number of allowed repeat elements within a probe. The default is 6 base pairs--/
 Extent of Repeat Overlaps=6
 
 /--The mappability threshold. The default is 0.7--/
 Mappability Threshold=0.7
+
+/--The path to the fasta file containing the genomic sequence. This field is required--/
+Fasta File=/pica/data/uppnex/reference/biodata/GATK/ftp.broadinstitute.org/bundle/2.8/hg19/ucsc.hg19.fasta
+
+/--The path to the index file(.fai) for the above fasta file. This field can be left empty if the index has the same name and is in the same directory as the fasta file--/
+Fasta Index File=
 
 
 ..............................................................................................................

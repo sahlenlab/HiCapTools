@@ -53,7 +53,7 @@ const int coreprom_upstream = 1000;
 const int coreprom_downstream = 1000;
 
 
-int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, std::string interactiontype){
+int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, std::string interactiontype, std::string extraConfig){
 	
 	
 	struct Experiment{
@@ -91,8 +91,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	int BinSizeProbeProbe=20000;
 	
 	PrDes::RENFileInfo reFileInfo;
-   
-	std::ifstream configFile("config/configFile.txt");
+	
 	std::string line;
    
 
@@ -105,6 +104,13 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
     log.AddStreams(&std::cout, &logFile);
 	
 	log<<"READ IN INPUTS"<<std::endl;
+	
+	if(extraConfig.empty()){
+		extraConfig="config/configFile.txt";
+	}
+	
+	
+	std::ifstream configFile(extraConfig);
 	
 	if(configFile.good()){
 		while (!configFile.eof()){
@@ -197,7 +203,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		}
 	}
 	else{
-		log<<"ConfigFile.txt not found in config directory."<<std::endl;
+		log<<"Provided config file not found or configFile.txt not found in config directory."<<std::endl;
 	}
 	
 	//------------------------

@@ -40,10 +40,11 @@
 #include "NegativeProbeDesign.h"
 #include "PrintUsage.h"
 #include "OutStream.h"
+#include "bioioMod.h"
 
 int DistanceBetweenProbes = 1000;
 
-int HiCapTools::ProbeDesignMain(std::string whichchr) {
+int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
 	
 	int ClusterPromoters  = 1200;
 	int ProbeLen = 120;
@@ -72,6 +73,8 @@ int HiCapTools::ProbeDesignMain(std::string whichchr) {
     int countFeatFiles = 2;
     int repeatOverlapExtent = 6;
     int BUFSIZE = 128;
+    std::string fastaIndexFile;
+    std::string fastaFile;
     
     
     std::time_t now_time = std::time(NULL);
@@ -89,9 +92,15 @@ int HiCapTools::ProbeDesignMain(std::string whichchr) {
     //-----------------------------------//
 	
 	
-    std::ifstream config_file("config/probeDesignConfig.txt");
+    
     
     log<<"READ IN INPUTS"<<std::endl;
+    
+    if(extraConfig.empty()){
+		extraConfig="config/probeDesignConfig.txt";
+	}
+	
+	std::ifstream config_file(extraConfig);
     
     if(config_file.good()){
 		while (!config_file.eof()){
@@ -220,6 +229,25 @@ int HiCapTools::ProbeDesignMain(std::string whichchr) {
 					if(!(line.substr(line.find('=')+1).empty()))
 						reFileInfo.mappabilityThreshold=std::stod(line.substr(line.find('=')+1));
 				}
+				if(line.substr(0, line.find('=')).find("Fasta File")!=std::string::npos){
+					std::string s;
+					s=line.substr(line.find('=')+1);
+					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
+					if(s.empty()){
+						log<<"!!Error!! : Fasta File is required" <<std::endl;
+						emptyErrFlag = true;
+					}
+					fastaFile=s;
+				}
+				if(line.substr(0, line.find('=')).find("Fasta Index File")!=std::string::npos){
+					std::string s;
+					s=line.substr(line.find('=')+1);
+					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
+					if(s.empty()){
+						log<<"!!Note!! : Fasta Index File will be checked in the same directory as Fasta File" <<std::endl;
+					}
+					fastaIndexFile=s;
+				}
 //--------------------------------------Negative Control Probes ---------------------------------------------------//
 			
 				if(line.substr(0, line.find('=')).find("Design negative probe set")!=std::string::npos){
@@ -290,7 +318,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr) {
 		}
 	}
 	else{
-		log<<"probeDesignConfig.txt not found in config directory."<<std::endl;
+		log<<"Provided config file not found or probeDesignConfig.txt not found in config directory."<<std::endl;
 	}
 	
 	if(transcriptfile.empty()&&SNPfile.empty()){
@@ -322,13 +350,16 @@ int HiCapTools::ProbeDesignMain(std::string whichchr) {
 		log<<"!!Error!! : Mappability File is not accessible " << std::endl;
 		return 0;
 	}
+	if(!CheckFile(fastaFile)){
+		log<<"!!Error!! : Fasta File is not accessible " << std::endl;
+		return 0;
+	}
 	if(ifRegRegion && !CheckFile(regRegionFile)){
 		log<<"!!Error!! : User provided forbidden regions file is not accessible " << std::endl;
 		return 0;
 	}
 	
-    
-        
+            
     log << std::setw(75)<<std::left<<"Base File Name:" << reFileInfo.desName << std::endl;    
     log << std::setw(75)<<"Digested Genome File:" << DigestedGenomeFileName << std::endl;
     log << std::setw(75)<<"RE cut site motif:" << motif << std::endl;
@@ -347,6 +378,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr) {
 	log << std::setw(75)<<"Cluster Promoters:"<< ClusterPromoters << std::endl;
 	log << std::setw(75)<<"Extent of Repeat Overlaps:"<< repeatOverlapExtent << std::endl;
 	log << std::setw(75)<<"Mappability Threshold:"<< reFileInfo.mappabilityThreshold << std::endl;
+	log << std::setw(75)<<"Fasta File:"<< fastaFile << std::endl;
 
 	if(ifNeg=="Yes"){
 		log << std::setw(75)<<"Design negative probe set:"<< ifNeg << std::endl;
@@ -407,6 +439,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr) {
 //-------------------//------------------------------    
     log << "Designing Probes: Starting!" << std::endl;
     DesignClass designProbes(log);
+    bioioMod getSeq(log, fastaIndexFile, fastaFile);
     
     if(whichchr=="chrAll"){
 		for(auto &iChr: Features.ChrNames_proms){
@@ -416,6 +449,13 @@ int HiCapTools::ProbeDesignMain(std::string whichchr) {
 	}
 	else
 		designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, bigwigsummarybinary, mappabilityfile, whichchr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE) ;
+	
+	bool isFas = designProbes.ConstructSeq(reFileInfo, getSeq);
+	
+	if(!isFas){
+		log << "!!Error getting sequence from fasta file!! Aborting!" << std::endl;
+		return 0;
+	}
 	
 	log << "Designing Probes: Done!" << std::endl;
     
@@ -431,13 +471,13 @@ int HiCapTools::ProbeDesignMain(std::string whichchr) {
 		res = NegctrlProbes.ConstructNegativeControlProbes(exonNegCtrls, "exonic",  hg19repeats, dforbidIntergen, dforbidRegReg);
 		res = NegctrlProbes.ConstructNegativeControlProbes(intronNegCtrls,"intronic",  hg19repeats,  dforbidIntergen, dforbidRegReg);
 		res = NegctrlProbes.ConstructNegativeControlProbes(intergenNegCtrls, "intergenic", hg19repeats, dforbidIntergen, dforbidRegReg);
-		NegctrlProbes.WritetoFile();
-		
+		NegctrlProbes.WritetoFile(getSeq);
 		
 		log << "Designing Negative control Probes: Done!" << std::endl;
 	}
 	
 	log<<"Execution Complete...................."<<std::endl;
+	
     return 1;
 }
 

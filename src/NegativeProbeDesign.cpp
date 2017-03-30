@@ -45,6 +45,7 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
 	ifExistRegRegionFile=ifRReg;
 	designName=reInfo.desName;
 	fileName=reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".NegCtrlProbes."+reInfo.REName+"."+reInfo.currTime+".gff3";
+	fasFileName = reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".NegProbeSequences."+reInfo.REName+"."+reInfo.currTime+".txt";    
 	reLeftCut = reInfo.leftOfCut;
 	reRightCut = reInfo.rightOfCut;
 	mapThreshold = reInfo.mappabilityThreshold;
@@ -464,13 +465,14 @@ bool NegativeProbeDesign::CheckRepeatOverlaps(std::string chr, int& closest_re, 
     
 }
 
-void NegativeProbeDesign::WritetoFile(){
+void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
 	
 	std::string target, side;
 	int disttotss, probeStart, probeEnd;
     target ="neg_ctrl";
 	
 	std::ofstream outfile(fileName, std::fstream::app);
+	std::ofstream outFasFile(fasFileName, std::fstream::app);
 	
 	for(auto it=chrToIndex.begin(); it!=chrToIndex.end(); ++it){
 		for(int ind : it->second){
@@ -484,11 +486,15 @@ void NegativeProbeDesign::WritetoFile(){
     
 			outfile <<probeStart << '\t' << probeEnd << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
         
-			outfile << "Name="<< toWriteSorted[ind].name <<"; " << "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<designName<<"; "<< "featuresinvicinity=";
+			outfile << "Name="<< toWriteSorted[ind].name <<"; " <<"transcriptid="<< "none"<<"; " << "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<designName<<"; "<< "featuresinvicinity=";
           
 			outfile << "none"<<"; ";
 	
 			outfile<< "targettss="<<"none; " <<"distancetotss="<<"not applicable"<< std::endl;
+			
+			std::string getFas=getSeq.GetFasta(it->first+":"+std::to_string(probeStart-1)+"-"+std::to_string(probeEnd-1)); // subtract 1 for bioio coordinates on Left side
+			
+			outFasFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<"+"<<'\t'<<toWriteSorted[ind].name<<'\t'<<getFas<<std::endl;
 			
 			//right side
 			probeEnd=( toWriteSorted[ind].end + reRightCut );
@@ -499,11 +505,15 @@ void NegativeProbeDesign::WritetoFile(){
     
 			outfile <<probeStart << '\t' << probeEnd << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
         
-			outfile << "Name="<< toWriteSorted[ind].name <<"; " << "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<designName<<"; "<< "featuresinvicinity=";
+			outfile << "Name="<< toWriteSorted[ind].name <<"; " <<"transcriptid="<< "none"<<"; " << "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<designName<<"; "<< "featuresinvicinity=";
           
 			outfile << "none"<<"; " ;
 	
 			outfile<< "targettss="<<"none; "<<"distancetotss="<<"not applicable"<< std::endl;
+			
+			getFas=getSeq.GetFasta(it->first+":"+std::to_string(probeStart)+"-"+std::to_string(probeEnd));
+			
+			outFasFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<"+"<<'\t'<<toWriteSorted[ind].name<<'\t'<<getFas<<std::endl;
 		}
 	}
 }

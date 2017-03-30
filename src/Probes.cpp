@@ -78,43 +78,34 @@ void ProbeSet::GetProbeFeats(std::stringstream& line, CaptureProbes& t, std::str
     // gff3 field 9 attributes
     getline(line,attributes,'\t'); // semicolon separated tags for upstream/downstream
     
-    size_t smpos1 = attributes.find_first_of(";");
-    if(smpos1!=std::string::npos){
+    if(attributes.back()!=';')
+		attributes.push_back(';');
 		
-		std::string parsename, parseside, parsetarget, parsedesign;
+    size_t countSC=std::count(attributes.begin(), attributes.end(), ';');
+    std::string parseValue;
+    size_t posEnd;
+    while(countSC>0){
 		
-		parsename = attributes.substr(0, smpos1);
+		posEnd=attributes.find_first_of(';'); 
 		
-		size_t smpos2 = attributes.substr(smpos1+1, std::string::npos).find_first_of(";");
+		parseValue=attributes.substr(0, posEnd);
+		parseValue.erase(std::remove_if(parseValue.begin(), parseValue.end(), [l](char ch) { return std::isspace(ch, l); }), parseValue.end());
 		
-		parseside = attributes.substr(smpos1+1, smpos2);
-		
-		smpos2=smpos1+1+smpos2;
-		
-		size_t smpos3 = attributes.substr(smpos2+1, std::string::npos).find_first_of(";");
-		
-		parsetarget=attributes.substr(smpos2+1, smpos3);
-		
-		smpos3=smpos2+1+smpos3;
-		
-		size_t smpos4 = attributes.substr(smpos3+1, std::string::npos).find_first_of(";");
-		
-		parsedesign=attributes.substr(smpos3+1, smpos4);
-		
-		if(parsename.substr(0, parsename.find('=')).find("Name")!= std::string::npos){
-			parsename.erase(std::remove_if(parsename.begin(), parsename.end(), [l](char ch) { return std::isspace(ch, l); }), parsename.end());
-			Name=parsename.substr(parsename.find('=')+1);
+		if(parseValue.substr(0, parseValue.find('=')).find("Name")!= std::string::npos){
+			Name=parseValue.substr(parseValue.find('=')+1);
 			for (auto & c: Name) c = toupper(c); // Name of Feature
 		}
 		
-		if(parseside.substr(0, parseside.find('=')).find("side")!= std::string::npos){
-			parseside.erase(std::remove_if(parseside.begin(), parseside.end(), [l](char ch) { return std::isspace(ch, l); }), parseside.end());
-			t.side=parseside.substr(parseside.find('=')+1); // Upstream (Left) or the downstream (Right) of the feature
+		if(parseValue.substr(0, parseValue.find('=')).find("transcriptid")!= std::string::npos){
+			t.target_id=parseValue.substr(parseValue.find('=')+1); //target transcript 
 		}
 		
-		if(parsetarget.substr(0, parsetarget.find('=')).find("target")!= std::string::npos){
-			parsetarget.erase(std::remove_if(parsetarget.begin(), parsetarget.end(), [l](char ch) { return std::isspace(ch, l); }), parsetarget.end());
-			std::string target = parsetarget.substr(parsetarget.find('=')+1); // Probe target for annotation 
+		if(parseValue.substr(0, parseValue.find('=')).find("side")!= std::string::npos){
+			t.side=parseValue.substr(parseValue.find('=')+1); // Upstream (Left) or the downstream (Right) of the feature
+		}
+		
+		if(parseValue.substr(0, parseValue.find('='))== "target"){
+			std::string target = parseValue.substr(parseValue.find('=')+1); // Probe target for annotation 
 			if(probeTypeMap.at("promoter").find(target)!=std::string::npos){
 				t.annotated = 1;
 			}
@@ -132,10 +123,13 @@ void ProbeSet::GetProbeFeats(std::stringstream& line, CaptureProbes& t, std::str
 			}
 		}
 		
-		if(parsedesign.substr(0, parsedesign.find('=')).find("design")!= -1){
-			parsedesign.erase(std::remove_if(parsedesign.begin(), parsedesign.end(), [l](char ch) { return std::isspace(ch, l); }), parsedesign.end());
-			t.name_of_design=parsedesign.substr(parsedesign.find('=')+1);// Design Name 
+		if(parseValue.substr(0, parseValue.find('=')).find("design")!= std::string::npos){
+			t.name_of_design=parseValue.substr(parseValue.find('=')+1);// Design Name 
 		}
+		
+		attributes.erase(0, posEnd+1);
+		--countSC;
+	
 	}
 }
 

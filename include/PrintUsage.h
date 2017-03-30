@@ -45,15 +45,21 @@ static int print_usage()
     std::cerr<< "Options:  "<<std::endl;
     std::cerr<<std::endl;
     std::cerr<< "    ProbeDesigner"<<std::endl;
-    std::cerr<< '\t'<< "Arguments:"<<std::endl;
+    std::cerr<< '\t'<< "Required Arguments:"<<std::endl;
     std::cerr<< '\t'<<std::left<<std::setw(25)<<"-c or --chr"<< "the Chromosome to process in the format chrN, where N can be the name/number of the chromosome or All if processing all available chromosomes"<<std::endl;
+    std::cerr<<std::endl;
+    std::cerr<< '\t'<< "Optional Arguments:"<<std::endl;
+    std::cerr<< '\t'<<std::left<<std::setw(25)<<"-config"<< "the path to the Probe config file, if changed from default in bin/config directory"<<std::endl;
     std::cerr<<std::endl;
     
     std::cerr<< "    ProximityDetector"<<std::endl;
-    std::cerr<< '\t'<<"Arguments:"<<std::endl;
+    std::cerr<< '\t'<<"Required Arguments:"<<std::endl;
     std::cerr<< '\t'<<std::left<< std::setw(25)<<"-c or --chr" <<"the Chromosome to process in the format chrN, where N can be the name/number of the chromosome or All if processing all available chromosomes"<<std::endl;
     std::cerr<< '\t'<<std::left <<std::setw(25)<<"-m or --outputmode"<<"'ComputeStatsOnly' to compute only the stats or 'PrintProximities' to also find and print proximities"<<std::endl;
-    std::cerr<< '\t'<<std::left<< std::setw(25)<<"-p or --proximitytype"<<"'Neg' to print only negative control Probe proximities or 'NonNeg' to print only Feature Probe proximities or 'Both' to print both "<<'\n'<<'\t'<<std::setw(25)<<" "<<std::endl;
+    std::cerr<< '\t'<<std::left<< std::setw(25)<<"-p or --proximitytype"<<"'Neg' to print only negative control Probe proximities or 'NonNeg' to print only Feature Probe proximities or 'Both' to print both "<<std::endl;
+    std::cerr<<std::endl;
+    std::cerr<< '\t'<< "Optional Arguments:"<<std::endl;
+    std::cerr<< '\t'<<std::left<<std::setw(25)<<"-config"<< "the path to the config file, if changed from default in bin/config directory"<<'\n'<<'\t'<<std::setw(25)<<" "<<std::endl;
     return 0;
 }
 

@@ -47,7 +47,7 @@ public:
 
     void InitialiseDesign(ProbeFeatureClass&, std::string, std::string, bool, int, std::string, std::string, int, PrDes::RENFileInfo&, int, std::string );
     int ConstructNegativeControlProbes(int, std::string,  Repeats, int, int);
-    void WritetoFile();
+    void WritetoFile(bioioMod&);
     NegativeProbeDesign(OutStream& dlog) : DesignClass (dlog) {}
     
 private:
@@ -63,7 +63,7 @@ private:
 	
 	int minREfragLen, distforbidIntergenic, distforbidReg;
 	bool ifExistRegRegionFile;
-    std::string fileName, summaryFileName, designName, genAssem;
+    std::string fileName, summaryFileName, designName, genAssem, fasFileName;
     bool ifRep, ifMap;
     
     void ConstructPools(std::string, ProbeFeatureClass&);

@@ -21,7 +21,7 @@ Use CMake to compile the application.
 
 #### Dependencies
 
--   C++11 compliant compiler (eg. GCC 4.8.1 or higher) is required
+-   C++11 compliant compiler (eg. GCC 4.9 or higher) is required
 
 -   Cmake 3.0 or higher is required
 

@@ -268,7 +268,7 @@ The Probe files outputted by the `ProbeDesigner` and required as input by the `P
 ```
  ##gff-version 3.2.1 
  ##genome-build UCSC hg19 
- chr1 . probe 112298381 112298501 . . . Name=DDX20; side=R; target=promoter; design=T1; featuresinvicinity=none; targettss=112298189; distancetotss=312
+ chr1 . probe 112298382 112298502 . . . Name=DDX20; transcriptid=NM_007204; side=R; target=promoter; design=T1; featuresinvicinity=none; targettss=112298189; distancetotss=313
  ```
 
 ##### Negative control region File

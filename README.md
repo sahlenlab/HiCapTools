@@ -21,7 +21,7 @@ Use CMake to compile the application.
 
 #### Dependencies
 
--   C++11 compliant compiler (eg. GCC 4.8.1 or higher) is required
+-   C++11 compliant compiler (eg. GCC 4.9 or higher) is required
 
 -   Cmake 3.0 or higher is required
 
@@ -43,7 +43,7 @@ Suggested steps in Linux
 4.  Run the following command on the terminal after replacing the path
     to the location of HiCapTools.
 ```
-    export LD_LIBRARY_PATH=/path/to/HiCapTools/bamtools/:$LD_LIBRARY_PATH
+$ export LD_LIBRARY_PATH=/path/to/HiCapTools/bamtools/:$LD_LIBRARY_PATH
 ```                
 
 ## How to Run HiCapTools?
@@ -65,6 +65,12 @@ To use the probe designer, run HiCapTools with the `ProbeDesigner` option.
 | Argument(s)  | Values | Summary |
 | ------------- | ------------- |------------- |
 | -c <BR /> --chr  | chrN <BR /> chrAll | chromosome for which Probes are to be designed in the format ’chrN’ where N <BR />is chromosome number. To design probes for all chromosomes at once use ’chrAll’ |
+
+#### Optional Arguments
+
+| Argument(s)  | Values | Summary |
+| ------------- | ------------- |------------- |
+| -config  | file path | the path to the new config file, if changed from the default name and location in bin/config directory |
 
 
 
@@ -105,6 +111,10 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 - Mappability Threshold *(FLOAT: OPTIONAL)* :   The mappability threshold. The default value is 0.7.
 
+- Fasta File *(STRING: REQUIRED)* :   The path to the fasta file containing the genomic sequence.
+
+- Fasta Index File *(STRING: OPTIONAL)* :   The path to the index file(.fai) for the above fasta file. This field can be left empty if the index has the same name and is in the same directory as the fasta file. 
+
 
 ##### 2. Negative Control Probe Design
 
@@ -141,6 +151,11 @@ To use the proximity detector, run HiCapTools with the `ProximityDetector` optio
 | -m <BR /> --outputmode  | ComputeStatsOnly <BR /> PrintInteractions | either ’ComputeStatsOnly’ or ’PrintInteractions’. With ‘ComputeStatsOnly’, ProximityDetector computes the number of reads in the input bam files and only calculates the numbers of reads overlapping Probes in different cases. With ‘PrintInteractions’, it also outputs the Proximities calculated. |
 | -p <BR /> --proximitytype | Neg<BR /> NonNeg <BR /> Both | Value must be ’Neg’, ’NonNeg’ or ’Both’. With ‘Neg’, `ProximityDetector` will output only negative control Probe interactions, while with ‘NonNeg’ it outputs only feature Probe interactions and with ’Both’ it outputs both. |
 
+#### Optional Arguments
+
+| Argument(s)  | Values | Summary |
+| ------------- | ------------- |------------- |
+| -config  | file path | the path to the new config file, if changed from the default name and location in bin/config directory |
 
 #### Required Inputs
 
@@ -253,7 +268,7 @@ The Probe files outputted by the `ProbeDesigner` and required as input by the `P
 ```
  ##gff-version 3.2.1 
  ##genome-build UCSC hg19 
- chr1 . probe 112298381 112298501 . . . Name=DDX20; side=R; target=promoter; design=T1; featuresinvicinity=none; targettss=112298189; distancetotss=312
+ chr1 . probe 112298382 112298502 . . . Name=DDX20; transcriptid=NM_007204; side=R; target=promoter; design=T1; featuresinvicinity=none; targettss=112298189; distancetotss=313
  ```
 
 ##### Negative control region File
@@ -264,3 +279,7 @@ The Negative control region File outputted by the `ProbeDesigner`, and required 
 ##### Experiment File
 
 This file is required as input for the `ProximityDetector`. This should be in the BAM format.
+
+### References and Acknowledgements
+
+-  [bioio](https://github.com/dancooke/bioio) (Daniel Cooke)   

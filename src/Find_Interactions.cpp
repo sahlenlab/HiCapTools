@@ -173,7 +173,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 						   it->second.p_val.push_back(1.0);
 						}
 						else{
-							if (background[e].bglevels.smoothed_stdev[bin] == 0.0)
+							if (background[e].bglevels.smoothed[bin] == 0.0)
 								it->second.p_val.push_back(1.0);
 								
 							else{
@@ -337,7 +337,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
 							outf3 << "1.0" ;
 						}
 						else{
-							if (background[e].bglevelsProbeProbe.smoothed_stdev[bin] == 0.0)
+							if (background[e].bglevelsProbeProbe.smoothed[bin] == 0.0)
 								outf3 << "1.0"; 
 							
 							else{
@@ -447,7 +447,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
 								it->second.p_val.push_back(1.0);
 							}
 							else{
-								if (background[e].bglevels.smoothed_stdev[bin] == 0.0)
+								if (background[e].bglevels.smoothed[bin] == 0.0)
 									it->second.p_val.push_back(1.0);
 						        else{
 						            double t = 1.0 - alglib::normaldistribution(( it->second.paircount[e] - background[e].bglevels.smoothed[bin]) / background[e].bglevels.smoothed_stdev[bin]);
@@ -596,7 +596,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(Pr
 							outf4 << "1.0"; 
 						}
 						else{
-							if (background[e].bglevelsProbeProbe.smoothed_stdev[bin] == 0.0)
+							if (background[e].bglevelsProbeProbe.smoothed[bin] == 0.0)
 								outf4 << "1.0";
 							
 							else{

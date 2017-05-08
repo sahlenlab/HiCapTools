@@ -51,7 +51,7 @@ $ export LD_LIBRARY_PATH=/path/to/HiCapTools/bamtools/:$LD_LIBRARY_PATH
 HiCapTools is run with the following command
 
 ``` {fontsize="\small"}
-$ .\HiCapTools <option> [arguments]
+$ ./HiCapTools <option> [arguments]
 ```
 
 The options are `ProbeDesigner` and `ProximityDetector`.

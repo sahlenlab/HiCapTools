@@ -525,7 +525,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
        	bamfile.ProcessSortedBAMFile(ProbeClass, dpnII, proximities, Exptemp.filepath, ExperimentNo, whichchr, Exptemp.designname, statsOption);
          
 		log << "Total_Number_of_Pairs" << '\t' << totalNumberofPairs << std::endl;
-		log << "Total_Number_of_Pairs" << '\t' << NumberofPairs << std::endl;
+		log << "Total_Number_of_Pairs on Probes" << '\t' << NumberofPairs << std::endl;
 		log << "Number_of_Pairs_Both_Reads_on_Probe" << '\t' << NofPairs_Both_on_Probe << std::endl;
 		log << "Number_of_Pairs_One_Read_on_Probe" << '\t' << NofPairs_One_on_Probe << std::endl;
 		log << "Number_of_Pairs_None_on_Probe" << '\t' << NofPairsNoAnn << std::endl;

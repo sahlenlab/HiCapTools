@@ -120,7 +120,7 @@ bool RESitesClass::GettheREPositions(std::string chr, int pos, int* renums){ // 
     std::unordered_map< std::string, int >::iterator ite = chr_ends.find(chr);
     
     if ((pos ) <= its->second || (pos ) >= ite->second){
-		rLog<<"!!Error!! : Encountered invalid coordinates. Check if the correct genome assembly is being used"<< std::endl;
+		rLog<<"!!Error!! : Encountered invalid coordinates. A coordinate is out of chromosome boundaries and is therefore skipped: chr "<< chr<<" Position "<< pos <<". Check if the correct genome assembly is being used"<< std::endl;
         return 0;
     }
     

@@ -47,7 +47,7 @@ public :
 	RESitesClass(OutStream& rlog) : rLog (rlog) {}
 	
 	void InitialiseVars(std::string);
-	bool GettheREPositions(std::string, int, int*);
+	bool GettheREPositions(std::string, int, int*, int&);
 	void CleanClass();
 	
 	

@@ -75,6 +75,7 @@ void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClas
     BamReader reader;
     BamRegion probeRegion;
     int probeRefID;
+    int invalidRECoord=0;
       
     if ( !reader.Open(BAMFILENAME.c_str()) )
         std::cerr << "Could not open input BAM file." << std::endl;
@@ -125,7 +126,7 @@ void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClas
 			pairinfo.probeid2 = ProbeClass.FindOverlaps_NegCtrls(pairinfo.chr2, al.MatePosition, (al.MatePosition + ReadLen), DesignName);
 			feature_id1 = Design_NegCtrl[DesignName].Probes[pairinfo.probeid1].feature_id;
                  //Find the closest RE
-            re1r = dpnII.GettheREPositions(pairinfo.chr2, (al.MatePosition), pairinfo.resites2);
+            re1r = dpnII.GettheREPositions(pairinfo.chr2, (al.MatePosition), pairinfo.resites2, invalidRECoord);
             if ( !re1r){
                 pairinfo.resites2[0] = al.MatePosition;
                 pairinfo.resites2[1] = al.MatePosition;
@@ -149,6 +150,9 @@ void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClas
     }
 }
 	NofPairsNoAnn = totalNumberofPairs - (NumberofPairs);
+	
+	if(invalidRECoord>0)
+		bLog<<"!!Warning!! Some invalid coordinates were encountered with coordinates out of chromosome boundaries and were therefore skipped. Number of Skipped coordinates:"<<invalidRECoord<<std::endl;
     bLog << BAMFILENAME <<  "    BAM file finished" << std::endl;
 }
 
@@ -160,6 +164,7 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 	BamReader reader;
 	BamRegion probeRegion;
 	int probeRefID;
+	int invalidRECoord=0;
 
 	std::string indexFilename;
     
@@ -226,7 +231,7 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 					pairinfo.probeid2 = ProbeClass.FindOverlaps(pairinfo.chr2, al.MatePosition, (al.MatePosition + ReadLen), DesignName);
 					feature_id1 = Design[DesignName].Probes[pairinfo.probeid1].feature_id;
         
-					re1r = dpnII.GettheREPositions(pairinfo.chr2, (al.MatePosition), pairinfo.resites2);
+					re1r = dpnII.GettheREPositions(pairinfo.chr2, (al.MatePosition), pairinfo.resites2, invalidRECoord);
 					if ( !re1r){
 						pairinfo.resites2[0] = al.MatePosition;
 						pairinfo.resites2[1] = al.MatePosition;
@@ -273,7 +278,7 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 				pairinfo.probeid2 = ProbeClass.FindOverlaps(pairinfo.chr2, al.MatePosition, (al.MatePosition + ReadLen), DesignName);
 				feature_id1 = Design[DesignName].Probes[pairinfo.probeid1].feature_id;
         
-            	re1r = dpnII.GettheREPositions(pairinfo.chr2, (al.MatePosition), pairinfo.resites2);
+            	re1r = dpnII.GettheREPositions(pairinfo.chr2, (al.MatePosition), pairinfo.resites2, invalidRECoord);
 				if ( !re1r){
 					pairinfo.resites2[0] = al.MatePosition;
 					pairinfo.resites2[1] = al.MatePosition;
@@ -297,6 +302,8 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 			}
 		}
 	}
+	if(invalidRECoord>0)
+		bLog<<"!!Warning!! Some invalid coordinates were encountered with coordinates out of chromosome boundaries and were therefore skipped. Number of Skipped coordinates:"<<invalidRECoord<<std::endl;
 	bLog << BAMFILENAME <<  "    BAM file finished" << std::endl;
 	NofPairsNoAnn = totalNumberofPairs - (NumberofPairs);
 }

@@ -403,13 +403,12 @@ void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::vector
 					if(rightEnd){
 					//write to file	 - 2 probes for each fragment
 						if(chrToIndex.find(whichgenPool[currIndex].chr)!=chrToIndex.end())
-							chrToIndex[whichgenPool[currIndex].chr].push_back(loopIndex);
+							chrToIndex[whichgenPool[currIndex].chr].push_back(negProbe(whichgenPool[currIndex].start, whichgenPool[currIndex].end, "NegCtrl_"+whichPool+std::to_string(loopIndex+1)));
 						else{
-							std::vector<int> temp;
-							temp.push_back(loopIndex);
+							std::vector<negProbe> temp;
+							temp.push_back(negProbe(whichgenPool[currIndex].start, whichgenPool[currIndex].end, "NegCtrl_"+whichPool+std::to_string(loopIndex+1)));
 							chrToIndex.emplace(whichgenPool[currIndex].chr, temp);
 						}
-						toWriteSorted.push_back(negProbe(whichgenPool[currIndex].start, whichgenPool[currIndex].end, "NegCtrl_"+whichPool+std::to_string(loopIndex+1)));
 						summaryfile << whichgenPool[currIndex].chr << '\t'  << whichgenPool[currIndex].start << '\t' << whichgenPool[currIndex].end << '\t' << "NegCtrl_"<<whichPool<<loopIndex+1 << std::endl;
 						++loopIndex;
 					}				
@@ -475,18 +474,19 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
 	std::ofstream outFasFile(fasFileName, std::fstream::app);
 	
 	for(auto it=chrToIndex.begin(); it!=chrToIndex.end(); ++it){
-		for(int ind : it->second){
+		std::sort(it->second.begin(), it->second.end(), [](negProbe const &a, negProbe const &b) { return a.start < b.start; });
+		for(auto ind : it->second){
 			//left side
 			
-			probeStart = ( toWriteSorted[ind].start ); /////check 1 based 0 based
+			probeStart = ( ind.start ); /////check 1 based 0 based
 			probeEnd =probeStart+ProbeLen;
 			side="L";
 			
 			outfile  << it -> first  << '\t' << "." << '\t' <<"probe"<<'\t';
     
 			outfile <<probeStart << '\t' << probeEnd << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
-        
-			outfile << "Name="<< toWriteSorted[ind].name <<"; " <<"transcriptid="<< "none"<<"; " << "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<designName<<"; "<< "featuresinvicinity=";
+			
+			outfile << "Name="<< ind.name <<"; " <<"transcriptid="<< "none"<<"; " << "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<designName<<"; "<< "featuresinvicinity=";
           
 			outfile << "none"<<"; ";
 	
@@ -494,10 +494,10 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
 			
 			std::string getFas=getSeq.GetFasta(it->first+":"+std::to_string(probeStart-1)+"-"+std::to_string(probeEnd-1)); // subtract 1 for bioio coordinates on Left side
 			
-			outFasFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<"+"<<'\t'<<toWriteSorted[ind].name<<'\t'<<getFas<<std::endl;
+			outFasFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<"+"<<'\t'<<ind.name<<'\t'<<getFas<<std::endl;
 			
 			//right side
-			probeEnd=( toWriteSorted[ind].end + reRightCut );
+			probeEnd=( ind.end + reRightCut );
 			probeStart=( probeEnd - ProbeLen ); 
 			side="R";
 			
@@ -505,7 +505,7 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
     
 			outfile <<probeStart << '\t' << probeEnd << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
         
-			outfile << "Name="<< toWriteSorted[ind].name <<"; " <<"transcriptid="<< "none"<<"; " << "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<designName<<"; "<< "featuresinvicinity=";
+			outfile << "Name="<< ind.name <<"; " <<"transcriptid="<< "none"<<"; " << "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<designName<<"; "<< "featuresinvicinity=";
           
 			outfile << "none"<<"; " ;
 	
@@ -513,10 +513,7 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
 			
 			getFas=getSeq.GetFasta(it->first+":"+std::to_string(probeStart)+"-"+std::to_string(probeEnd));
 			
-			outFasFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<"+"<<'\t'<<toWriteSorted[ind].name<<'\t'<<getFas<<std::endl;
+			outFasFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<"+"<<'\t'<<ind.name<<'\t'<<getFas<<std::endl;
 		}
 	}
 }
-
-
-

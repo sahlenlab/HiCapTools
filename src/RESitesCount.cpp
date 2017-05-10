@@ -101,7 +101,7 @@ void RESitesClass::InitialiseVars(std::string DigestedGenomeFileName){
 
 }
 
-bool RESitesClass::GettheREPositions(std::string chr, int pos, int* renums){ // Returns closest RE sites to a position
+bool RESitesClass::GettheREPositions(std::string chr, int pos, int* renums, int& invalidCounter){ // Returns closest RE sites to a position
 	
     int HalfClusterDist = 5000; //in case the pos is at the end of a bin
     int rightchr;
@@ -120,7 +120,8 @@ bool RESitesClass::GettheREPositions(std::string chr, int pos, int* renums){ // 
     std::unordered_map< std::string, int >::iterator ite = chr_ends.find(chr);
     
     if ((pos ) <= its->second || (pos ) >= ite->second){
-		rLog<<"!!Error!! : Encountered invalid coordinates. A coordinate is out of chromosome boundaries and is therefore skipped: chr "<< chr<<" Position "<< pos <<". Check if the correct genome assembly is being used"<< std::endl;
+		//rLog<<"!!Error!! : Encountered invalid coordinates. A coordinate is out of chromosome boundaries and is therefore skipped: chr "<< chr<<" Position "<< pos <<". Check if the correct genome assembly is being used"<< std::endl;
+		invalidCounter=invalidCounter+1;
         return 0;
     }
     

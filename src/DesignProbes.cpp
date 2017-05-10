@@ -90,6 +90,7 @@ bool DesignClass::overlap(RESitesClass& dpnII, Repeats repeat_trees, int& closes
     int *resites;
     resites = new int[2];
     bool refound = false, passed = false;
+    int invalidRECoordinate=0;
     
     int overlaprepeats;
     double mappability; 
@@ -110,7 +111,7 @@ bool DesignClass::overlap(RESitesClass& dpnII, Repeats repeat_trees, int& closes
     
     if(overlaprepeats > 0 || mappability < mapThreshold ){ // if overlap with repeats and low mappability, go to the next RE site
         
-        refound = dpnII.GettheREPositions(chr,closest_re, resites);
+        refound = dpnII.GettheREPositions(chr,closest_re, resites, invalidRECoordinate);
         
         if (refound){
             closest_re = resites[whichside];
@@ -157,9 +158,10 @@ int DesignClass::CheckDistanceofProbetoTSS(RESitesClass& dpnII, std::string chr,
     int *resites;
     resites = new int[2];
     bool refound = 0;
+    int invalidRECoordinate=0;
 
     while (abs(tss - closest_re) < ProbeLen) {
-		refound = dpnII.GettheREPositions(chr,closest_re, resites);
+		refound = dpnII.GettheREPositions(chr,closest_re, resites, invalidRECoordinate);
 		if (refound){
 			closest_re = resites[rightside];
 		}
@@ -288,8 +290,9 @@ int DesignClass::CheckREsiteAroundProbe(RESitesClass& dpnII, std::string chr, in
     int *resites;
     resites = new int[2];
     bool refound = 0;
+    int invalidRECoordinate=0;
     
-    refound = dpnII.GettheREPositions(chr,probe_re,resites);
+    refound = dpnII.GettheREPositions(chr,probe_re,resites, invalidRECoordinate);
     
     if (refound) {
         return resites[direction];

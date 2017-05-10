@@ -57,9 +57,8 @@ private:
 		std::string name;
 		negProbe(int s, int e, std::string n): start(s), end(e), name(n) {}
 	};
-	std::map <std::string, std::vector<int>> chrToIndex;
 	
-	std::vector<negProbe> toWriteSorted;
+	std::map <std::string, std::vector<negProbe>> chrToIndex;
 	
 	int minREfragLen, distforbidIntergenic, distforbidReg;
 	bool ifExistRegRegionFile;

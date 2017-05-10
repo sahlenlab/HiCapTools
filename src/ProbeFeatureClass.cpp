@@ -200,6 +200,7 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
 {
 	std::string temp,tr1,tr2, feature_id;
 	int promindex = 0; 
+	int invalidRECoordinate=0;
 	
 	bool flag = true; 
 	
@@ -279,7 +280,7 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
                 promFeatures[feature_id].ProbeID.push_back(probe_ids_of_clustered[y]);
                 promFeatures[feature_id].FeatureType = tp[0].FeatureType;
                                 
-                dpnIIsites.GettheREPositions(promFeatures[feature_id].chr, promFeatures[feature_id].TSS, promFeatures[feature_id].closestREsitenums);
+                dpnIIsites.GettheREPositions(promFeatures[feature_id].chr, promFeatures[feature_id].TSS, promFeatures[feature_id].closestREsitenums, invalidRECoordinate);
             }
         }
         else{
@@ -309,7 +310,7 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
 				chrIntervals.emplace(tp[0].chr, tempvector);
 			}
 		        
-            dpnIIsites.GettheREPositions(promFeatures[feature_id].chr, promFeatures[feature_id].TSS, promFeatures[feature_id].closestREsitenums);
+            dpnIIsites.GettheREPositions(promFeatures[feature_id].chr, promFeatures[feature_id].TSS, promFeatures[feature_id].closestREsitenums, invalidRECoordinate);
         }
         
         clusteredcoords.clear();

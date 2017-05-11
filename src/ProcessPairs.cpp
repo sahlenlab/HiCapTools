@@ -149,7 +149,7 @@ void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClas
            bLog << NumberofPairs/1000000 << " million pairs are processed  " << BAMFILENAME << std::endl;  
     }
 }
-	NofPairsNoAnn = totalNumberofPairs - (NumberofPairs);
+	NofPairsNoAnn = totalNumberofPairs/2 - (NumberofPairs);
 	
 	if(invalidRECoord>0)
 		bLog<<"!!Warning!! Some invalid coordinates were encountered with coordinates out of chromosome boundaries and were therefore skipped. Number of Skipped coordinates:"<<invalidRECoord<<std::endl;
@@ -305,5 +305,5 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 	if(invalidRECoord>0)
 		bLog<<"!!Warning!! Some invalid coordinates were encountered with coordinates out of chromosome boundaries and were therefore skipped. Number of Skipped coordinates:"<<invalidRECoord<<std::endl;
 	bLog << BAMFILENAME <<  "    BAM file finished" << std::endl;
-	NofPairsNoAnn = totalNumberofPairs - (NumberofPairs);
+	NofPairsNoAnn = totalNumberofPairs/2 - (NumberofPairs);
 }

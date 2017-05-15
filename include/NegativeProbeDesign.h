@@ -45,8 +45,8 @@ public:
     std::vector<PrDes::FeatureStruct> exonPool;
     std::vector<PrDes::FeatureStruct> intronPool;
 
-    void InitialiseDesign(ProbeFeatureClass&, std::string, std::string, bool, int, std::string, std::string, int, PrDes::RENFileInfo&, int, std::string );
-    int ConstructNegativeControlProbes(int, std::string,  Repeats, int, int);
+    void InitialiseDesign(ProbeFeatureClass&, std::string, std::string, bool, int, std::string, std::string, int, PrDes::RENFileInfo&, int, std::string, int, int);
+    int ConstructNegativeControlProbes(int, std::string,  Repeats);
     void WritetoFile(bioioMod&);
     NegativeProbeDesign(OutStream& dlog) : DesignClass (dlog) {}
     

@@ -466,11 +466,11 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
 		log << "Designing Negative control Probes: Starting!" << std::endl;
 		NegativeProbeDesign NegctrlProbes(log);
 		int res;
-		NegctrlProbes.InitialiseDesign(Features, transcriptfile, regRegionFile, ifRegRegion, ProbeLen, bigwigsummarybinary, mappabilityfile, MinNegFragLen, reFileInfo, BUFSIZE, DigestedGenomeFileName);
+		NegctrlProbes.InitialiseDesign(Features, transcriptfile, regRegionFile, ifRegRegion, ProbeLen, bigwigsummarybinary, mappabilityfile, MinNegFragLen, reFileInfo, BUFSIZE, DigestedGenomeFileName, dforbidIntergen, dforbidRegReg);
 							
-		res = NegctrlProbes.ConstructNegativeControlProbes(exonNegCtrls, "exonic",  hg19repeats, dforbidIntergen, dforbidRegReg);
-		res = NegctrlProbes.ConstructNegativeControlProbes(intronNegCtrls,"intronic",  hg19repeats,  dforbidIntergen, dforbidRegReg);
-		res = NegctrlProbes.ConstructNegativeControlProbes(intergenNegCtrls, "intergenic", hg19repeats, dforbidIntergen, dforbidRegReg);
+		res = NegctrlProbes.ConstructNegativeControlProbes(exonNegCtrls, "exonic",  hg19repeats);
+		res = NegctrlProbes.ConstructNegativeControlProbes(intronNegCtrls,"intronic",  hg19repeats);
+		res = NegctrlProbes.ConstructNegativeControlProbes(intergenNegCtrls, "intergenic", hg19repeats);
 		NegctrlProbes.WritetoFile(getSeq);
 		
 		log << "Designing Negative control Probes: Done!" << std::endl;

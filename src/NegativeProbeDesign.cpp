@@ -35,7 +35,7 @@
 #include "NegativeProbeDesign.h"
 
 
-void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::string transcriptfile, std::string regRegionFile, bool ifRReg, int prlen, std::string bgwgsumbin, std::string mapfp, int minREfragLength, PrDes::RENFileInfo& reInfo, int bufSize, std::string digestFile){
+void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::string transcriptfile, std::string regRegionFile, bool ifRReg, int prlen, std::string bgwgsumbin, std::string mapfp, int minREfragLength, PrDes::RENFileInfo& reInfo, int bufSize, std::string digestFile, int dfI, int dfReg){
 	
 	//Set class variables
 	minREfragLen = minREfragLength;
@@ -54,6 +54,8 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
 	BUFSIZE=bufSize;
 	genAssem=reInfo.genomeAssembly;
 	summaryFileName = reInfo.desName + "."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".NegCtrlRegions_" +reInfo.REName+"."+reInfo.currTime+".bed";
+	distforbidIntergenic=dfI; 
+	distforbidReg=dfReg;
 	
 	// Store gene
 	struct genetemp{
@@ -319,11 +321,7 @@ std::string NegativeProbeDesign::FindOverlaps( std::map< std::string, IntervalTr
 }
 
 
-int NegativeProbeDesign::ConstructNegativeControlProbes(int nCtrls,std::string nCtrlType,  Repeats repeatTrees, int dfI, int dfReg){
-	
-	
-	distforbidIntergenic=dfI; 
-	distforbidReg=dfReg;
+int NegativeProbeDesign::ConstructNegativeControlProbes(int nCtrls,std::string nCtrlType,  Repeats repeatTrees){
 	
 	std::string outFileName;
 	std::ofstream outFile, summaryFile;

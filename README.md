@@ -148,7 +148,7 @@ To use the proximity detector, run HiCapTools with the `ProximityDetector` optio
 | Argument(s)  | Values | Summary |
 | ------------- | ------------- |------------- |
 | -c <BR /> --chr  | chrN <BR /> chrAll | chromosome for which Proximities are to be found in the format ’chrN' where N is chromosome number. To detect proximities for all chromosomes at once use ’chrAll’. Note that it is assumed that the sequences are mapped on a UCSC assembly such as hg19 or mm10. |
-| -m <BR /> --outputmode  | ComputeStatsOnly <BR /> PrintInteractions | either ’ComputeStatsOnly’ or ’PrintInteractions’. With ‘ComputeStatsOnly’, ProximityDetector computes the number of reads in the input bam files and only calculates the numbers of reads overlapping Probes in different cases. With ‘PrintInteractions’, it also outputs the Proximities calculated. |
+| -m <BR /> --outputmode  | ComputeStatsOnly <BR /> PrintProximities | either ’ComputeStatsOnly’ or ’PrintProximities’. With ‘ComputeStatsOnly’, ProximityDetector computes the number of reads in the input bam files and only calculates the numbers of reads overlapping Probes in different cases. With ‘PrintProximities’, it also outputs the Proximities calculated. |
 | -p <BR /> --proximitytype | Neg<BR /> NonNeg <BR /> Both | Value must be ’Neg’, ’NonNeg’ or ’Both’. With ‘Neg’, `ProximityDetector` will output only negative control Probe interactions, while with ‘NonNeg’ it outputs only feature Probe interactions and with ’Both’ it outputs both. |
 
 #### Optional Arguments

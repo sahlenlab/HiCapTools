@@ -83,7 +83,7 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 - Base File Name *(STRING:REQUIRED)* :   The name with which the output file names will start.
 
-- Digested Genome File *(STRING: REQUIRED)* :   The file path to the Genome digest file. The digest file should be in the HiCUP_digester output format.
+- Digested Genome File *(STRING: OPTIONAL)* :   The file path to the Genome digest file. The digest file should be in the HiCUP_digester output format. If this field is left empty, the genome digest will be generated from the fasta file by HiCapTools. 
 
 - RE cut site motif *(STRING: REQUIRED)* :   The cut site motif of the restriction enzyme used to digest the genome. It should be given in the format ’X^XXX,EnzymeName’ with the cut site indicated by a ’^’. E.g. ^GATC,MboI; A^AGCTT,HindIII
 
@@ -191,7 +191,13 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
 
 - Negative control Probe File *(STRING: OPTIONAL/REQUIRED)* :   The path to Negative Control Probe file in gff3 format. This field is required if Calculate p_values is Yes. It can be empty otherwise.
 
-- Digested Genome File *(STRING: REQUIRED)* :   The path to genome digest file that was used to design probes. The digest file should be in the HiCUP_digester output format.
+- Digested Genome File *(STRING: OPTIONAL)* :   The path to genome digest file that was used to design probes. The digest file should be in the HiCUP_digester output format. If this field is left empty, the genome digest will be generated from the fasta file by HiCapTools. 
+
+- RE cut site motif *(STRING: OPTIONAL/REQUIRED)* :   The cut site motif of the restriction enzyme used to digest the genome. It should be given in the format ’X^XXX,EnzymeName’ with the cut site indicated by a ’^’. E.g. ^GATC,MboI; A^AGCTT,HindIII. This field is required if Digested Genome File is left empty.
+
+- Genome assembly *(STRING: OPTIONAL/REQUIRED)* :   The genome assembly build version of the reference genome that is used to map the pairs. It should be in the format ’buildVersion,source’. Eg. hg19,UCSC. This field is required if Digested Genome File is left empty.
+
+- Fasta File *(STRING: OPTIONAL/REQUIRED)* :   The path to the fasta file containing the genomic sequence. This field is required if Digested Genome File is left empty.
 
 - Transcript List File *(STRING: OPTIONAL/REQUIRED)* :   The path to the file containing the list of annotated transcripts in the genome. It should be same file used to design probes. It should also be sorted by gene name(field 1). Either Transcript List file or SNV List file is required. Both can be used together. Please see [File Formats](#file-formats) section.
 
@@ -220,6 +226,8 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
     - Probe Design Name *(STRING: REQUIRED)* :   The value of the tag ‘design’ in the Attributes field in the Probe file used in the experiment.
 
 ### File Formats
+
+#### Input Files
 
 ##### Transcript Files
 
@@ -279,6 +287,34 @@ The Negative control region File outputted by the `ProbeDesigner`, and required 
 ##### Experiment File
 
 This file is required as input for the `ProximityDetector`. This should be in the BAM format.
+
+
+#### Output Files
+
+##### I. ProbeDesigner
+    1. ProbeDesignLog File : This file contains the message log from a ProbeDesigner run.
+    2. Probe file : This file is named in the format "BaseFileName.assemblyVer_chrN.RestrictionEnzyme.date.gff3". This file contains the probe information in the gff3 file format and is required as input to ProximityDetector.
+    3. Probe Sequence File : This file is named in the format "BaseFileName.assemblyVer.ProbeSequences.RestrictionEnzyme.date.txt". This file contains the sequence information of the probes.
+    4. Probe Design Summary file : This file is named in the format "BaseFileName.assemblyVer.ProbeDesignSummary_chrN.RestrictionEnzyme.date.txt". This file contains the summary information of number of probes designed against features.
+    5. Negative control Probe file : This file in the the gff3 format contains negative control probe information and is required as input to ProximityDetector. It is generated only when the "Design negative probe set option" is set to Yes.
+    6. Negative control Probe region File :This file in the BED format contains the list of restriction enzyme fragments for which negative control probes have been designed.  It is generated only when the "Design negative probe set option" is set to Yes.
+    7. Negative control Probe sequence file : This file in the TXT format contains the sequence information of the negative control probes. It is generated only when the "Design negative probe set option" is set to Yes.
+    
+`
+##### II. ProximityDetector
+    1. ProxDetectLog File : This file contains the message log from a ProximityDetector run.
+    2. Background Levels files : These files contains the values of mean and standard deviation for background levels of 'Probe-Distal' and 'Probe-Probe' proximities calculated from the proximities of the negative control probe set. A file each for 'Probe-Distal' and 'Probe-Probe' background levels will be generated for each input experiment file.
+    3. Probe_Distal Proximities files : These files are named in the format 'BaseFileName.AssemblyVer.chrN.Proximities.Probe_Distal.date.txt'. The file with proximities from the negative control probe set will be indicated with a 'NegCtrl' in the file name. The files contain information about the proximities with distal interacting regions gainst the Probe sets called from the input experiment files. The following information is reported for each proximity
+        1. Probe : Target feature, location in chromosome, type of probe
+        2. Distal region : location in chromosome
+        3. Proximity : Distance between interacting fragments, and Supporting pairs and p-value from each input experiment file.
+    4. Probe_Probe Proximities files : These files are named in the format 'BaseFileName.AssemblyVer.chrN.Proximities.Probe_Probe.date.txt'. The file with proximities from the negative control probe set will be indicated with a 'NegCtrl' in the file name. The files contain information about the proximities with Probe regions against the Probe sets called from the input experiment files. The following information is reported for each proximity
+        1. Probe region 1: Target feature, location in chromosome, type of probe
+        2. Probe region 2: Target feature, location in chromosome, type of probe
+        3. Proximity : Distance between interacting fragments, and Supporting pairs and p-value from each input experiment file.
+        
+##### III. Common
+    1. Restriction Enzyme Digest File : This file will be generated if the 'Digested Genome File' field is left blank in ProbeDesigner/ProximityDetector.
 
 ### References and Acknowledgements
 

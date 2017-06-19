@@ -120,9 +120,9 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 - SNV List File *(STRING: OPTIONAL/REQUIRED)* :   The path to the file containing the list of known Single Nucleotide Variants in the genome used. Either Transcript List file or SNV List file is required. Both files can be used together. The file must be in the SNV File format as described in the [File Formats](#file-formats) section
 
-- Repeat File *(STRING: OPTIONAL)* :   The path to the file containing repeat regions in the BED format. The field is to be left empty if not used. The repeat file for hg19 can be downloaded from the following link http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/rmsk.txt.gz . 
+- Repeat File *(STRING: OPTIONAL)* :   The path to the file containing repeat regions in the BED format. The field is to be left empty if not used. The repeat file for hg19 can be downloaded from the following link http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/rmsk.txt.gz . Please note that this is a large file (>200MB)
 
-- Mappability File *(STRING: OPTIONAL)* :   The path to the file containing mappability information in the bigWig format(.bw). The field is to be left empty if not used. Mappability files for hg19 can be downloaded from the following link http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/
+- Mappability File *(STRING: OPTIONAL)* :   The path to the file containing mappability information in the bigWig format(.bw). The field is to be left empty if not used. Mappability files for hg19 can be downloaded from the following link http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/ Please note that this is a large file (>200MB)
 
 - bigWigSummary executable path *(STRING: OPTIONAL)* :   The file path to the bigWigSummary executable. The executable for linux x86_64 included in the package in the bin directory and its path is entered by default.
 
@@ -132,7 +132,7 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 - Maximum distance from Probe to feature start (TSS if the feature is transcript) :   *(INTEGER: REQUIRED)* The maximum distance allowed from a Probe to the TSS of the promoter it targets. The default value is 2500 base pairs.
 
-- Cluster Promoters *(INTEGER: REQUIRED)* :   If the distance between alternative promoters of the same transcript is less than the value given here, they will be clustered. The default value is 1200 base pairs.
+- Cluster Promoters *(INTEGER: REQUIRED)* :   If the distance between alternative promoters of the same transcript is less than the value given here, they will be clustered. The default value is 3000 base pairs.
 
 - Extent of Repeat Overlaps *(INTEGER: OPTIONAL)* :   The number of allowed repeat elements within a probe. The default value is 6.
 
@@ -232,7 +232,7 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
 
 - Negative control region File *(STRING: OPTIONAL/REQUIRED)* :   The path to the Negative Control Region File in BED format from HiCapTools `ProbeDesigner`. This field is required if Calculate p_values is ‘Yes’ in configFile.txt.
 
-- Target tags *(STRING: REQUIRED)* :   The values in the ‘target’ tag in the Attributes field with which Probes are annotated in the Probe gff3 files. If more than one target term is associated, put them on the same line separated by commas. The below values do not have to be changed if the probes used were designed using HiCapTools `ProbeDesigner`.
+- Target tags *(STRING: REQUIRED)* :  The target of each probe should be defined explicitly using the target tags. Probes can target promoters, SNVs or negative control or other regions. The values in the ‘target’ tag in the Attributes field with which Probes are annotated in the Probe gff3 files are shown below. If more than one target term is associated with a probe, put them on the same line separated by commas. The below values do not have to be changed if the probes used were designed using HiCapTools `ProbeDesigner`.
 
     -   Promoters=promoter
 
@@ -250,7 +250,7 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
 
     - Experiment Name *(STRING: REQUIRED)*  :   The name of the experiment.
 
-    - Probe Design Name *(STRING: REQUIRED)* :   The value of the tag ‘design’ in the Attributes field in the Probe file used in the experiment.
+    - Probe Design Name *(STRING: REQUIRED)* :   The value of the tag ‘design’ in the Attributes field in the Probe file used in the experiment. This is the name of the probe design and can be relevant when multiple probe designs are contained within one probe file.
 
 ### File Formats
 
@@ -258,9 +258,10 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
 
 ##### Transcript Files
 
-The transcript file can be constructed from the UCSC Table browser by choosing the ’Genes and Gene Predictions’ from group, ’refGene’ from table and getting the output. 
-After the file has been downloaded, cut out the relevant fields and reorder them in the below format. The file must then be sorted by gene name and the fields separated by tabs. The headers are as from the UCSC refGene
-    table.
+The transcript file can be constructed from the UCSC Table browser by choosing the ’Genes and Gene Predictions’ from group, and relevant option from table and getting the output. 
+The file MUST then be SORTED by gene name and the fields separated by tabs. You can sort the file using the unix sort command (sort -k13,13 transcript_file). The headers are as from the UCSC refGene table. 
+
+If one wishes to use a subset of genes or transcripts for probe design or proximity detection, one can paste or upload the names or accessions of the subset using option "identifiers (names/accessions): " in the UCSC Table Browser.
     
 ```
 name2	name    chrom   strand  txStart txEnd   exonCount   exonStarts  exonEnds

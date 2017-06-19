@@ -64,14 +64,10 @@ Use CMake to compile the application.
 
 Suggested steps in Linux
 
-1.  Create a directory/folder inside ’Project Dir’.
-
-2.  Run ’cmake ..’ from inside the created folder.
-
-3.  Run ’make’ from inside the folder. The compiled executable
+1. Run the bash script 'buildHiCapTools.sh. The compiled executable
     ’HiCapTools’ is placed inside the ’bin’ directory.
 
-4.  Run the following command on the terminal after replacing the path
+2.  Run the following command on the terminal after replacing the path
     to the location of HiCapTools.
 ```
 $ export LD_LIBRARY_PATH=/path/to/HiCapTools/bamtools/:$LD_LIBRARY_PATH

@@ -1,6 +1,5 @@
 # HiCapTools
 
-
 ## What is HiCapTools?
 
 HiCapTools (Probe Design and Proximity Detection) is a software package
@@ -12,6 +11,38 @@ sequences of interest. `ProximityDetector` takes mapped and processed
 targeted Hi-C data and detects proximities between probes and rest of
 the genome.
 
+Table of Contents
+=================
+
+   * [HiCapTools](#hicaptools)
+      * [What is HiCapTools?](#what-is-hicaptools)
+      * [How to Compile HiCapTools?](#how-to-compile-hicaptools)
+      * [How to Run HiCapTools?](#how-to-run-hicaptools)
+         * [Running the ProbeDesigner](#running-the-probedesigner)
+            * [Required Arguments](#required-arguments)
+            * [Optional Arguments](#optional-arguments)
+            * [Required Inputs](#required-inputs)
+               * [1. Base Config](#1-base-config)
+               * [2. Negative Control Probe Design](#2-negative-control-probe-design)
+         * [Running the ProximityDetector](#running-the-proximitydetector)
+            * [Required Arguments](#required-arguments-1)
+            * [Optional Arguments](#optional-arguments-1)
+            * [Required Inputs](#required-inputs-1)
+               * [I. configFile.txt](#i-configfiletxt)
+               * [II. ExperimentFile.txt](#ii-experimentfiletxt)
+       * [File Formats](#file-formats)
+            * [Input Files](#input-files)
+               * [Transcript Files](#transcript-files)
+               * [SNV Files](#snv-files)
+               * [Forbidden regulatory regions File](#forbidden-regulatory-regions-file)
+               * [Probe File](#probe-file)
+               * [Negative control region File](#negative-control-region-file)
+               * [Experiment File](#experiment-file)
+            * [Output Files](#output-files)
+               * [I. ProbeDesigner](#i-probedesigner)
+               * [II. ProximityDetector](#ii-proximitydetector)
+               * [III. Common](#iii-common)
+       * [References and Acknowledgements](#references-and-acknowledgements)
 
 ## How to Compile HiCapTools?
 
@@ -93,9 +124,9 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 - SNV List File *(STRING: OPTIONAL/REQUIRED)* :   The path to the file containing the list of known Single Nucleotide Variants in the genome used. Either Transcript List file or SNV List file is required. Both files can be used together. The file must be in the SNV File format as described in the [File Formats](#file-formats) section
 
-- Repeat File *(STRING: OPTIONAL)* :   The path to the file containing repeat regions in the BED format. The field is to be left empty if not used.
+- Repeat File *(STRING: OPTIONAL)* :   The path to the file containing repeat regions in the BED format. The field is to be left empty if not used. The repeat file for hg19 can be downloaded from the following link http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/rmsk.txt.gz . 
 
-- Mappability File *(STRING: OPTIONAL)* :   The path to the file containing mappability information in the bigWig format(.bw). The field is to be left empty if not used.
+- Mappability File *(STRING: OPTIONAL)* :   The path to the file containing mappability information in the bigWig format(.bw). The field is to be left empty if not used. Mappability files for hg19 can be downloaded from the following link http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/
 
 - bigWigSummary executable path *(STRING: OPTIONAL)* :   The file path to the bigWigSummary executable. The executable for linux x86_64 included in the package in the bin directory and its path is entered by default.
 

@@ -323,30 +323,39 @@ This file is required as input for the `ProximityDetector`. This should be in th
 #### Output Files
 
 ##### I. ProbeDesigner
-    1. ProbeDesignLog File : This file contains the message log from a ProbeDesigner run.
-    2. Probe file : This file is named in the format "BaseFileName.assemblyVer_chrN.RestrictionEnzyme.date.gff3". This file contains the probe information in the gff3 file format and is required as input to ProximityDetector.
-    3. Probe Sequence File : This file is named in the format "BaseFileName.assemblyVer.ProbeSequences.RestrictionEnzyme.date.txt". This file contains the sequence information of the probes.
-    4. Probe Design Summary file : This file is named in the format "BaseFileName.assemblyVer.ProbeDesignSummary_chrN.RestrictionEnzyme.date.txt". This file contains the summary information of number of probes designed against features.
-    5. Negative control Probe file : This file in the the gff3 format contains negative control probe information and is required as input to ProximityDetector. It is generated only when the "Design negative probe set option" is set to Yes.
-    6. Negative control Probe region File :This file in the BED format contains the list of restriction enzyme fragments for which negative control probes have been designed.  It is generated only when the "Design negative probe set option" is set to Yes.
-    7. Negative control Probe sequence file : This file in the TXT format contains the sequence information of the negative control probes. It is generated only when the "Design negative probe set option" is set to Yes.
+* ProbeDesignLog File : This file contains the message log from a ProbeDesigner run.
+
+* Probe file : This file contains the probe information in the gff3 file format and is required as input to ProximityDetector. It is named in the format "BaseFileName.assemblyVer_chrN.RestrictionEnzyme.date.gff3".
+
+* Probe Sequence File : This file contains the sequence information of the probes and is named in the format "BaseFileName.assemblyVer.ProbeSequences.RestrictionEnzyme.date.txt". 
+
+* Probe Design Summary file : This file contains the summary information of number of probes designed against features. It is named in the format "BaseFileName.assemblyVer.ProbeDesignSummary_chrN.RestrictionEnzyme.date.txt". 
+
+* Negative control Probe file : This file in the the gff3 format contains negative control probe information and is required as input to ProximityDetector. It is generated only when the "Design negative probe set option" is set to Yes.
+
+* Negative control Probe region File :This file in the BED format contains the list of restriction enzyme fragments for which negative control probes have been designed.  It is generated only when the "Design negative probe set option" is set to Yes.
+
+* Negative control Probe sequence file : This file in the TXT format contains the sequence information of the negative control probes. It is generated only when the "Design negative probe set option" is set to Yes.
     
 `
 ##### II. ProximityDetector
-    1. ProxDetectLog File : This file contains the message log from a ProximityDetector run.
-    2. Background Levels files : These files contains the values of mean and standard deviation for background levels of 'Probe-Distal' and 'Probe-Probe' proximities calculated from the proximities of the negative control probe set. A file each for 'Probe-Distal' and 'Probe-Probe' background levels will be generated for each input experiment file.
-    3. Probe_Distal Proximities files : These files are named in the format 'BaseFileName.AssemblyVer.chrN.Proximities.Probe_Distal.date.txt'. The file with proximities from the negative control probe set will be indicated with a 'NegCtrl' in the file name. The files contain information about the proximities with distal interacting regions gainst the Probe sets called from the input experiment files. The following information is reported for each proximity
-        1. Probe : Target feature, location in chromosome, type of probe
-        2. Distal region : location in chromosome
-        3. Proximity : Distance between interacting fragments, and Supporting pairs and p-value from each input experiment file.
-    4. Probe_Probe Proximities files : These files are named in the format 'BaseFileName.AssemblyVer.chrN.Proximities.Probe_Probe.date.txt'. The file with proximities from the negative control probe set will be indicated with a 'NegCtrl' in the file name. The files contain information about the proximities with Probe regions against the Probe sets called from the input experiment files. The following information is reported for each proximity
-        1. Probe region 1: Target feature, location in chromosome, type of probe
-        2. Probe region 2: Target feature, location in chromosome, type of probe
-        3. Proximity : Distance between interacting fragments, and Supporting pairs and p-value from each input experiment file.
+* ProxDetectLog File : This file contains the message log from a ProximityDetector run.
+
+* Background Levels files : These files contains the values of mean and standard deviation for background levels of 'Probe-Distal' and 'Probe-Probe' proximities calculated from the proximities of the negative control probe set. A file each for 'Probe-Distal' and 'Probe-Probe' background levels will be generated for each input experiment file.
+
+* Probe_Distal Proximities files : The files contain information about the proximities with distal interacting regions gainst the Probe sets called from the input experiment files. They are named in the format 'BaseFileName.AssemblyVer.chrN.Proximities.Probe_Distal.date.txt'. The file with proximities from the negative control probe set will be indicated with a 'NegCtrl' in the file name. The following information is reported for each proximity
+    1. Probe : Target feature, location in chromosome, type of probe
+    2. Distal region : location in chromosome
+    3. Proximity : Distance between interacting fragments, and Supporting pairs and p-value from each input experiment file.
+* Probe_Probe Proximities files : The files contain information about the proximities with Probe regions against the Probe sets called from the input experiment files. These files are named in the format 'BaseFileName.AssemblyVer.chrN.Proximities.Probe_Probe.date.txt'. The file with proximities from the negative control probe set will be indicated with a 'NegCtrl' in the file name. The following information is reported for each proximity
+    1. Probe region 1: Target feature, location in chromosome, type of probe
+    2. Probe region 2: Target feature, location in chromosome, type of probe
+    3. Proximity : Distance between interacting fragments, and Supporting pairs and p-value from each input experiment file.
         
 ##### III. Common
-    1. Restriction Enzyme Digest File : This file will be generated if the 'Digested Genome File' field is left blank in ProbeDesigner/ProximityDetector.
+* Restriction Enzyme Digest File : This file will be generated if the 'Digested Genome File' field is left blank in ProbeDesigner/ProximityDetector.
 
 ### References and Acknowledgements
 
 -  [bioio](https://github.com/dancooke/bioio) (Daniel Cooke)   
+-  [HiCUP](https://www.bioinformatics.babraham.ac.uk/projects/hicup/)(Babraham Bioinformatics)

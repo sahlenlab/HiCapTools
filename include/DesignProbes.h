@@ -44,7 +44,7 @@ public:
     void InitialiseDesign(ProbeFeatureClass&, std::vector< PrDes::REPosMap >&);
     void DesignProbes(ProbeFeatureClass&, RESitesClass&, Repeats, std::string, std::string, std::string, int, int, PrDes::RENFileInfo&, int);
     void MergeAllChrOutputs(ProbeFeatureClass&, PrDes::RENFileInfo&);
-    bool ConstructSeq(PrDes::RENFileInfo&, bioioMod&);
+    bool ConstructSeq(PrDes::RENFileInfo&, bioioMod&, std::string);
     DesignClass(OutStream& dlog) : dLog (dlog) {}
     
 protected:

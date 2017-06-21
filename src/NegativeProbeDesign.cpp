@@ -45,7 +45,8 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
 	ifExistRegRegionFile=ifRReg;
 	designName=reInfo.desName;
 	fileName=reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".NegCtrlProbes."+reInfo.REName+"."+reInfo.currTime+".gff3";
-	fasFileName = reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".NegProbeSequences."+reInfo.REName+"."+reInfo.currTime+".txt";    
+	fasFileName = reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".NegProbeSequences."+reInfo.REName+"."+reInfo.currTime+".txt";  
+	write2ProbesBedFileName =   reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".AllProbeSequences."+reInfo.REName+"."+reInfo.currTime+".bed";
 	reLeftCut = reInfo.leftOfCut;
 	reRightCut = reInfo.rightOfCut;
 	mapThreshold = reInfo.mappabilityThreshold;
@@ -68,7 +69,7 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
 	bool flag=true;
 	int istart, iend;
 	std::string temp, lineReadin;
-	std::string chr, start, end, strand, intId;	
+	std::string chr, start, end, strand, intId, discardtemp;	
 	std::string genename, tr_id, exonCounts, exonStarts, exonEnds;
 	
 	std::map <std::string, genetemp> genemap;
@@ -86,11 +87,12 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
       		
 		std::stringstream geneline ( lineReadin );
 		
-		//name2	 name	chrom	strand	txStart	txEnd	exonCount	exonStarts	exonEnds
-		getline(geneline,genename,'\t');
-		 
-		getline(geneline, tr_id,'\t'); 
+		//#bin	name	chrom	strand	txStart	txEnd	cdsStart	cdsEnd	exonCount	exonStarts	exonEnds	score	name2	cdsStartStat	cdsEndStat	exonFrames
 		
+		getline(geneline,discardtemp,'\t');
+		
+		getline(geneline, tr_id,'\t'); 
+	
 		getline(geneline, chr,'\t'); 
         	  
 		getline(geneline, strand,'\t');
@@ -98,9 +100,20 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
 		getline(geneline, start,'\t');
 		getline(geneline, end,'\t');
 		
+		getline(geneline,discardtemp,'\t');
+		getline(geneline,discardtemp,'\t');
+		
 		getline(geneline, exonCounts,'\t');
 		getline(geneline, exonStarts,'\t');
 		getline(geneline, exonEnds,'\t');
+		
+		getline(geneline,discardtemp,'\t');
+		
+		getline(geneline,genename,'\t');
+		
+		getline(geneline,discardtemp,'\t');
+		getline(geneline,discardtemp,'\t');
+		getline(geneline,discardtemp,'\t');
 		
 		genetemp gt;
 		gt.chr=chr;
@@ -470,6 +483,7 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
 	
 	std::ofstream outfile(fileName, std::fstream::app);
 	std::ofstream outFasFile(fasFileName, std::fstream::app);
+	std::ofstream write2ProbesBedFile(write2ProbesBedFileName, std::fstream::app);
 	
 	for(auto it=chrToIndex.begin(); it!=chrToIndex.end(); ++it){
 		std::sort(it->second.begin(), it->second.end(), [](negProbe const &a, negProbe const &b) { return a.start < b.start; });
@@ -494,6 +508,8 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
 			
 			outFasFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<"+"<<'\t'<<ind.name<<'\t'<<getFas<<std::endl;
 			
+			write2ProbesBedFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<ind.name<<std::endl;
+			
 			//right side
 			probeEnd=( ind.end + reRightCut );
 			probeStart=( probeEnd - ProbeLen ); 
@@ -512,6 +528,8 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
 			getFas=getSeq.GetFasta(it->first+":"+std::to_string(probeStart)+"-"+std::to_string(probeEnd));
 			
 			outFasFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<"+"<<'\t'<<ind.name<<'\t'<<getFas<<std::endl;
+			
+			write2ProbesBedFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<ind.name<<std::endl;
 		}
 	}
 }

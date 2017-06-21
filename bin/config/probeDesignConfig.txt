@@ -14,7 +14,7 @@ RE cut site motif=^GATC,MboI
 /--The genome assembly build version in the format 'buildVersion,source'. Eg. hg19,UCSC --/
 Genome assembly=hg19,UCSC
 
-/--The file path to the Transcript List File in given format. Either Transcript List file or SNP List file is required. Both can be used together--/
+/--The file path to the Transcript List File in given format. Either Transcript List file or SNV List file is required. Both can be used together--/
 Transcript List File=/path/to/TranscriptListFile.txt
 
 /--The file path to the SNV List File in BED format. Either Transcript List file or SNV List file is required. Both can be used together--/

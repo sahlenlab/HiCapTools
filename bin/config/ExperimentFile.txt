@@ -11,6 +11,18 @@ Negative control Probe File=/path/to/NegativeControlProbeFile.gff3
 /--The file path to Digested Genome File Name in txt format--/
 Digested Genome File=/path/to/DigestedGenomeFileName.txt
 
+/--The cut site motif of the restiction enzyme used to digest the genome in the following format with the cut site indicated by a '^'. X^XXX,EnzymeName. Eg. ^GATC,MboI ; A^AGCTT,HindIII. --/
+/--Required field if Digested Genome File field is left empty--/
+RE cut site motif=^GATC,MboI
+
+/--The genome assembly build version in the format 'buildVersion,source'. Eg. hg19,UCSC --/
+/--Required field if Digested Genome File field is left empty--/
+Genome assembly=hg19,UCSC
+
+/--The path to the fasta file containing the genomic sequence--/
+/--Required field if Digested Genome File field is left empty--/
+Fasta File=
+
 /--The file path to Transcript List File in given format. Either Transcript List file or SNV List file is required. Both can be used together--/
 Transcript List File=/path/to/TranscriptListFile.txt
 

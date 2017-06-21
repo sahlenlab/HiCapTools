@@ -35,12 +35,14 @@
 #include <string>
 #include <algorithm>
 #include <ctime>
+#include <dirent.h>
 
 #include "HiCapTools.h"
 #include "NegativeProbeDesign.h"
 #include "PrintUsage.h"
 #include "OutStream.h"
 #include "bioioMod.h"
+#include "CallHiCUP.h"
 
 int DistanceBetweenProbes = 1000;
 
@@ -69,6 +71,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
     std::string regRegionFile;
     PrDes::RENFileInfo reFileInfo;
     bool emptyErrFlag = false;
+    bool generateDigest=false;
     int featFileCount = 3; //3 - both files, 2 - transcript file only, 1 - snp file only
     int countFeatFiles = 2;
     int repeatOverlapExtent = 6;
@@ -122,8 +125,8 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
 					if(s.empty()){
-						log<<"!!Error!! : Digested Genome File is required" <<std::endl;
-						emptyErrFlag = true;
+						log<<"##Note## : Digested Genome File is empty. The digest will be generated from the provided fasta file" <<std::endl;
+						generateDigest = true;
 					}
 					DigestedGenomeFileName=s;
 				}
@@ -330,7 +333,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
 		return 0;
 	}
 	
-	if(!CheckFile(DigestedGenomeFileName)){
+	if(!DigestedGenomeFileName.empty() && !CheckFile(DigestedGenomeFileName)){
 		log<<"!!Error!! : Digested Genome File is not accessible " << std::endl;
 		return 0;
 	}
@@ -359,7 +362,21 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
 		return 0;
 	}
 	
-            
+	
+	if(generateDigest){
+		log<< "Generating Restriction Digest File : Starting!"<<std::endl;
+		int digestErr;
+		CallHiCUP getDigest(log); 
+		std::string assemblyVer =reFileInfo.genomeAssembly.substr(0, reFileInfo.genomeAssembly.find_first_of(","));
+		 digestErr = getDigest.GenerateRestrictionFile("hiCUPDigester/hicup_digester", motif, assemblyVer, fastaFile, DigestedGenomeFileName);
+		 if(digestErr!=1){
+			 log<<"!!Digest file could not be generated. Program exiting!!"<<std::endl;
+			 return 0;
+		 }
+		 log<< "Generating Restriction Digest File : Done!"<<std::endl;
+	}
+	
+	          
     log << std::setw(75)<<std::left<<"Base File Name:" << reFileInfo.desName << std::endl;    
     log << std::setw(75)<<"Digested Genome File:" << DigestedGenomeFileName << std::endl;
     log << std::setw(75)<<"RE cut site motif:" << motif << std::endl;
@@ -450,7 +467,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
 	else
 		designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, bigwigsummarybinary, mappabilityfile, whichchr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE) ;
 	
-	bool isFas = designProbes.ConstructSeq(reFileInfo, getSeq);
+	bool isFas = designProbes.ConstructSeq(reFileInfo, getSeq, whichchr);
 	
 	if(!isFas){
 		log << "!!Error getting sequence from fasta file!! Aborting!" << std::endl;

@@ -62,7 +62,7 @@ private:
 	
 	int minREfragLen, distforbidIntergenic, distforbidReg;
 	bool ifExistRegRegionFile;
-    std::string fileName, summaryFileName, designName, genAssem, fasFileName;
+    std::string fileName, summaryFileName, designName, genAssem, fasFileName, write2ProbesBedFileName;
     bool ifRep, ifMap;
     
     void ConstructPools(std::string, ProbeFeatureClass&);

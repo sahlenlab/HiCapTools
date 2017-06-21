@@ -35,13 +35,13 @@
 #include <cstring>
 #include <fstream>
 #include <iomanip>
-using namespace std;
 
 #include "Global.h"
 #include "ProcessPairs.h"
 #include "Find_Interactions.h"
 #include "OutStream.h"
 #include "HiCapTools.h"
+#include "CallHiCUP.h"
 
 
 unsigned int totalNumberofPairs=0;
@@ -77,6 +77,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	std::locale l;
 	std::ofstream statsFile;
 	bool emptyErrFlag=false;
+	bool generateDigest=false;
 	char currTime[100];
 	int featFileCount = 3; //4 - transcript and SNV files, 2 - transcript file only, 1 - snp file only
     int countFeatFiles = 2;
@@ -92,7 +93,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	
 	PrDes::RENFileInfo reFileInfo;
 	
-	std::string line;
+	std::string line, motif, fastaFile;
    
 
 	std::time_t now_time = std::time(NULL);
@@ -115,9 +116,9 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	if(configFile.good()){
 		while (!configFile.eof()){
 			getline(configFile, line);
-			if(line.find("=")!=string::npos){
+			if(line.find("=")!=std::string::npos){
 				if(line.substr(0, line.find('=')).find("Experiment File Name Path")!=std::string::npos){
-					string s;
+					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
 					if(s.empty()){
@@ -153,7 +154,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					
 				}
 				if(line.substr(0, line.find('=')).find("Base File Name")!=std::string::npos){
-					string s;
+					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
 					if(s.empty()){
@@ -163,7 +164,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					BaseFileName=s;
 				}
 				if(line.substr(0, line.find('=')).find("Calculate p_values")!=std::string::npos){
-					string s;
+					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
 					if(s=="Yes" || s=="yes"|| s=="Y" || s== "y"){
@@ -239,13 +240,13 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	log << std::setw(35)<<"Bin Size for Probe-Probe"	<<BinSizeProbeProbe<<std::endl;
 	log << std::setw(35)<<"Window Size for Probe-Probe"<<WindowSizeProbeProbe<<std::endl;
     
-    ifstream ExpFile(ExpFileName.c_str());
+    std::ifstream ExpFile(ExpFileName.c_str());
     if(ExpFile.good()){
 		while (!ExpFile.eof()){
 			getline(ExpFile, line);
-			if(line.find("=")!=string::npos){
+			if(line.find("=")!=std::string::npos){
 				if(line.substr(0, line.find('=')).find("Feature Probe File")!=std::string::npos){
-					string s;
+					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
 					if(s.empty()){
@@ -255,7 +256,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					ProbeFileName = s;
 				}
 				if(line.substr(0, line.find('=')).find("Negative control Probe File")!=std::string::npos){
-					string s;
+					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
 					if(s.empty() && CALCULATE_P_VALUES){
@@ -265,17 +266,47 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					NegCtrlProbeFileName = s;
 				}
 				if(line.substr(0, line.find('=')).find("Digested Genome File")!=std::string::npos){
-					string s;
+					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
 					if(s.empty()){
-						log<<"!!Error!! : Digested Genome File Path is empty. It is required!" <<std::endl;
-						emptyErrFlag=true;
+						log<<"##Note## : Digested Genome File is empty. The digest will be generated from the provided fasta file" <<std::endl;
+						generateDigest=true;
 					}
 					DigestedGenomeFileName = s;
 				}
+				if(line.substr(0, line.find('=')).find("RE cut site motif")!=std::string::npos){
+					std::string s;
+					s=line.substr(line.find('=')+1);
+					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
+					if(s.empty()){
+						log<<"##Note## : RE cut site motif is required if genome restriction digest file has to be generated" <<std::endl;
+						//emptyErrFlag = true;
+					}
+					motif=s;
+				}
+				if(line.substr(0, line.find('=')).find("Genome assembly")!=std::string::npos){
+					std::string s;
+					s=line.substr(line.find('=')+1);
+					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
+					if(s.empty()){
+						log<<"##Note## : Genome assembly version is required if genome restriction digest file has to be generated" <<std::endl;
+						//emptyErrFlag = true;
+					}
+					reFileInfo.genomeAssembly=s;
+				}
+				if(line.substr(0, line.find('=')).find("Fasta File")!=std::string::npos){
+					std::string s;
+					s=line.substr(line.find('=')+1);
+					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
+					if(s.empty()){
+						log<<"##Note## : Fasta File is required if genome restriction digest file has to be generated" <<std::endl;
+						//emptyErrFlag = true;
+					}
+					fastaFile=s;
+				}
 				if(line.substr(0, line.find('=')).find("Transcript List File")!=std::string::npos){
-					string s;
+					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
 					if(s.empty()){
@@ -307,7 +338,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					negCtrlRegFile=s;
 				}
 				if(line.substr(0, line.find('=')).find("Promoters")!=std::string::npos){
-					string s;
+					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
 					if(s.empty()){
@@ -318,7 +349,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					probeType["promoter"]=s;
 				}
 				if(line.substr(0, line.find('=')).find("SNVs")!=std::string::npos){
-					string s;
+					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
 					if(s.empty()){
@@ -329,7 +360,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					probeType["SNP"]=s;
 				}
 				if(line.substr(0, line.find('=')).find("Negative controls")!=std::string::npos){
-					string s;
+					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
 					if(s.empty()){
@@ -340,7 +371,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					probeType["negctrl"]=s;
 				}
 				if(line.substr(0, line.find('=')).find("Other")!=std::string::npos){
-					string s;
+					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
 					if(s.empty()){
@@ -355,7 +386,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 				}
 				if(line.substr(0, line.find('=')).find("Experiment BAM File Name Path")!=std::string::npos){
 					
-					string s;
+					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
 					Exptemp.filepath=s;
@@ -378,6 +409,15 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		emptyErrFlag=true;
 	}
 	
+	if(generateDigest && motif.empty()){
+		log << "Restriction enzyme Motif is required if Genome Restriction Digest file is to be generated!"<< std::endl;
+		emptyErrFlag=true;
+	}
+	if(generateDigest && reFileInfo.genomeAssembly.empty()){
+		log << "Genome Assembly information is required if Genome Restriction Digest file is to be generated!"<< std::endl;
+		emptyErrFlag=true;
+	}
+	
 	if(emptyErrFlag){ // a required field is empty
 		log<< " Enter all required fields."<<std::endl;
 		return 0;
@@ -395,8 +435,12 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		log<< "!!Error!! : Negative control Probe File is not accessible"<<std::endl;
 		return 0;
 	}
-	if(!CheckFile(DigestedGenomeFileName)){
+	if(!DigestedGenomeFileName.empty() && !CheckFile(DigestedGenomeFileName)){
 		log<< "!!Error!! : Genome Digest File is not accessible"<<std::endl;
+		return 0;
+	}
+	if(generateDigest && !CheckFile(fastaFile)){
+		log<< "!!Error!! : Fasta File is not accessible"<<std::endl;
 		return 0;
 	}
 	if(!TranscriptListFileName.empty() && !CheckFile(TranscriptListFileName)){
@@ -411,6 +455,23 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		log<< "!!Error!! : Negative control Regions File is not accessible"<<std::endl;
 		return 0;
 	}
+	
+	
+	
+	if(generateDigest){
+		log<< "Generating Restriction Digest File : Starting!"<<std::endl;
+		int digestErr;
+		CallHiCUP getDigest(log); 
+		std::string assemblyVer =reFileInfo.genomeAssembly.substr(0, reFileInfo.genomeAssembly.find_first_of(","));
+		 digestErr = getDigest.GenerateRestrictionFile("hiCUPDigester/hicup_digester",motif, assemblyVer, fastaFile, DigestedGenomeFileName);
+		 if(digestErr!=1){
+			 log<<"!!Digest file could not be generated. Program exiting!!"<<std::endl;
+			 return 0;
+		 }
+		 log<< "Generating Restriction Digest File : Done!"<<std::endl;
+	}
+	
+	
 	
 	log <<std::setw(35)<< "Feature Probe File"<<ProbeFileName<<std::endl;
 	if(CALCULATE_P_VALUES)
@@ -493,7 +554,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	}
     
     //---------------------------------------------------------------------------------
-    vector < DetermineBackgroundLevels > background;
+    std::vector < DetermineBackgroundLevels > background;
     
     ProximityClass proximities(NOFEXPERIMENTS);
        
@@ -533,9 +594,10 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 			
 		if(statsOption=="ComputeStatsOnly"){
 			statsFile <<  Exptemp.name << std::endl;
-			statsFile << totalNumberofPairs << '\t' <<NumberofPairs << '\t' << NofPairs_Both_on_Probe<< '\t' << NofPairs_One_on_Probe<< '\t' << NofPairsNoAnn << '\t' << (NumberofPairs)/double(totalNumberofPairs) << std::endl;
+			statsFile << totalNumberofPairs/2 << '\t' <<NumberofPairs << '\t' << NofPairs_Both_on_Probe<< '\t' << NofPairs_One_on_Probe<< '\t' << NofPairsNoAnn << '\t' << (NumberofPairs)/double(totalNumberofPairs) << std::endl;
 		}
-        
+		
+        totalNumberofPairs = 0;
 		NumberofPairs = 0; 
 		NofPairs_Both_on_Probe = 0; 
 		NofPairs_One_on_Probe = 0; 

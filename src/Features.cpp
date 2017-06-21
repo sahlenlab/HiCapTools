@@ -34,8 +34,8 @@
 #include <fstream>
 #include <algorithm>
 
-std::map< std::string, FeatureStruct > Features;
-std::map< std::string, std::vector < std::string > > MetaFeatures;
+std::map< std::string, FeatureStruct, caseInsensComp > Features;
+std::map< std::string, std::vector < std::string > , caseInsensComp> MetaFeatures;
 
 void FeatureClass::InitialiseData(int clustProm, int fCount){
 	
@@ -53,13 +53,18 @@ void FeatureClass::GetTrFeats(std::stringstream &trx, temppars &tpars, std::stri
     
     //Transcript Line Format
     //name2	 name	chrom	strand	txStart	txEnd	exonCount	exonStarts	exonEnds
+    //#bin	name	chrom	strand	txStart	txEnd	cdsStart	cdsEnd	exonCount	exonStarts	exonEnds	score	name2	cdsStartStat	cdsEndStat	exonFrames
     
     //BED Line Format for SNP and Negative Control Region
     //chrom	Start	End	name
 	
 	if(option=="transcript"){
-		getline(trx,tpars.name,'\t'); 
+		getline(trx,field,'\t'); 
 		getline(trx,tpars.tr_id,'\t'); 
+		
+		
+		//for (auto & c: tpars.name) c = toupper(c);
+		
     }
     
     getline(trx,tpars.chr,'\t'); 
@@ -72,9 +77,18 @@ void FeatureClass::GetTrFeats(std::stringstream &trx, temppars &tpars, std::stri
     getline(trx,end,'\t');
     
     if(option=="transcript"){
-		getline(trx,field,'\t');
-		getline(trx,field,'\t');
-		getline(trx,field,'\t');
+		getline(trx,field,'\t'); //cdsStart
+		getline(trx,field,'\t'); //cdsEnd
+		getline(trx,field,'\t'); //exonCount
+		getline(trx,field,'\t'); //exonStarts
+		getline(trx,field,'\t'); //exonEnds
+		getline(trx,field,'\t'); //score
+		
+		getline(trx,tpars.name,'\t'); 
+		
+		getline(trx,field,'\t'); //cdsStartStat
+		getline(trx,field,'\t'); //cdsEndStat
+		getline(trx,field,'\t'); //exonFrames
     
 		if(tpars.strand=="+"){
 			tpars.start=std::stoi(start);
@@ -96,7 +110,7 @@ void FeatureClass::GetTrFeats(std::stringstream &trx, temppars &tpars, std::stri
 	   tpars.strand="+";
 	   
 	   getline(trx,tpars.name,'\t');
-	   for (auto & c: tpars.name) c = toupper(c);
+	   //for (auto & c: tpars.name) c = toupper(c);
 	   tpars.tr_id=tpars.name;
 	   if(option=="SNV")
 		tpars.FeatureType = 2;

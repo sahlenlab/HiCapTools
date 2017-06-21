@@ -93,7 +93,7 @@ void ProbeSet::GetProbeFeats(std::stringstream& line, CaptureProbes& t, std::str
 		
 		if(parseValue.substr(0, parseValue.find('=')).find("Name")!= std::string::npos){
 			Name=parseValue.substr(parseValue.find('=')+1);
-			for (auto & c: Name) c = toupper(c); // Name of Feature
+			//for (auto & c: Name) c = toupper(c); // Name of Feature
 		}
 		
 		if(parseValue.substr(0, parseValue.find('=')).find("transcriptid")!= std::string::npos){

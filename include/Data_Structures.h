@@ -35,7 +35,19 @@
 #include <vector>
 #include "IntervalTree.h"
 
-
+struct caseInsensComp : std::binary_function<std::string, std::string, bool>{
+    // case-independent (ci) compare_less binary function
+	struct caseLessComp : public std::binary_function<unsigned char,unsigned char,bool>{
+		bool operator() (const unsigned char& c1, const unsigned char& c2) const {
+			return tolower (c1) < tolower (c2); 
+		}
+	};
+	bool operator() (const std::string & s1, const std::string & s2) const {
+		return std::lexicographical_compare(s1.begin (), s1.end (),   // source range
+									  s2.begin (), s2.end (),   // dest range
+									  caseLessComp ());  // comparison
+	}
+};
 
 struct Junction{
     int* paircount; // [0..n]: number of times observed for experiments 0..n,
@@ -83,8 +95,8 @@ struct FeatureStruct{
 
 
 //DECLARE FEATURES
-extern std::map< std::string, FeatureStruct > Features; //key = featureid, (chr_start); value = feature struct
-extern std::map< std::string, std::vector < std::string > > MetaFeatures; // key = name (A1BG, rs1101 etc); value = list of feature_id (e.g. chr1_199202)
+extern std::map< std::string, FeatureStruct,  caseInsensComp> Features; //key = featureid, (chr_start); value = feature struct
+extern std::map< std::string, std::vector < std::string > , caseInsensComp> MetaFeatures; // key = name (A1BG, rs1101 etc); value = list of feature_id (e.g. chr1_199202)
 
 struct CaptureProbes{
 	std::string name_of_design;

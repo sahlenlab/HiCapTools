@@ -34,7 +34,7 @@ int Repeats::ReadRepeatIntervals(std::string repeatfile, OutStream& log, int ove
 
     repeat_features feats;
     
-    std::string chr_of_vector, chr, temp1, temp2, temp3;
+    std::string chr_of_vector, chr, temp1, temp2, temp3, tmp;
     int start, end, index = 0;
     std::string fname;
     std::vector< Interval< repeat_features >  > repeat_intervals;
@@ -45,8 +45,8 @@ int Repeats::ReadRepeatIntervals(std::string repeatfile, OutStream& log, int ove
     log << "Repeat File is " << fname << std::endl;
     
     
-    while(infile >> chr){
-        infile >> start >> end >> temp1 >> temp2 >> temp3;
+    while(infile >> tmp>> temp2 >> tmp>> tmp>>tmp>> chr>>start >> end >>tmp>> temp3>> temp1>>tmp>>tmp>>tmp>>tmp>>tmp>>tmp){
+        //infile >>  ;
         chr_of_vector = chr;
         ++index;
         bool endoffile = false;
@@ -55,8 +55,8 @@ int Repeats::ReadRepeatIntervals(std::string repeatfile, OutStream& log, int ove
             feats.a = (temp1); feats.b = (temp2); feats.c = (temp3);
             repeat_intervals.push_back(Interval< repeat_features >(start, end, feats));
             
-            if(infile >> chr)
-                infile >> start >> end >> temp1 >> temp2 >> temp3;
+            if(infile >> tmp>> temp2 >> tmp>> tmp>>tmp>> chr>>start >> end >>tmp>> temp3>> temp1>>tmp>>tmp>>tmp>>tmp>>tmp>>tmp)
+                endoffile = false;
             else
                 endoffile = true;
             ++index;

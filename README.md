@@ -259,7 +259,7 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
 ##### Transcript Files
 
 The transcript file can be constructed from the UCSC Table browser by choosing the ’Genes and Gene Predictions’ from group, and relevant option from table and getting the output. 
-The file MUST then be SORTED by gene name and the fields separated by tabs. You can sort the file using the sortTranscriptFile.sh  script (sh sortTranscriptFile.sh /path/to/file) available in the scripts directory. The headers are as from the UCSC refGene table. 
+The file MUST then be SORTED by gene name and the fields separated by tabs. You can produce a sorted file using the sortTranscriptFile.sh script (sh sortTranscriptFile.sh /path/to/unsortedfile) available in the scripts directory. The headers are as from the UCSC refGene table. 
 
 If one wishes to use a subset of genes or transcripts for probe design or proximity detection, one can paste or upload the names or accessions of the subset using option "identifiers (names/accessions): " in the UCSC Table Browser.
     

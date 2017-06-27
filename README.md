@@ -259,14 +259,15 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
 ##### Transcript Files
 
 The transcript file can be constructed from the UCSC Table browser by choosing the ’Genes and Gene Predictions’ from group, and relevant option from table and getting the output. 
-The file MUST then be SORTED by gene name and the fields separated by tabs. You can sort the file using the unix sort command (sort -k13,13 transcript_file). The headers are as from the UCSC refGene table. 
+The file MUST then be SORTED by gene name and the fields separated by tabs. You can sort the file using the TranscriptFileSort.sh  script. The headers are as from the UCSC refGene table. 
 
 If one wishes to use a subset of genes or transcripts for probe design or proximity detection, one can paste or upload the names or accessions of the subset using option "identifiers (names/accessions): " in the UCSC Table Browser.
     
 ```
-name2	name    chrom   strand  txStart txEnd   exonCount   exonStarts  exonEnds
-ACYP1   NM_001107	chr14   -   75519927    75530752    3   75519927,75530656,  75520362,75530752,
-ACYP1   NM_001302616	chr14   -   75519927    75530752    3   75519927,75530674,  75520362,75530752,
+#bin  name  chrom strand  txStart txEnd cdsStart  cdsEnd  exonCount exonStarts  exonEnds  score name2 cdsStartStat  cdsEndStat  exonFrames
+1034  NM_130786 chr19 - 58858171  58864865  58858387  58864803  8 58858171,58858718,58861735,58862756,58863648,58864293,58864657,58864769,  58858395,58859006,58862017,58863053,58863921,58864563,58864693,58864865,  0 A1BG  cmpl  cmpl  1,1,1,1,1,1,1,0,  
+1034  NR_015380 chr19 + 58863335  58866549  58866549  58866549  4 58863335,58864744,58865079,58865734,  58864410,58864840,58865223,58866549,  0 A1BG-AS1  unk unk -1,-1,-1,-1,
+
 ```            
 
 ##### SNV Files

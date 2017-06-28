@@ -126,7 +126,7 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 - bigWigSummary executable path *(STRING: OPTIONAL)* :   The file path to the bigWigSummary executable. The executable for linux x86_64 included in the package in the bin directory and its path is entered by default.
 
-- Probe Length *(INTEGER: REQUIRED)* :   The required length of a probe in the current design. The default probe length is 120 base pairs. The probe lenght should ideally be between 50 and 1000 base pairs.
+- Probe Length *(INTEGER: REQUIRED)* :   The required length of a probe in the current design. The default probe length is 120 base pairs. The probe length should ideally be between 50 and 1000 base pairs.
 
 - Minimum distance between Probes *(INTEGER: REQUIRED)* :  The minimum distance allowed between two Probes in the current design. The default value is 1000 base pairs.
 

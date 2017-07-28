@@ -44,6 +44,7 @@ int main(int argc, const char * argv[]) {
 	std::string statsOption;
 	std::string printOption;
 	std::string extraConfig; 
+	std::string probeOption;
 	
 	HiCapTools prde;
 	
@@ -55,24 +56,47 @@ int main(int argc, const char * argv[]) {
     whichMod = argv[1];
     
     if(whichMod=="ProbeDesigner"){
-		if (!(argc == 4 || argc == 6)){
+		if (!(argc == 4 || argc == 6 || argc == 8)){
 			print_usage();
 			return 1;
 		}
 		else{
 			for(int i=2; i<argc; i+=2){
-				if((std::string(argv[i])=="-c" || std::string(argv[i])=="--chr")){
-					whichChr=argv[i+1];					
+				if((std::string(argv[i])=="-o" || std::string(argv[i])=="--option")){
+					probeOption=argv[i+1];
+					if(probeOption=="FeatureProbes" && argc <= 4){
+						print_usage();
+						return 1;
+					}
+					continue;
 				}
-				else if(argc==6 && (std::string(argv[i])=="-config")){
-					extraConfig=argv[i+1];
+				if(probeOption=="FeatureProbes" && argc > 4){										
+					if((std::string(argv[i])=="-c" || std::string(argv[i])=="--chr")){
+						whichChr=argv[i+1];
+					}
+					else if(argc==8 && (std::string(argv[i])=="-config")){
+						extraConfig=argv[i+1];
+					}
+					else{
+						print_usage();
+						return 1;
+					}
+				}
+				else if(probeOption=="NegativeControls"){
+					if(argc==6 && (std::string(argv[i])=="-config")){
+						extraConfig=argv[i+1];
+					}
+					else{
+						print_usage();
+						return 1;
+					}
 				}
 				else{
-				print_usage();
-				return 1;
+						print_usage();
+						return 1;
 				}
 			}
-			prde.ProbeDesignMain(whichChr, extraConfig);
+			prde.ProbeDesignMain(whichChr, extraConfig, probeOption);
 		}
 		
 	}

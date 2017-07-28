@@ -37,11 +37,12 @@
 std::map< std::string, FeatureStruct, caseInsensComp > Features;
 std::map< std::string, std::vector < std::string > , caseInsensComp> MetaFeatures;
 
-void FeatureClass::InitialiseData(int clustProm, int fCount){
+void FeatureClass::InitialiseData(int clustProm, int fCount, int featOverlapPadding){
 	
 	ClusterPromoters = clustProm;
 	fileCount = fCount;
 	filesReadCount=0;
+	fOverlapPad=featOverlapPadding;
 	tp = new temppars [2];
     pLog << "Promoter Class Initialised" << std::endl;
 
@@ -117,6 +118,8 @@ void FeatureClass::GetTrFeats(std::stringstream &trx, temppars &tpars, std::stri
 	   if(option=="neg_ctrl")
 		tpars.FeatureType = 3;
 	   tpars.probe_id=tpars.tr_id+"_"+start;
+	   getline(trx,field,'\t');
+	   getline(trx,tpars.tr_id,'\t'); 
    }
 }
 
@@ -207,7 +210,7 @@ void FeatureClass::ClusterIsoformPromoters(std::vector <int>& isoformprs, std::v
 
 
 void FeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::string TranscriptListFileName, std::string option){
-    std::string temp,tr1, tr2, feature_id;
+    std::string temp,tr1, tr2;
     int nofgenes = 0, z = 0;
     std::locale l;
     
@@ -262,6 +265,7 @@ void FeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::string T
             
             ClusterIsoformPromoters(isoformprs, tr_ids, clusteredcoords, ids_of_clustered, tp[0].strand, ClusterPromoters); //Promoters that are within "ClusterPromoters" of each other are clustered
             for(int y = 0; y < clusteredcoords.size();++y){
+				std::string feature_id; 
                 feature_id.append(tp[0].name);
                 feature_id.append("_");
                 
@@ -280,12 +284,27 @@ void FeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::string T
                 Features[feature_id].probe_target = tp[0].probetarget;
                 Features[feature_id].FeatureType = tp[0].FeatureType;
                 
+                ////////////
+                
+                if(chrIntervals.find(tp[0].chr)!=chrIntervals.end()){
+					chrIntervals[tp[0].chr].push_back(Interval <std::string>((clusteredcoords[y] - fOverlapPad),(clusteredcoords[y] + fOverlapPad), feature_id));
+					//chrIntervals[tp[0].chr].push_back(Interval <std::string>((clusteredcoords[y]),(clusteredcoords[y]), feature_id));
+				}
+				else{
+					std::vector < Interval < std::string > > tempvector ;
+					tempvector.push_back(Interval <std::string>((clusteredcoords[y] - fOverlapPad),(clusteredcoords[y] + fOverlapPad), feature_id));
+					//tempvector.push_back(Interval <std::string>((clusteredcoords[y]),(clusteredcoords[y]), feature_id));
+					chrIntervals.emplace(tp[0].chr, tempvector);
+				}
+                
              
                 MetaFeatures[Features[feature_id].Name].push_back(feature_id);
                 feature_id = "";
             }
         }
         else{
+			std::string feature_id;
+			
             feature_id.append(tp[0].name);
             feature_id.append("_");
             
@@ -304,9 +323,20 @@ void FeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::string T
             Features[feature_id].probe_target = tp[0].probetarget;
             Features[feature_id].FeatureType = tp[0].FeatureType;
             
+            if(chrIntervals.find(tp[0].chr)!=chrIntervals.end()){
+				//chrIntervals[tp[0].chr].push_back(Interval <std::string>((isoformprs[0] - promPadding),(isoformprs[0] + promPadding), feature_id));
+				chrIntervals[tp[0].chr].push_back(Interval <std::string>((isoformprs[0]),(isoformprs[0]), feature_id));
+			}
+			else{
+				std::vector < Interval < std::string > > tempvector ;
+				//tempvector.push_back(Interval <std::string>((isoformprs[0] - promPadding),(isoformprs[0] + promPadding), feature_id));
+				tempvector.push_back(Interval <std::string>((isoformprs[0]),(isoformprs[0]), feature_id));
+				chrIntervals.emplace(tp[0].chr, tempvector);
+			}
+            
             MetaFeatures[Features[feature_id].Name].push_back(feature_id);
         }
-        feature_id ="";
+        //feature_id ="";
         isoformprs.clear();
         clusteredcoords.clear();
         ids_of_clustered.clear();
@@ -344,7 +374,23 @@ void FeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::string T
     
     if(filesReadCount==fileCount){ 
 		pLog<<"Total Number of Features annotated: "<< Features.size()<<std::endl;
+		for(auto it = chrIntervals.begin(); it != chrIntervals.end(); ++it){
+				std::vector< Interval < std::string > > temp;
+				promIntTree[it->first] = IntervalTree< std::string >(it->second);
+				it->second.swap(temp);
+		}
 	}
+}
+
+std::string FeatureClass::FindOverlaps(std::string chr, unsigned long int readstart, unsigned long int readend){
+    
+    std::vector<Interval< std::string > > overlapResult;
+    promIntTree[chr].findOverlapping(readstart, readend, overlapResult);
+    if (overlapResult.size() > 0){ // value = probe_index
+        return overlapResult[0].value;
+    }
+    else
+        return "null";
 }
 
 

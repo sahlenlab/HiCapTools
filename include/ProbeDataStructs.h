@@ -56,8 +56,7 @@ namespace PrDes{
 		std::vector <std::string> ProbeID;
 		int FeatureType; //Promoter, NegCtrl, etc..
 		std::string chr;
-		int nofRESites; // how many restriction sites the core promoter contains, will be used to normalise the signal
-		//int *closestREsitenums;  
+		int nofRESites; // how many restriction sites the core promoter contains, will be used to normalise the signal  
 		int closestREsitenums[2];  
 		int start;
 		int end;
@@ -70,6 +69,7 @@ namespace PrDes{
 		int TSS;
 		bool sharedpromoter; 
 		std::vector < std::string > genes_sharingproms;
+		bool probesSkip;
 	//restriction fragments will be numbered with respect to the closest site upstream [0] or downstream [1].
 	};
 
@@ -96,6 +96,7 @@ namespace PrDes{
 		int rightOfCut;
 		char currTime[100];
 		double mappabilityThreshold;
+		int repeatOverlapExtent;
 		bool ifRepeatAvail;
 		bool ifMapAvail;
 		std::string genomeAssembly;

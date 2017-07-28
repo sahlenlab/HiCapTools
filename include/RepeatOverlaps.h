@@ -46,7 +46,7 @@ class Repeats{
     friend class Probes;
 public:
     std::unordered_map< std::string, IntervalTree < repeat_features > > repeat_map;
-    int ReadRepeatIntervals(std::string, OutStream&, int);
+    int ReadRepeatIntervals(std::string, OutStream&);
     int FindOverlaps(std::string, unsigned long int, unsigned long int);
     
 private:

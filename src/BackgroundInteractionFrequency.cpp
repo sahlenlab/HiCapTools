@@ -37,12 +37,15 @@ using namespace boost::accumulators;
 #include "Global.h"
 #include "linear.h"
 #include <fstream>
+#include <cmath>
 
 
 ///For Probe-Distal and Probe-Probe
-void DetermineBackgroundLevels::CalculateMeanandStdRegress(std::string BaseFileName, int ExperimentNo, std::string DesignName, BG_signals& bglevelsloc, int binsize, std::string whichProx, int MinimumJunctionDistance, OutStream& log, int WindowSizeloc){
+void DetermineBackgroundLevels::CalculateMeanandStdRegress(std::string eName, int ExperimentNo, std::string DesignName, BG_signals& bglevelsloc, int binsize, std::string whichProx, int MinimumJunctionDistance, OutStream& log, int WindowSizeloc){
 
 
+	expName= eName; //set experiment name
+	
 	std::map< int, int > nofentries_perBin; // required for calculating mean
 	std::map< int, int > signal_square; // required for calculating stdev
     double sum_square, variance;
@@ -123,11 +126,8 @@ void DetermineBackgroundLevels::CalculateMeanandStdRegress(std::string BaseFileN
             bglevelsloc.stdev[it->first] = sqrt(variance); //stdev
         }
 	}
-    std::string FileName;
-	FileName.append(BaseFileName);
-	FileName.append(".BackgroundLevels.txt");
-	std::ofstream outf(FileName.c_str());
-    outf << "Distance Bin" << '\t' << "Mean " << '\t' << "Stdev" << '\t' << "Sample Size" << '\t' << "Mean (Smoothed)" << '\t' << "StDev (Smoothed)" <<  std::endl;
+    
+    int first25kb = ceil(25000/(double)binsize); // to exclude bins of first 25 kb from smoothing 
     
     boost::accumulators::accumulator_set<double, stats<tag::rolling_mean> > acc(tag::rolling_window::window_size = (WindowSizeloc*2));
     boost::accumulators::accumulator_set<double, stats<tag::rolling_mean> > acc2(tag::rolling_window::window_size = (WindowSizeloc*2));
@@ -147,8 +147,143 @@ void DetermineBackgroundLevels::CalculateMeanandStdRegress(std::string BaseFileN
     //Push the first WindowSize-1 elements into a queue
 	if(dm.empty())
 		log<<"No Element in dm Outloop"<<std::endl;
+	//////////////////////
 	
-    for(z = 0; z < WindowSizeloc - 1; ++z){
+	bool firstpass=true;
+    for(w = 0; w < (dm.size()); ++w){
+		if(w < first25kb){
+			bglevelsloc.smoothed[db[w]] = dm[w];
+			bglevelsloc.smoothed_stdev[db[w]] = ds[w];
+		}
+		else{
+			boost::accumulators::accumulator_set<double, stats<tag::rolling_mean> > acc(tag::rolling_window::window_size = (WindowSizeloc));
+			boost::accumulators::accumulator_set<double, stats<tag::rolling_mean> > acc2(tag::rolling_window::window_size = (WindowSizeloc));
+			
+			if(w >= first25kb && w < first25kb + WindowSizeloc - 1){
+				
+	
+				/**
+				if(dwm.size()==WindowSizeloc){
+					for(z = 0; z < WindowSizeloc;++z){
+						std::cout<<dwm[z]<<std::endl;
+					}
+					dwm.pop_front();
+				}
+			**/
+				//change to rolling mean if needed
+				bglevelsloc.smoothed[db[w]] = dm[w];
+				bglevelsloc.smoothed_stdev[db[w]] = ds[w];
+				
+
+			}
+			else {
+			    if(firstpass){
+			        for(auto it=w-(WindowSizeloc/2); it<w+WindowSizeloc/2;++it){ //for the first bin that is to be smoothed
+			            dwm.push_back(dm[it]);
+			            dws.push_back(ds[it]);
+			        }
+			        firstpass=false;
+			    }
+				bool ifrolling=false;
+				
+				//To check that the window stops at the last bin
+				if(w+WindowSizeloc/2 < dm.size()){
+				    dwm.push_back(dm.at(w+WindowSizeloc/2));
+				    dws.push_back(ds.at(w+WindowSizeloc/2));
+				}
+				
+			
+				if(dwm.size()==WindowSizeloc){
+					ifrolling=true;
+					for(z = 0; z < WindowSizeloc;++z){
+						acc(dwm[z]);
+						acc2(dws[z]);
+					}
+				}
+				if(ifrolling){
+					bglevelsloc.smoothed[db[w]] = rolling_mean(acc);
+					bglevelsloc.smoothed_stdev[db[w]] = rolling_mean(acc2); 
+					
+				}
+				else{
+					bglevelsloc.smoothed[db[w]] = dm[w];
+					bglevelsloc.smoothed_stdev[db[w]] = ds[w]; 
+					
+				}
+		
+				dwm.pop_front();
+				dws.pop_front();
+				
+			}
+		}
+	}
+	
+    ///////////////////////
+    /***
+    s=0;
+    for(w = 0; w < (dm.size()); ++w){
+		if(w < first25kb){
+			bglevelsloc.smoothed[db[w]] = dm[w];
+			bglevelsloc.smoothed_stdev[db[w]] = ds[w];
+		}
+		else {
+			boost::accumulators::accumulator_set<double, stats<tag::rolling_mean> > acc(tag::rolling_window::window_size = (WindowSizeloc));
+			boost::accumulators::accumulator_set<double, stats<tag::rolling_mean> > acc2(tag::rolling_window::window_size = (WindowSizeloc));
+			
+			if(w >= first25kb && w < first25kb + WindowSizeloc - 1){
+				
+				dwm.push_back(dm[w]);
+				dws.push_back(ds[w]);
+				
+				if(dwm.size()==WindowSizeloc){
+					for(z = 0; z < WindowSizeloc;++z){
+						acc(dwm[z]);
+						acc2(dws[z]);
+					}
+					dwm.pop_front();
+					dws.pop_front();
+				}
+				
+				//change to rolling mean if needed
+				bglevelsloc.smoothed[db[w]] = dm[w];
+				bglevelsloc.smoothed_stdev[db[w]] = ds[w];
+
+			}
+			else {//if(w < (dm.size() - (((WindowSizeloc - 1)/2)+first25kb))){
+				bool ifrolling=false;
+				dwm.push_back(dm.at(w));
+				dws.push_back(ds.at(w));
+			
+				if(dwm.size()==WindowSizeloc){
+					ifrolling=true;
+					for(z = 0; z < WindowSizeloc;++z){
+						acc(dwm[z]);
+						acc2(dws[z]);
+					}
+				}
+				if(ifrolling){
+					bglevelsloc.smoothed[db[w]] = rolling_mean(acc);
+					bglevelsloc.smoothed_stdev[db[w]] = rolling_mean(acc2); 
+				}
+				else{
+					bglevelsloc.smoothed[db[w]] = dm[w];
+					bglevelsloc.smoothed_stdev[db[w]] = ds[w]; 
+				}
+		
+				dwm.pop_front();
+				dws.pop_front();
+			}
+			//++s;
+		}
+	}
+    ***//////////////////////////
+/***	
+    //for(z = 0; z < WindowSizeloc - 1; ++z){
+    for(z = 0; z < first25kb; ++z){
+		 bglevelsloc.smoothed[db[z]] = dm[z];
+	     bglevelsloc.smoothed_stdev[db[z]] = ds[z];
+	}
+    for(z = first25kb; z < first25kb + WindowSizeloc - 1; ++z){
 	
         dwm.push_back(dm[z]);
 	
@@ -161,20 +296,28 @@ void DetermineBackgroundLevels::CalculateMeanandStdRegress(std::string BaseFileN
 	
     }
 	
-    s = WindowSizeloc;
-    for(w = ((WindowSizeloc - 1)/2); w < (dm.size() - ((WindowSizeloc - 1)/2));++w){
+    s = first25kb + WindowSizeloc;
+    for(w = ((WindowSizeloc - 1)/2); w < (dm.size() - (((WindowSizeloc - 1)/2)+first25kb));++w){
         boost::accumulators::accumulator_set<double, stats<tag::rolling_mean> > acc(tag::rolling_window::window_size = (WindowSizeloc));
         boost::accumulators::accumulator_set<double, stats<tag::rolling_mean> > acc2(tag::rolling_window::window_size = (WindowSizeloc));
         
-		dwm.push_back(dm[s - 1]);
-		dws.push_back(ds[s - 1]);
+        std::cout<<"S:"<<s<<" first25kb:"<<first25kb<<" windowsize:"<<WindowSizeloc<<" "<<whichProx<<" "<<expName<<std::endl;
+        std::cout<<dm.size()<< " Size dm"<< " w:"<<w<<std::endl; //vec.at
+        //std::cout<<"171520 "<<dm[171520]<<std::endl;
 		
+		//dwm.push_back(dm[s - 1]);
+		//dws.push_back(ds[s - 1]);
+		//if(s<dm.size()){
+			dwm.push_back(dm.at(s - 1));
+			dws.push_back(ds.at(s - 1));
+		//}
 		
         for(z = 0; z < WindowSizeloc;++z){
+        //for(z = firtst25kb; z < firtst25kb + WindowSizeloc; ++z){
             acc(dwm[z]);
             acc2(dws[z]);
         }
-        if(w>WindowSizeloc-1){
+        if(w > first25kb + WindowSizeloc-1){
 			bglevelsloc.smoothed[db[w]] = rolling_mean(acc);
 			bglevelsloc.smoothed_stdev[db[w]] = rolling_mean(acc2);
         }
@@ -186,8 +329,29 @@ void DetermineBackgroundLevels::CalculateMeanandStdRegress(std::string BaseFileN
         dws.pop_front();
         ++s;
     }
-
-    for (it = bglevelsloc.mean.begin(); it != bglevelsloc.mean.end(); ++it)
-        outf << (it->first) << '\t' << it->second << '\t' << bglevelsloc.stdev[it->first] << '\t' << bglevelsloc.samplesize[it->first] << '\t' << bglevelsloc.smoothed[it->first] << '\t' << bglevelsloc.smoothed_stdev[it->first] << std::endl;
-
+**/
 }
+
+void DetermineBackgroundLevels::PrintBackgroundFrequency(int bSize, int bSizePP){
+	
+	std::string FileNamePE, FileNamePP;
+	FileNamePE.append(expName);
+	FileNamePP.append(expName);
+	FileNamePE.append(".Probe_Distal.BackgroundLevels.txt");
+	FileNamePP.append(".Probe_Probe.BackgroundLevels.txt");
+	std::ofstream outfPE(FileNamePE.c_str());
+	std::ofstream outfPP(FileNamePP.c_str());
+    outfPE << "Distance Bin" << '\t' << "Interaction Distance" << '\t' << "Mean " << '\t' << "Stdev" << '\t' << "Sample Size" << '\t' << "Mean (Smoothed)" << '\t' << "StDev (Smoothed)" <<  std::endl;
+    
+	for (auto it = bglevels.smoothed.begin(); it != bglevels.smoothed.end(); ++it){
+        outfPE << (it->first) << '\t'<< (it->first)*bSize << '\t' << bglevels.mean[it->first] << '\t' << bglevels.stdev[it->first] << '\t' << bglevels.samplesize[it->first] << '\t' << it->second << '\t' << bglevels.smoothed_stdev[it->first] << std::endl;	
+	}
+	
+	outfPP << "Distance Bin" << '\t' << "Interaction Distance" << '\t' << "Mean " << '\t' << "Stdev" << '\t' << "Sample Size" << '\t' << "Mean (Smoothed)" << '\t' << "StDev (Smoothed)" <<  std::endl;
+	
+	for (auto it = bglevelsProbeProbe.smoothed.begin(); it != bglevelsProbeProbe.smoothed.end(); ++it){
+        outfPP << (it->first) << '\t' << (it->first)*bSizePP << '\t' << bglevelsProbeProbe.mean[it->first] << '\t' << bglevelsProbeProbe.stdev[it->first] << '\t' << bglevelsProbeProbe.samplesize[it->first] << '\t' << it->second << '\t' << bglevelsProbeProbe.smoothed_stdev[it->first] << std::endl;	
+	}
+	
+}
+

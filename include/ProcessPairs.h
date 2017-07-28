@@ -43,8 +43,8 @@ public:
 
     void Initialize(std::string, int, int, int);
   
-    void ProcessSortedBAMFile(ProbeSet&, RESitesClass&, ProximityClass&, std::string, int, std::string, std::string, std::string);
-    void ProcessSortedBamFile_NegCtrls(ProbeSet&, RESitesClass&, ProximityClass&, std::string, int, std::string, std::string);    
+    void ProcessSortedBAMFile(ProbeSet&, RESitesClass&, ProximityClass&, std::string, int, std::string, std::string, std::string, FeatureClass&);
+    void ProcessSortedBamFile_NegCtrls(ProbeSet&, RESitesClass&, ProximityClass&, std::string, int, std::string, std::string, FeatureClass&);    
     
     ProcessBAM(OutStream& blog) : bLog (blog) {}
     

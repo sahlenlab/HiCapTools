@@ -30,7 +30,7 @@
 #include "RepeatOverlaps.h"
 #include <fstream>
 
-int Repeats::ReadRepeatIntervals(std::string repeatfile, OutStream& log, int overlapExtent){
+int Repeats::ReadRepeatIntervals(std::string repeatfile, OutStream& log){
 
     repeat_features feats;
     
@@ -62,7 +62,7 @@ int Repeats::ReadRepeatIntervals(std::string repeatfile, OutStream& log, int ove
             ++index;
         }
         
-        if((chr_of_vector.length() < overlapExtent)){ 
+        if((chr_of_vector.length() < 6)){  //filter out haplotype assemblies/random chromosomes
             AddTotheIntervalTree(repeat_intervals, chr_of_vector);
         }
         chr_of_vector = chr;

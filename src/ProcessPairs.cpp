@@ -69,7 +69,7 @@ void ProcessBAM::Initialize(std::string bamfilename, int nOfExp, int padd, int r
 }
 
 
-void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClass& dpnII, ProximityClass& proximities, std::string BAMFILENAME, int ExperimentNo, std::string DesignName, std::string StatsOption){
+void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClass& dpnII, ProximityClass& proximities, std::string BAMFILENAME, int ExperimentNo, std::string DesignName, std::string StatsOption, FeatureClass& proms){
     
     BamAlignment al, almate;
     BamReader reader;
@@ -138,8 +138,15 @@ void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClas
 			   ++NofPairs_Both_on_Probe;
                }
                else{
-               feature_id2 = "null";
-               ++NofPairs_One_on_Probe;
+				   std::string checkFeat = proms.FindOverlaps(pairinfo.chr2, al.MatePosition, (al.MatePosition + ReadLen));
+				   if(checkFeat!="null"){
+					   feature_id2 = checkFeat;
+						++NofPairs_Both_on_Probe;
+					}
+					else{
+						feature_id2 = "null";
+						++NofPairs_One_on_Probe;
+					}
 			   }
 			   
 			   if(StatsOption!="ComputeStatsOnly"){
@@ -158,7 +165,7 @@ void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClas
 
 
 
-void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII, ProximityClass& proximities, std::string BAMFILENAME, int ExperimentNo, std::string whichchr, std::string DesignName, std::string StatsOption){
+void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII, ProximityClass& proximities, std::string BAMFILENAME, int ExperimentNo, std::string whichchr, std::string DesignName, std::string StatsOption, FeatureClass& proms){
    
 	BamAlignment al, almate;
 	BamReader reader;
@@ -243,8 +250,15 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 						++NofPairs_Both_on_Probe;
 					}
 					else{
-						feature_id2 = "null";
-						++NofPairs_One_on_Probe;
+						std::string checkFeat = proms.FindOverlaps(pairinfo.chr2, al.MatePosition, (al.MatePosition + ReadLen));
+						if(checkFeat!="null"){
+							feature_id2 = checkFeat;
+							++NofPairs_Both_on_Probe;
+						}
+						else{
+							feature_id2 = "null";
+							++NofPairs_One_on_Probe;
+						}
 					}
             
 					if(StatsOption!="ComputeStatsOnly"){
@@ -288,8 +302,15 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 					++NofPairs_Both_on_Probe;
 				}
 				else{
-					feature_id2 = "null";
-					++NofPairs_One_on_Probe;
+					std::string checkFeat = proms.FindOverlaps(pairinfo.chr2, al.MatePosition, (al.MatePosition + ReadLen));
+					if(checkFeat!="null"){
+							feature_id2 = checkFeat;
+							++NofPairs_Both_on_Probe;
+					}
+					else{
+						feature_id2 = "null";
+						++NofPairs_One_on_Probe;
+					}
 				}
             
 				if(StatsOption!="ComputeStatsOnly"){

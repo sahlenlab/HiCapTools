@@ -34,7 +34,7 @@
 
 class HiCapTools{ //Probe Clusters Associated with a Promoter
 public:
-	int ProbeDesignMain(std::string, std::string);
+	int ProbeDesignMain(std::string, std::string, std::string);
 	int ProxDetectMain(std::string, std::string, std::string, std::string);
 	
 private:

@@ -50,6 +50,7 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
 	reLeftCut = reInfo.leftOfCut;
 	reRightCut = reInfo.rightOfCut;
 	mapThreshold = reInfo.mappabilityThreshold;
+	repOverlapExtent = reInfo.repeatOverlapExtent;
 	ifRep = reInfo.ifRepeatAvail;
 	ifMap = reInfo.ifMapAvail;
 	BUFSIZE=bufSize;
@@ -466,7 +467,7 @@ bool NegativeProbeDesign::CheckRepeatOverlaps(std::string chr, int& closest_re, 
 	}
 	
     		
-	if(overlaprepeats > 0 || mappability < mapThreshold ){
+	if(overlaprepeats > repOverlapExtent || mappability < mapThreshold ){
 		return false;
 	}
 	else 

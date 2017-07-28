@@ -68,7 +68,7 @@ double DesignClass::BigWigSummary(std::string chr, int start, int end){
     FILE *fp;
     
     if ((fp = popen(cmdchar, "r")) == NULL) {
-        dLog<<"Error opening pipe!"<<std::endl;
+        dLog<<"BigWigSummary: Error opening pipe!"<<std::endl;
         return -1;
     }
     
@@ -77,13 +77,29 @@ double DesignClass::BigWigSummary(std::string chr, int start, int end){
     }
     
     if(pclose(fp))  {
-        dLog<<"Command not found or exited with error status"<<std::endl;
+        dLog<<"BigWigSummary: Command not found or exited with error status"<<std::endl;
         return -1;
     }
     return a;
     
 }
 
+bool DesignClass::CheckFragmentSize(RESitesClass &dpnII, std::string chr, int closest_re, int whichside){
+	
+	bool refound;
+	int *resites;
+    resites = new int[2];
+    int invalidRECoordinate=0;
+	
+	refound = dpnII.GettheREPositions(chr,closest_re, resites, invalidRECoordinate);
+	
+	if(abs(closest_re - resites[1-whichside])> minDistToTSS){ //
+		return true;
+	}
+	else 
+		return false;
+	
+}
 
 bool DesignClass::overlap(RESitesClass& dpnII, Repeats repeat_trees, int& closest_re, int tss, int whichside, std::string chr, int probe_start, int probe_end, bool ifRep, bool ifMap){
     
@@ -109,7 +125,7 @@ bool DesignClass::overlap(RESitesClass& dpnII, Repeats repeat_trees, int& closes
 		mappability = BigWigSummary(chr, probe_start, probe_end);
 	}
     
-    if(overlaprepeats > 0 || mappability < mapThreshold ){ // if overlap with repeats and low mappability, go to the next RE site
+    if(overlaprepeats > repOverlapExtent || mappability < mapThreshold ){ // if overlap with repeats and low mappability, go to the next RE site
         
         refound = dpnII.GettheREPositions(chr,closest_re, resites, invalidRECoordinate);
         
@@ -119,7 +135,7 @@ bool DesignClass::overlap(RESitesClass& dpnII, Repeats repeat_trees, int& closes
         else
             return false;
             
-        if (abs(closest_re - tss) <= MaxDistancetoTSS) {
+        if (abs(closest_re - tss) <= MaxDistancetoTSS && CheckFragmentSize(dpnII, chr, closest_re, whichside)) {
             passed = CheckRepeatOverlaps(dpnII, chr, tss, closest_re, whichside, repeat_trees, ifRep, ifMap);
         }
         else{
@@ -127,7 +143,7 @@ bool DesignClass::overlap(RESitesClass& dpnII, Repeats repeat_trees, int& closes
         }
     }
     else{
-        if(abs(closest_re - tss) <= MaxDistancetoTSS)
+        if(abs(closest_re - tss) <= MaxDistancetoTSS && CheckFragmentSize(dpnII, chr, closest_re, whichside))
             passed = true;
     }
     return passed;
@@ -152,20 +168,25 @@ bool DesignClass::CheckRepeatOverlaps(RESitesClass & dpnII, std::string chr, int
 }
 
 
-int DesignClass::CheckDistanceofProbetoTSS(RESitesClass& dpnII, std::string chr, int tss, int closest_re, bool rightside){
+int DesignClass::CheckDistanceofProbetoTSS(RESitesClass& dpnII, std::string chr, int tss, int closest_re, int whichside){
     //If probe is less than 120 bases away from the TSS, it looks at the next RE site to design probe
     
     int *resites;
     resites = new int[2];
     bool refound = 0;
     int invalidRECoordinate=0;
+    bool resFragFlag = false; //flag to check if restriction fragment is greater than probe length. Becomes false if greater
+    
+    resFragFlag=CheckFragmentSize(dpnII, chr, closest_re, whichside); // flag becomes false when restriction fragment is longer than probe length
 
-    while (abs(tss - closest_re) < ProbeLen) {
-		refound = dpnII.GettheREPositions(chr,closest_re, resites, invalidRECoordinate);
+    while (abs(tss - closest_re) < ProbeLen || !resFragFlag) {
+		refound = dpnII.GettheREPositions(chr, closest_re, resites, invalidRECoordinate);
 		if (refound){
-			closest_re = resites[rightside];
+			closest_re = resites[whichside];
+			
+			resFragFlag=CheckFragmentSize(dpnII, chr, closest_re, whichside); // flag becomes false when restriction fragment is longer than probe length
 		}
-		else{
+		else{	
 			return closest_re;
 		}
 	}
@@ -190,7 +211,7 @@ bool DesignClass::createNewEntry(std::unordered_map<int, PrDes::REposStruct >& t
 }
 
 
-void DesignClass::DesignProbes(ProbeFeatureClass & Feats, RESitesClass & dpnII, Repeats repeat_trees, std::string bgwgsumbin, std::string mappabilityfilepath, std::string whichchr, int mDisttoTSS, int prlen, PrDes::RENFileInfo& reInfo, int bufSize){
+void DesignClass::DesignProbes(ProbeFeatureClass & Feats, RESitesClass & dpnII, Repeats repeat_trees, std::string bgwgsumbin, std::string mappabilityfilepath, std::string whichchr, int mDisttoTSS, int prlen, PrDes::RENFileInfo& reInfo, int bufSize, int dFromTSS){
     
     // There is only one design layer which contains both upstream and downstream designs. Each feature will have two probes if possible.
     ProbeLen = prlen;
@@ -200,7 +221,9 @@ void DesignClass::DesignProbes(ProbeFeatureClass & Feats, RESitesClass & dpnII, 
 	reLeftCut = reInfo.leftOfCut;
 	reRightCut = reInfo.rightOfCut;
     mapThreshold = reInfo.mappabilityThreshold;
+    repOverlapExtent = reInfo.repeatOverlapExtent;
     BUFSIZE=bufSize;
+    minDistToTSS = dFromTSS;
     
     OneDesign.push_back(PrDes::DesignLayers());
     InitialiseDesign(Feats, OneDesign.back().Layer);
@@ -223,6 +246,8 @@ void DesignClass::DesignProbes(ProbeFeatureClass & Feats, RESitesClass & dpnII, 
     fn.append(".txt");
     std::ofstream summaryfile(fn.c_str());
     
+    summaryfile<<"Feature_Name"<<'\t'<<"Feature_chr"<<'\t'<<"Feature_coordinate"<<'\t'<<"Dist between Left ProbeStart and Closest RESite to fragment"<<'\t'<<"Dist between Right ProbeEnd and Closest RESite to fragment"<<'\t'<<"If Upstream(left)/Downstream(right) probes created"<<std::endl;
+    
     std::string fname = reInfo.desName;
     fname.append(".");
     fname.append(reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(',')));
@@ -241,23 +266,19 @@ void DesignClass::DesignProbes(ProbeFeatureClass & Feats, RESitesClass & dpnII, 
 	////////add genome and sequence region if possible
 		
     for (auto pIt = Feats.promFeatures.begin(); pIt != Feats.promFeatures.end(); ++pIt) {
-        if(pIt->second.chr == whichchr){
+        if(pIt->second.chr == whichchr && !(pIt->second.probesSkip)){ //if chosen chromosome and no skip of the transcript
+			
             it = chrIndex.find(pIt->second.chr);
             bool passed_upstream = false, passed_downstream = false;
             left_res = CheckDistanceofProbetoTSS(dpnII, pIt->second.chr, pIt->second.TSS, pIt->second.closestREsitenums[0], 0);
             right_res = CheckDistanceofProbetoTSS(dpnII, pIt->second.chr, pIt->second.TSS, pIt->second.closestREsitenums[1], 1);
             //last parameter is design direction not the promoter (RE on the left or right side of TSS)
             
-            if(abs(right_res-left_res)< ProbeLen){
-				right_res=left_res;
-				left_res = CheckDistanceofProbetoTSS(dpnII, pIt->second.chr, right_res, pIt->second.closestREsitenums[0], 0);
-			}
-             
             passed_upstream = CheckRepeatOverlaps(dpnII, pIt->second.chr, pIt->second.TSS, left_res, 0, repeat_trees, reInfo.ifRepeatAvail, reInfo.ifMapAvail);
             passed_downstream = CheckRepeatOverlaps(dpnII, pIt->second.chr, pIt->second.TSS, right_res, 1, repeat_trees, reInfo.ifRepeatAvail, reInfo.ifMapAvail);
             
             
-            if (passed_upstream && passed_downstream) {
+            if (passed_upstream && passed_downstream) { //check if fragment is same and longer than 600
                 createNewEntry(OneDesign.back().Layer[it->second].repmap, OneDesign.back().Layer[it->second].repmap, it->second, pIt->first, left_res,0); 
                 createNewEntry(OneDesign.back().Layer[it->second].repmap, OneDesign.back().Layer[it->second].repmap, it->second, pIt->first, right_res,1); 
                 summaryfile << pIt->second.genes[0] << '\t' << pIt->second.chr  << '\t' << pIt->second.TSS << '\t' << (pIt->second.closestREsitenums[0] - left_res) << '\t' << (right_res - pIt->second.closestREsitenums[1]) << '\t' << "both" << std::endl;
@@ -426,6 +447,7 @@ bool DesignClass::ConstructSeq(PrDes::RENFileInfo& reInfo, bioioMod& getSeq, std
     outfile.open(fname, std::fstream::app);
     outfile2.open(probesBedFile, std::fstream::app);
 
+	outfile2<<"track name=\"AllProbes_"<<reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))<<"_"<<reInfo.REName<<"_"<<reInfo.currTime<<"\""<<std::endl;
 	
 	for(auto &probeVar : probeList){
 		

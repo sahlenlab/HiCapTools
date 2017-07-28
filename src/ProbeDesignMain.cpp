@@ -36,6 +36,7 @@
 #include <algorithm>
 #include <ctime>
 #include <dirent.h>
+//#include <omp.h>
 
 #include "HiCapTools.h"
 #include "NegativeProbeDesign.h"
@@ -46,7 +47,7 @@
 
 int DistanceBetweenProbes = 1000;
 
-int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
+int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, std::string probeOption) {
 	
 	int ClusterPromoters  = 1200;
 	int ProbeLen = 120;
@@ -74,10 +75,12 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
     bool generateDigest=false;
     int featFileCount = 3; //3 - both files, 2 - transcript file only, 1 - snp file only
     int countFeatFiles = 2;
-    int repeatOverlapExtent = 6;
+    //int repeatOverlapExtent = 6;
+    
     int BUFSIZE = 128;
     std::string fastaIndexFile;
     std::string fastaFile;
+    int distFromTSS = 300; //half of the average fragment length -- hardcoded for now
     
     
     std::time_t now_time = std::time(NULL);
@@ -85,6 +88,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
 	
 	//Initialise
     reFileInfo.mappabilityThreshold = 0.7;
+    reFileInfo.repeatOverlapExtent = 6;
     
 	//-----Output to Log and std::cout-----//
     
@@ -95,6 +99,12 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
     //-----------------------------------//
 	
 	
+	if(probeOption=="NegativeControls"){
+		ifNeg="Yes";
+	}
+	else{
+		ifNeg="No";
+	}
     
     
     log<<"READ IN INPUTS"<<std::endl;
@@ -212,10 +222,11 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
 					if(!(line.substr(line.find('=')+1).empty()))
 						ProbeLen=std::stoi(line.substr(line.find('=')+1));
 				}
+				/***
 				if(line.substr(0, line.find('=')).find("Minimum distance between Probes")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						DistanceBetweenProbes=std::stoi(line.substr(line.find('=')+1));
-				}
+				}***/
 				if(line.substr(0, line.find('=')).find("Maximum distance from Probe to feature start (TSS if the feature is transcript)")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						MaxDistancetoTSS=std::stoi(line.substr(line.find('=')+1));
@@ -226,7 +237,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
 				}
 				if(line.substr(0, line.find('=')).find("Extent of Repeat Overlaps")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
-						repeatOverlapExtent=std::stoi(line.substr(line.find('=')+1));
+						reFileInfo.repeatOverlapExtent=std::stoi(line.substr(line.find('=')+1));
 				}
 				if(line.substr(0, line.find('=')).find("Mappability Threshold")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
@@ -252,19 +263,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
 					fastaIndexFile=s;
 				}
 //--------------------------------------Negative Control Probes ---------------------------------------------------//
-			
-				if(line.substr(0, line.find('=')).find("Design negative probe set")!=std::string::npos){
-					std::string s;
-					s=line.substr(line.find('=')+1);
-					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
-					if(s.empty()){
-						log<<"##Warning## : Design negative probe set is empty and therefore set to No" <<std::endl;
-						//emptyErrFlag = true;
-						ifNeg="No";
-					}
-					else
-						ifNeg=s;
-				}
+				
 				if(line.substr(0, line.find('=')).find("Minimum fragment length for negative probe")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						MinNegFragLen=std::stoi(line.substr(line.find('=')+1));
@@ -386,15 +385,17 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
 		log << std::setw(75)<<"SNV List File:" << SNPfile << std::endl;
 	if(reFileInfo.ifRepeatAvail)	
 		log << std::setw(75)<<"Repeat File:" << repeatfile << std::endl;
-	if(reFileInfo.ifRepeatAvail)
+	if(reFileInfo.ifMapAvail)
 		log << std::setw(75)<<"Mappability File:" << mappabilityfile << std::endl;
     log << std::setw(75)<<"bigWigSummary executable path:" << bigwigsummarybinary << std::endl;
 	log << std::setw(75)<<"Probe Length:" << ProbeLen << std::endl;
-	log << std::setw(75)<<"Minimum distance between Probes:" << DistanceBetweenProbes << std::endl;
+	//log << std::setw(75)<<"Minimum distance between Probes:" << DistanceBetweenProbes << std::endl;
 	log << std::setw(75)<<"Maximum distance from Probe to TSS:"<<MaxDistancetoTSS << std::endl;
 	log << std::setw(75)<<"Cluster Promoters:"<< ClusterPromoters << std::endl;
-	log << std::setw(75)<<"Extent of Repeat Overlaps:"<< repeatOverlapExtent << std::endl;
-	log << std::setw(75)<<"Mappability Threshold:"<< reFileInfo.mappabilityThreshold << std::endl;
+	if(reFileInfo.ifRepeatAvail)	
+		log << std::setw(75)<<"Extent of Repeat Overlaps:"<< reFileInfo.repeatOverlapExtent << std::endl;
+	if(reFileInfo.ifMapAvail)
+		log << std::setw(75)<<"Mappability Threshold:"<< reFileInfo.mappabilityThreshold << std::endl;
 	log << std::setw(75)<<"Fasta File:"<< fastaFile << std::endl;
 
 	if(ifNeg=="Yes"){
@@ -428,7 +429,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
     Repeats hg19repeats;
     if(reFileInfo.ifRepeatAvail){
 		log << "Reading repeat file and calculating repeat overlap: Starting!" << std::endl;
-		hg19repeats.ReadRepeatIntervals(repeatfile, log, repeatOverlapExtent);
+		hg19repeats.ReadRepeatIntervals(repeatfile, log);
 		log << "Reading repeat file and calculating repeat overlap: Done!" << std::endl;
     }
 //-------------------//------------------------------
@@ -453,29 +454,37 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig) {
 	}
 	log << "Reading Feature files and annotating features: Done!" << std::endl;
 	
-//-------------------//------------------------------    
-    log << "Designing Probes: Starting!" << std::endl;
-    DesignClass designProbes(log);
-    bioioMod getSeq(log, fastaIndexFile, fastaFile);
+//--------------------//------------------------------	
+	bioioMod getSeq(log, fastaIndexFile, fastaFile);
+	
+//-------------------//------------------------------ 
+
+	if(ifNeg=="No"){
+		log << "Designing Probes: Starting!" << std::endl;
+		DesignClass designProbes(log);
+		
     
-    if(whichchr=="chrAll"){
-		for(auto &iChr: Features.ChrNames_proms){
-				designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, bigwigsummarybinary, mappabilityfile, iChr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE) ;
+		if(whichchr=="chrAll"){
+			//Parallelise probe design for each chromosome
+			//#pragma omp parallel for 
+			for(auto iChr=Features.ChrNames_proms.begin(); iChr < Features.ChrNames_proms.end(); ++iChr){
+			//for(auto &iChr: Features.ChrNames_proms){
+					designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, bigwigsummarybinary, mappabilityfile, *iChr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE, distFromTSS) ;
+			}
+			designProbes.MergeAllChrOutputs(Features, reFileInfo);
 		}
-		designProbes.MergeAllChrOutputs(Features, reFileInfo);
+		else
+			designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, bigwigsummarybinary, mappabilityfile, whichchr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE, distFromTSS) ;
+	
+		bool isFas = designProbes.ConstructSeq(reFileInfo, getSeq, whichchr);
+	
+		if(!isFas){
+			log << "!!Error getting sequence from fasta file!! Aborting!" << std::endl;
+			return 0;
+		}
+	
+		log << "Designing Probes: Done!" << std::endl;
 	}
-	else
-		designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, bigwigsummarybinary, mappabilityfile, whichchr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE) ;
-	
-	bool isFas = designProbes.ConstructSeq(reFileInfo, getSeq, whichchr);
-	
-	if(!isFas){
-		log << "!!Error getting sequence from fasta file!! Aborting!" << std::endl;
-		return 0;
-	}
-	
-	log << "Designing Probes: Done!" << std::endl;
-    
 //-------------------//------------------------------    
     
     if(ifNeg=="Yes"){

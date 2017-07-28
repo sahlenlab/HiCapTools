@@ -91,6 +91,8 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	int BinSize  = 1000; // Only To Calculate Background Interaction Frequencies
 	int BinSizeProbeProbe=20000;
 	
+	int FeatureOverlapCheckPadding = 2000; // 2KB padding hardcoded to check for distal interacting element overlap with features 
+	
 	PrDes::RENFileInfo reFileInfo;
 	
 	std::string line, motif, fastaFile;
@@ -518,7 +520,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
    
     //-------------------------------------------------------------------------------
 	log << "Reading Feature files and annotating features: Starting!" << std::endl;
-    proms.InitialiseData(ClusterPromoters, countFeatFiles+CALCULATE_P_VALUES);
+    proms.InitialiseData(ClusterPromoters, countFeatFiles+CALCULATE_P_VALUES, FeatureOverlapCheckPadding);
     
     switch(featFileCount){
 		case 1:	
@@ -568,12 +570,12 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		
 		
 		if(CALCULATE_P_VALUES){ //Fill NegCtrl proximities to calculate background interaction frequencies
-			bamfile.ProcessSortedBamFile_NegCtrls(ProbeClass, dpnII, proximities, Exptemp.filepath, ExperimentNo, Exptemp.designname, statsOption);
+			bamfile.ProcessSortedBamFile_NegCtrls(ProbeClass, dpnII, proximities, Exptemp.filepath, ExperimentNo, Exptemp.designname, statsOption, proms);
 		
 			background.push_back(DetermineBackgroundLevels());
 		
-			background.back().CalculateMeanandStdRegress(Exptemp.name+".Probe_Distal", ExperimentNo, Exptemp.designname, background.back().bglevels, BinSize, "ProbeDistal", MinimumJunctionDistance, log, WindowSize);
-			background.back().CalculateMeanandStdRegress(Exptemp.name+".Probe_Probe", ExperimentNo, Exptemp.designname, background.back().bglevelsProbeProbe, BinSizeProbeProbe, "ProbeProbe", MinimumJunctionDistance, log, WindowSizeProbeProbe);
+			background.back().CalculateMeanandStdRegress(Exptemp.name, ExperimentNo, Exptemp.designname, background.back().bglevels, BinSize, "ProbeDistal", MinimumJunctionDistance, log, WindowSize);
+			background.back().CalculateMeanandStdRegress(Exptemp.name, ExperimentNo, Exptemp.designname, background.back().bglevelsProbeProbe, BinSizeProbeProbe, "ProbeProbe", MinimumJunctionDistance, log, WindowSizeProbeProbe);
 			
 			log << "Total_Number_of_Pairs" << '\t' << totalNumberofPairs/2 << std::endl;
 			log << "Total_Number_of_Pairs on Probes" << '\t' << NumberofPairs << std::endl;
@@ -583,7 +585,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 			log << "FractionofPairsOnProbe" << '\t' << (NumberofPairs)/double(totalNumberofPairs) << std::endl; 	    
 			NumberofPairs = 0; NofPairs_Both_on_Probe = 0; NofPairs_One_on_Probe = 0; NofPairsNoAnn = 0;
 		}
-       	bamfile.ProcessSortedBAMFile(ProbeClass, dpnII, proximities, Exptemp.filepath, ExperimentNo, whichchr, Exptemp.designname, statsOption);
+       	bamfile.ProcessSortedBAMFile(ProbeClass, dpnII, proximities, Exptemp.filepath, ExperimentNo, whichchr, Exptemp.designname, statsOption, proms);
          
 		log << "Total_Number_of_Pairs" << '\t' << totalNumberofPairs/2 << std::endl;
 		log << "Total_Number_of_Pairs on Probes" << '\t' << NumberofPairs << std::endl;
@@ -623,6 +625,12 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		Interactions.CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo); //Print all same type of interactions
 		Interactions.CalculatePvalAndPrintInteractionsProbeProbe(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo);//Print all same type of interactions
 		Interactions.CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo); //Print all same type of interactions
+	}
+	
+	if(CALCULATE_P_VALUES){
+		for(auto it=background.begin(); it!=background.end(); ++it){
+			(*it).PrintBackgroundFrequency(BinSize, BinSizeProbeProbe);
+		}
 	}
 
 }

@@ -32,7 +32,9 @@
 #define HCT_PROXDET_INC_PROM_H_
 
 #include <sstream>
+#include <map>
 #include "RESitesCount.h"
+#include "IntervalTree.h"
 
 struct temppars{
     std::string chr;
@@ -54,9 +56,13 @@ class FeatureClass{ //Probe Clusters Associated with a Promoter
 public:
     
     temppars *tp;
-    void InitialiseData(int, int);
+    void InitialiseData(int, int, int);
+    
+    std::map< std::string, IntervalTree <std::string> > promIntTree; //Promoter Interval Tree
     
     void ReadFeatureAnnotation(RESitesClass&, std::string, std::string);
+    std::string FindOverlaps(std::string, unsigned long int, unsigned long int);
+    
     FeatureClass(OutStream& plog) : pLog (plog) {}
        
 private:
@@ -64,6 +70,8 @@ private:
 	int ClusterPromoters; 
 	int fileCount ;
 	int filesReadCount;
+	int fOverlapPad;
+	std::map< std::string, std::vector < Interval < std::string > > > chrIntervals;
 	
     void GetTrFeats(std::stringstream&, temppars&, std::string);
     void ClusterIsoformPromoters(std::vector<int>&, std::vector<std::string>&, std::vector<int>&, std::vector<std::string>&, std::string, int);

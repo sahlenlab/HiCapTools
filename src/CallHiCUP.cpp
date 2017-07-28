@@ -38,7 +38,7 @@ int CallHiCUP::GenerateRestrictionFile(std::string hicupdigesterPath, std::strin
 	struct dirent *dirStruct;
 	dr=opendir(".");
 	
-	std::string nameComp="Digest_"+genomeName+"_"+enzymeMotif+"_None";
+	std::string nameComp="Digest_"+genomeName+"_"+enzymeMotif.substr(enzymeMotif.find(",")+1)+"_None";
 	
 	 while ((dirStruct = readdir(dr)) != NULL) {
 		std::string fname = dirStruct->d_name;
@@ -67,7 +67,7 @@ int CallHiCUP::GenerateRestrictionFile(std::string hicupdigesterPath, std::strin
     }
     
     if(pclose(fp))  {
-        cLog<<"HiCUP not found in bin/hicup OR HiCUP returned error"<<std::endl;
+        cLog<<"HiCUP not found in bin/hiCUPDigester OR HiCUP returned error"<<std::endl;
         return -1;
     }
     

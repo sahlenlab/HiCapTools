@@ -48,6 +48,11 @@ struct temppars{
     int FeatureType;
 };
 
+struct cCounter{
+	int count;
+	bool probesDesigned;
+};
+
 class ProbeFeatureClass{ //Probe Clusters Associated with a Promoter
 public:
 	int promPadding;//padding for Promoter Interval Tree
@@ -67,6 +72,7 @@ private:
 	std::map< std::string, std::vector < Interval < std::string > > > chrIntervals;
 	int fileCount, fileReadCount;
 	OutStream& pLog;
+	std::map<std::string, cCounter> transcriptCounter;
 	
 	void GetTrFeats(std::stringstream&,temppars&, std::string);
     void ClusterIsoformPromoters(std::vector<int>, std::vector<std::string>, std::vector<std::string>, std::vector<int>&, std::vector<std::string>&, std::vector<std::string>&, std::string);

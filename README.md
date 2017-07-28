@@ -126,7 +126,7 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 - bigWigSummary executable path *(STRING: OPTIONAL)* :   The file path to the bigWigSummary executable. The executable for linux x86_64 included in the package in the bin directory and its path is entered by default.
 
-- Probe Length *(INTEGER: REQUIRED)* :   The required length of a probe in the current design. The default probe length is 120 base pairs. 
+- Probe Length *(INTEGER: REQUIRED)* :   The required length of a probe in the current design. The default probe length is 120 base pairs. The probe length should ideally be between 50 and 1000 base pairs.
 
 - Minimum distance between Probes *(INTEGER: REQUIRED)* :  The minimum distance allowed between two Probes in the current design. The default value is 1000 base pairs.
 
@@ -136,7 +136,7 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 - Extent of Repeat Overlaps *(INTEGER: OPTIONAL)* :   The number of allowed repeat elements within a probe. The default value is 6.
 
-- Mappability Threshold *(FLOAT: OPTIONAL)* :   The mappability threshold. The default value is 0.7.
+- Mappability Threshold *(FLOAT: OPTIONAL)* :   The mappability threshold. The default value is 0.7. The range of values of mappability is between 0 and 1.
 
 - Fasta File *(STRING: REQUIRED)* :   The path to the fasta file containing the genomic sequence.
 

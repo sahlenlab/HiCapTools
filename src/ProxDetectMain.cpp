@@ -633,4 +633,5 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		}
 	}
 
+	return 1;		
 }

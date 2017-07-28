@@ -74,6 +74,7 @@ int CallHiCUP::GenerateRestrictionFile(std::string hicupdigesterPath, std::strin
     
     std::vector<std::string> retNames;
     
+    rewinddir(dr);
     
     while ((dirStruct = readdir(dr)) != NULL) {
 		std::string fname = dirStruct->d_name;

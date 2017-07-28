@@ -64,14 +64,16 @@ Use CMake to compile the application.
 
 Suggested steps in Linux
 
-1. Run the bash script 'buildHiCapTools.sh. The compiled executable
-    ’HiCapTools’ is placed inside the ’bin’ directory.
+1. Run the bash script 'buildHiCapTools.sh. The compiled executable ’HiCapTools’ is placed inside the ’bin’ directory.
 
-2.  Run the following command on the terminal after replacing the path
-    to the location of HiCapTools.
+2.  Run the following command on the terminal after replacing the path to the location of HiCapTools.
 ```
 $ export LD_LIBRARY_PATH=/path/to/HiCapTools/bamtools/:$LD_LIBRARY_PATH
-```                
+```         
+
+Suggested steps in Mac
+
+1. Run the bash script 'buildHiCapTools.sh. The compiled executable ’HiCapTools’ is placed inside the ’bin’ directory.
 
 ## How to Run HiCapTools?
 
@@ -91,12 +93,14 @@ To use the probe designer, run HiCapTools with the `ProbeDesigner` option.
 
 | Argument(s)  | Values | Summary |
 | ------------- | ------------- |------------- |
-| -c <BR /> --chr  | chrN <BR /> chrAll | chromosome for which Probes are to be designed in the format ’chrN’ where N <BR />is chromosome number. To design probes for all chromosomes at once use ’chrAll’ |
+| -o <BR /> --option  | FeatureProbes <BR /> NegativeControls | either ’FeatureProbes’ or ’NegativeControls’. With ‘FeatureProbes’, ProbeDesigner create probes targeting Features for chromosomes. The '-c' argument is required with the 'FeatureProbes' option. With ‘NegativeControls’, ProbeDesigner creates negative control probes for all chromosomes. The '-c' argument is not required with the 'NegativeControls' option.|
+
 
 #### Optional Arguments
 
 | Argument(s)  | Values | Summary |
 | ------------- | ------------- |------------- |
+| -c <BR /> --chr  | chrN <BR /> chrAll | chromosome for which Probes are to be designed in the format ’chrN’ where N <BR />is chromosome number. To design probes for all chromosomes at once use ’chrAll’ |
 | -config  | file path | the path to the new config file, if changed from the default name and location in bin/config directory |
 
 
@@ -120,15 +124,13 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 - SNV List File *(STRING: OPTIONAL/REQUIRED)* :   The path to the file containing the list of known Single Nucleotide Variants in the genome used. Either Transcript List file or SNV List file is required. Both files can be used together. The file must be in the SNV File format as described in the [File Formats](#file-formats) section
 
-- Repeat File *(STRING: OPTIONAL)* :   The path to the file containing repeat regions in the BED format. The field is to be left empty if not used. The repeat file for hg19 can be downloaded from the following link http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/rmsk.txt.gz . Please note that this is a large file (~140MB)
+- Repeat File *(STRING: OPTIONAL)* :   The path to the text file containing repeat regions. The field is to be left empty if not used. The repeat file for hg19 can be downloaded from the following link http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/rmsk.txt.gz . Please note that this is a large file (~430MB)
 
 - Mappability File *(STRING: OPTIONAL)* :   The path to the file containing mappability information in the bigWig format(.bw). The field is to be left empty if not used. Mappability files for hg19 can be downloaded from the following link http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/ Please note that this is a large file (>200MB)
 
 - bigWigSummary executable path *(STRING: OPTIONAL)* :   The file path to the bigWigSummary executable. The executable for linux x86_64 included in the package in the bin directory and its path is entered by default.
 
 - Probe Length *(INTEGER: REQUIRED)* :   The required length of a probe in the current design. The default probe length is 120 base pairs. The probe length should ideally be between 50 and 1000 base pairs.
-
-- Minimum distance between Probes *(INTEGER: REQUIRED)* :  The minimum distance allowed between two Probes in the current design. The default value is 1000 base pairs.
 
 - Maximum distance from Probe to feature start (TSS if the feature is transcript) :   *(INTEGER: REQUIRED)* The maximum distance allowed from a Probe to the TSS of the promoter it targets. The default value is 2500 base pairs.
 
@@ -140,7 +142,7 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 - Fasta File *(STRING: REQUIRED)* :   The path to the fasta file containing the genomic sequence.
 
-- Fasta Index File *(STRING: OPTIONAL)* :   The path to the index file(.fai) for the above fasta file. This field can be left empty if the index has the same name and is in the same directory as the fasta file. 
+- Fasta Index File *(STRING: OPTIONAL/REQUIRED)* :   The path to the index file(.fai) for the above fasta file. The index file is required and this field can be left empty only if the index has the same name and is present in the same directory as the fasta file.  
 
 
 ##### 2. Negative Control Probe Design

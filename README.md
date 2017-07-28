@@ -130,15 +130,15 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 - bigWigSummary executable path *(STRING: OPTIONAL)* :   The file path to the bigWigSummary executable. The executable for linux x86_64 included in the package in the bin directory and its path is entered by default.
 
-- Probe Length *(INTEGER: REQUIRED)* :   The required length of a probe in the current design. The default probe length is 120 base pairs. The probe length should ideally be between 50 and 1000 base pairs.
+- Probe Length *(INTEGER: REQUIRED)* :   The required length of a probe in the current design. The default probe length of 120 base pairs is used if the field is left empty. The probe length should ideally be between 50 and 1000 base pairs.
 
-- Maximum distance from Probe to feature start (TSS if the feature is transcript) :   *(INTEGER: REQUIRED)* The maximum distance allowed from a Probe to the TSS of the promoter it targets. The default value is 2500 base pairs.
+- Maximum distance from Probe to feature start (TSS if the feature is transcript) :   *(INTEGER: REQUIRED)* The maximum distance allowed from a Probe to the TSS of the promoter it targets. The default value of 2500 base pairs is used if the field is left empty.
 
-- Cluster Promoters *(INTEGER: REQUIRED)* :   If the distance between alternative promoters of the same transcript is less than the value given here, they will be clustered. The default value is 3000 base pairs.
+- Cluster Promoters *(INTEGER: REQUIRED)* :   If the distance between alternative promoters of the same transcript is less than the value given here, they will be clustered. The default value of 3000 base pairs is used if the field is left empty.
 
-- Extent of Repeat Overlaps *(INTEGER: OPTIONAL)* :   The number of allowed repeat elements within a probe. The default value is 6.
+- Extent of Repeat Overlaps *(INTEGER: OPTIONAL)* :   The number of allowed repeat elements within a probe. The default value of 6 is used if the field is left empty.
 
-- Mappability Threshold *(FLOAT: OPTIONAL)* :   The mappability threshold. The default value is 0.7. The range of values of mappability is between 0 and 1.
+- Mappability Threshold *(FLOAT: OPTIONAL)* :   The mappability threshold. The default value of 0.7 is used if the field is left empty. The range of values of mappability is between 0 and 1.
 
 - Fasta File *(STRING: REQUIRED)* :   The path to the fasta file containing the genomic sequence.
 
@@ -147,9 +147,7 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 ##### 2. Negative Control Probe Design
 
-- Design negative probe set *(STRING: REQUIRED)* :   The option to enable the generation of negative control probes(intergenic, intronic, exonic) for this design. Its value can be Yes or No. The negative control probes will be designed against the whole genome and will be selected randomly to the number needed. If empty, the value will be set to No.
-
-- Minimum fragment length for negative probe  *(INTEGER: REQUIRED)*  : The minimum length of the restriction enzyme fragment for which negative control probes are designed. The recommended and default value is 500 base pairs.
+- Minimum fragment length for negative probe  *(INTEGER: REQUIRED)*  : The minimum length of the restriction enzyme fragment for which negative control probes are designed. The recommended and default value is 500 base pairs, used if the field is left empty.
 
 - Number of Intergenic Negative control fragments *(INTEGER: OPTIONAL)* :   The number of intergenic negative control fragments to place probes. Empty field will be taken as zero. Two probes will be placed on each negative control fragment.
 
@@ -194,25 +192,25 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
 
 - Experiment File Name Path *(STRING REQUIRED)* :   The path to the ‘ExperimentFile.txt’. The default path points to location of the ExperimentFile in HiCapTools. Change the path only if Experiment file is moved to another location.
 
-- Minimum Number of Supporting Pairs *(INTEGER: REQUIRED)* :   The minimum number of supporting pairs to call a proximity. The default value is 2.
+- Minimum Number of Supporting Pairs *(INTEGER: REQUIRED)* :   The minimum number of supporting pairs to call a proximity. The default value is 2, used if the field is left empty.
 
-- Minimum Junction Distance *(INTEGER: REQUIRED)* :   The value for the minimum junction distance to call a proximity. The default value is 1000.
+- Minimum Junction Distance *(INTEGER: REQUIRED)* :   The value for the minimum junction distance to call a proximity. The default value is 1000, used if the field is left empty.
 
-- Padding *(INTEGER: REQUIRED)* :   The number of base pairs around a probe that will be taken into account while deciding overlap. The default value is 500 base pairs.
+- Padding *(INTEGER: REQUIRED)* :   The number of base pairs around a probe that will be taken into account while deciding overlap. The default value is 500 base pairs, used if the field is left empty.
 
-- Read Length *(INTEGER: REQUIRED)* :  The sequence read length. The default value is 80.
+- Read Length *(INTEGER: REQUIRED)* :  The sequence read length. The default value is 80, used if the field is left empty.
 
 - Base File Name *(STRING: REQUIRED)* :   The name with which the output file names will start.
 
 - Calculate p_values *(STRING: REQUIRED)* :   Option to calculate p values based on proximity profile of negative control probes. Its value must be either ‘Yes’ or ‘No’. Negative control probe and region files must be entered in ExperimentFile.txt if Calculate p_values is ‘Yes’.
 
-- Bin Size for Probe-Distal *(INTEGER: REQUIRED)* :   The distance bin size for averaging probe-distal proximities of negative probes. The default value is 1000 base pairs.
+- Bin Size for Probe-Distal *(INTEGER: REQUIRED)* :   The distance bin size for averaging probe-distal proximities of negative probes. The default value is 1000 base pairs, used if the field is left empty.
 
-- Window Size for Probe-Distal *(INTEGER: REQUIRED)* :   The window size for probe-distal proximity bins over which the rolling mean and standard deviation are calculated for smoothing. The default value is 101 bins.
+- Window Size for Probe-Distal *(INTEGER: REQUIRED)* :   The window size for probe-distal proximity bins over which the rolling mean and standard deviation are calculated for smoothing. The default value is 101 bins, used if the field is left empty.
 
-- Bin Size for Probe-Probe *(INTEGER: REQUIRED)* :   The distance bin size for averaging probe-probe proximities of negative probes. The default value is 20000 base pairs.
+- Bin Size for Probe-Probe *(INTEGER: REQUIRED)* :   The distance bin size for averaging probe-probe proximities of negative probes. The default value is 20000 base pairs, used if the field is left empty.
 
-- Window Size for Probe-Probe *(INTEGER: REQUIRED)* :   The window size for probe-probe proximity bins over which the rolling mean and standard deviation are calculated for smoothing. The default value is 3 bins.
+- Window Size for Probe-Probe *(INTEGER: REQUIRED)* :   The window size for probe-probe proximity bins over which the rolling mean and standard deviation are calculated for smoothing. The default value is 3 bins, used if the field is left empty.
 
 ##### II. ExperimentFile.txt
 
@@ -351,6 +349,8 @@ This file is required as input for the `ProximityDetector`. This should be in th
     1. Probe region 1: Target feature, location in chromosome, type of probe
     2. Probe region 2: Target feature, location in chromosome, type of probe
     3. Proximity : Distance between interacting fragments, and Supporting pairs and p-value from each input experiment file.
+    
+ * Pairwise Interaction files : The files whose name is in the format 'BaseFileName.AssemblyVer.chrN.Proximities.Probe_XXXX.WashU.date.txt',where XXXX can be Probe or Distal, contain the proximity information in the long range interaction data format suitable for uploading to WashU browser for display.
         
 ##### III. Common
 * Restriction Enzyme Digest File : This file will be generated if the 'Digested Genome File' field is left blank in ProbeDesigner/ProximityDetector.

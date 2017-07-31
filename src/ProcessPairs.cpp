@@ -197,7 +197,7 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 
 	std::map<int, std::string>::const_iterator it1;
 	int chrindex = 0;
-	if(whichchr!="chrAll"){
+	if(whichchr.find("All")==std::string::npos){
 		for(it1 = RefIDtoChrNames.begin(); it1 != RefIDtoChrNames.end(); ++it1){
 			if(it1->second == whichchr){
 				chrindex = it1->first;
@@ -230,7 +230,7 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 		
 			++NumberofPairs;
 		
-			if(whichchr!="chrAll"){
+			if(whichchr.find("All")==std::string::npos){
 				if(al.RefID == chrindex){
 					pairinfo.chr1 = RefIDtoChrNames[al.RefID];
 					pairinfo.chr2 = RefIDtoChrNames[al.MateRefID];

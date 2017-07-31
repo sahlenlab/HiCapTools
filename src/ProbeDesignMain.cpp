@@ -464,7 +464,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, s
 		DesignClass designProbes(log);
 		
     
-		if(whichchr=="chrAll"){
+		if(whichchr.find("All")!=std::string::npos){
 			//Parallelise probe design for each chromosome
 			//#pragma omp parallel for 
 			for(auto iChr=Features.ChrNames_proms.begin(); iChr < Features.ChrNames_proms.end(); ++iChr){

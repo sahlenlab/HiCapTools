@@ -357,7 +357,7 @@ int NegativeProbeDesign::ConstructNegativeControlProbes(int nCtrls,std::string n
 	if(!flag){
 		outFile<<"##gff-version 3.2.1"<<std::endl;
 		outFile<<"##genome-build "<<genAssem.substr(genAssem.find_first_of(',')+1)<<" "<<genAssem.substr(0, genAssem.find_first_of(',')) <<std::endl;
-		summaryFile<<"track name=\""<<designName<<"\" description=\"Negative control probe target fragment for "<< designName<<"\""<<std::endl;
+		summaryFile<<"track name=\""<<designName<<"\" type=bedDetail description=\"Negative control probe target fragments for "<< designName<<"\""<<std::endl;
 	}
 
 	
@@ -421,7 +421,7 @@ void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::vector
 							temp.push_back(negProbe(whichgenPool[currIndex].start, whichgenPool[currIndex].end, "NegCtrl_"+whichPool+std::to_string(loopIndex+1)));
 							chrToIndex.emplace(whichgenPool[currIndex].chr, temp);
 						}
-						summaryfile << whichgenPool[currIndex].chr << '\t'  << whichgenPool[currIndex].start << '\t' << whichgenPool[currIndex].end << '\t' << "NegCtrl_"<<whichPool<<loopIndex+1 << std::endl;
+						summaryfile << whichgenPool[currIndex].chr << '\t'  << whichgenPool[currIndex].start << '\t' << whichgenPool[currIndex].end << '\t' << "NegCtrl_"<<whichPool<<loopIndex+1 << '\t' << "NegCtrl_"<<whichPool<<loopIndex+1 << '\t'<< "Neg_Ctrl"<< std::endl;
 						++loopIndex;
 					}				
 				}	

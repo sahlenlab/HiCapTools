@@ -281,12 +281,14 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
                 //////////////Add intervals to vector clusteredcoords[y]
 				if(chrIntervals.find(tp[0].chr)!=chrIntervals.end()){
 					chrIntervals[tp[0].chr].push_back(Interval <std::string>((clusteredcoords[y] - promPadding),(clusteredcoords[y] + promPadding), feature_id));
-					ChrNames_proms.push_back(tp[0].chr);
+					
 				}
 				else{
 					std::vector < Interval < std::string > > tempvector ;
 					tempvector.push_back(Interval <std::string>((clusteredcoords[y] - promPadding),(clusteredcoords[y] + promPadding), feature_id));
 					chrIntervals.emplace(tp[0].chr, tempvector);
+					if(tp[0].chr.find("random")==std::string::npos)
+						ChrNames_proms.push_back(tp[0].chr);
 				}
 				
 				//deal with shared promoters
@@ -331,12 +333,14 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
             
 			if(chrIntervals.find(tp[0].chr)!=chrIntervals.end()){
 				chrIntervals[tp[0].chr].push_back(Interval <std::string>((isoformprs[0] - promPadding),(isoformprs[0] + promPadding), feature_id));
-				ChrNames_proms.push_back(tp[0].chr);
+				
 			}
 			else{
 				std::vector < Interval < std::string > > tempvector ;
 				tempvector.push_back(Interval <std::string>((isoformprs[0] - promPadding),(isoformprs[0] + promPadding), feature_id));
 				chrIntervals.emplace(tp[0].chr, tempvector);
+				if(tp[0].chr.find("random")==std::string::npos)
+					ChrNames_proms.push_back(tp[0].chr);
 			}
 			
 			//deal with shared promoters

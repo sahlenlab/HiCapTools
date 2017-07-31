@@ -42,7 +42,7 @@ public:
     std::vector < PrDes::DesignLayers > OneDesign; // TSS is on plus strand
     
     void InitialiseDesign(ProbeFeatureClass&, std::vector< PrDes::REPosMap >&);
-    void DesignProbes(ProbeFeatureClass&, RESitesClass&, Repeats, std::string, std::string, std::string, int, int, PrDes::RENFileInfo&, int, int);
+    void DesignProbes(ProbeFeatureClass&, RESitesClass&, Repeats&, std::string, std::string, std::string, int, int, PrDes::RENFileInfo&, int, int);
     void MergeAllChrOutputs(ProbeFeatureClass&, PrDes::RENFileInfo&);
     bool ConstructSeq(PrDes::RENFileInfo&, bioioMod&, std::string);
     DesignClass(OutStream& dlog) : dLog (dlog) {}
@@ -65,7 +65,7 @@ protected:
 	std::vector<BaseProbe> probeList;
 	
 	bool CheckFragmentSize(RESitesClass &, std::string, int, int);
-    bool overlap(RESitesClass&, Repeats, int&, int, int, std::string, int, int, bool, bool);
+    bool overlap(RESitesClass&, Repeats&, int&, int, int, std::string, int, int, bool, bool);
     double BigWigSummary(std::string, int, int);   
     
 private:
@@ -73,11 +73,13 @@ private:
 	int MaxDistancetoTSS;
 	int minDistToTSS;
 	
-    bool CheckRepeatOverlaps(RESitesClass&, std::string, int, int&, bool, Repeats, bool, bool);
+    bool CheckRepeatOverlaps(RESitesClass&, std::string, int, int&, bool, Repeats&, bool, bool);
     bool createNewEntry(std::unordered_map<int, PrDes::REposStruct >&, std::unordered_map<int, PrDes::REposStruct >&, int, std::string, int,bool);
     int CheckREsiteAroundProbe(RESitesClass&, std::string, int, int);
     bool WritetoFile(std::ofstream&, std::string, int, int, std::vector< std::string >, bool, std::string, ProbeFeatureClass&);
     int CheckDistanceofProbetoTSS(RESitesClass&, std::string, int, int, int);
+    bool CheckRepeats(Repeats&, std::string, int, int, bool);
+    bool CheckMappability(std::string, int, int, bool);
     
     
 };

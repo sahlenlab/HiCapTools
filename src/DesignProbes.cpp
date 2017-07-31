@@ -101,56 +101,78 @@ bool DesignClass::CheckFragmentSize(RESitesClass &dpnII, std::string chr, int cl
 	
 }
 
-bool DesignClass::overlap(RESitesClass& dpnII, Repeats repeat_trees, int& closest_re, int tss, int whichside, std::string chr, int probe_start, int probe_end, bool ifRep, bool ifMap){
+bool DesignClass::CheckRepeats(Repeats& repeat_trees, std::string chr, int probe_start, int probe_end, bool ifRep){
+	
+	if(!ifRep)
+		return true;
+	
+	int overlaps = repeat_trees.FindOverlaps(chr, probe_start ,probe_end);
+	
+	if(overlaps < repOverlapExtent)
+		return true;
+	else
+		return false;
+}
+
+bool DesignClass::CheckMappability(std::string chr, int probe_start, int probe_end, bool ifMap){
+	
+	if(!ifMap)
+		return true;
+	
+	double mappability = BigWigSummary(chr, probe_start, probe_end);
+	
+	if(mappability > mapThreshold)
+		return true;
+	else
+		return false;
+}
+
+bool DesignClass::overlap(RESitesClass& dpnII, Repeats& repeat_trees, int& closest_re, int tss, int whichside, std::string chr, int probe_start, int probe_end, bool ifRep, bool ifMap){
     
     int *resites;
     resites = new int[2];
     bool refound = false, passed = false;
     int invalidRECoordinate=0;
     
-    int overlaprepeats;
-    double mappability; 
+    bool checkRep = CheckRepeats(repeat_trees, chr, probe_start, probe_end, ifRep);
+    bool checkMap = CheckMappability(chr, probe_start, probe_end, ifMap);
+    bool checkFrag = CheckFragmentSize(dpnII, chr, closest_re, whichside);
     
-    if(ifRep && !ifMap){
-		overlaprepeats = repeat_trees.FindOverlaps(chr, probe_start ,probe_end);
-		mappability=mapThreshold;
+    if(checkRep && checkMap && checkFrag){
+		return true;
 	}
-	if(!ifRep && ifMap){
-		overlaprepeats=0;
-		mappability = BigWigSummary(chr, probe_start, probe_end);
-	}
-	if(ifRep && ifMap){
-		
-		overlaprepeats = repeat_trees.FindOverlaps(chr, probe_start ,probe_end);
-		mappability = BigWigSummary(chr, probe_start, probe_end);
-	}
-    
-    if(overlaprepeats > repOverlapExtent || mappability < mapThreshold ){ // if overlap with repeats and low mappability, go to the next RE site
-        
-        refound = dpnII.GettheREPositions(chr,closest_re, resites, invalidRECoordinate);
-        
-        if (refound){
-            closest_re = resites[whichside];
-        }
-        else
-            return false;
-            
-        if (abs(closest_re - tss) <= MaxDistancetoTSS && CheckFragmentSize(dpnII, chr, closest_re, whichside)) {
-            passed = CheckRepeatOverlaps(dpnII, chr, tss, closest_re, whichside, repeat_trees, ifRep, ifMap);
-        }
-        else{
-            passed = false;
-        }
-    }
     else{
-        if(abs(closest_re - tss) <= MaxDistancetoTSS && CheckFragmentSize(dpnII, chr, closest_re, whichside))
-            passed = true;
-    }
-    return passed;
+		while(abs(closest_re - tss) <= MaxDistancetoTSS){
+			refound = dpnII.GettheREPositions(chr,closest_re, resites, invalidRECoordinate);
+			if(refound){
+				closest_re = resites[whichside];
+			}
+			else
+				break;
+				
+			if(CheckFragmentSize(dpnII, chr, closest_re, whichside)){ //Frag size passes
+				if (whichside == 1) {
+					 probe_start = closest_re - ProbeLen + reRightCut -1 ;
+					 probe_end = closest_re + reRightCut - 1 ;
+				}
+				else{
+					probe_start = closest_re - reLeftCut - 1 ;
+					probe_end = closest_re + ProbeLen - reLeftCut - 1 ; 
+				}				
+				checkRep = CheckRepeats(repeat_trees, chr, probe_start, probe_end, ifRep);
+				checkMap = CheckMappability(chr, probe_start, probe_end, ifMap);
+				if(checkRep && checkMap){
+					passed = true;
+					break;
+				}
+			}			
+		}
+		return passed;
+	}
 }
 
 
-bool DesignClass::CheckRepeatOverlaps(RESitesClass & dpnII, std::string chr, int tss, int& closest_re, bool rightside, Repeats repeat_trees, bool ifRep, bool ifMap){
+bool DesignClass::CheckRepeatOverlaps(RESitesClass & dpnII, std::string chr, int tss, int& closest_re, bool rightside, Repeats& repeat_trees, bool ifRep, bool ifMap){
     
     if(!ifRep && !ifMap){
 		return true;
@@ -211,7 +233,7 @@ bool DesignClass::createNewEntry(std::unordered_map<int, PrDes::REposStruct >& t
 }
 
 
-void DesignClass::DesignProbes(ProbeFeatureClass & Feats, RESitesClass & dpnII, Repeats repeat_trees, std::string bgwgsumbin, std::string mappabilityfilepath, std::string whichchr, int mDisttoTSS, int prlen, PrDes::RENFileInfo& reInfo, int bufSize, int dFromTSS){
+void DesignClass::DesignProbes(ProbeFeatureClass & Feats, RESitesClass & dpnII, Repeats& repeat_trees, std::string bgwgsumbin, std::string mappabilityfilepath, std::string whichchr, int mDisttoTSS, int prlen, PrDes::RENFileInfo& reInfo, int bufSize, int dFromTSS){
     
     // There is only one design layer which contains both upstream and downstream designs. Each feature will have two probes if possible.
     ProbeLen = prlen;
@@ -274,9 +296,18 @@ void DesignClass::DesignProbes(ProbeFeatureClass & Feats, RESitesClass & dpnII, 
             right_res = CheckDistanceofProbetoTSS(dpnII, pIt->second.chr, pIt->second.TSS, pIt->second.closestREsitenums[1], 1);
             //last parameter is design direction not the promoter (RE on the left or right side of TSS)
             
+            
+            if(pIt->second.TSS==7579912){
+				std::cout<<"right res "<<right_res<<std::endl;
+				//std::cout<<"Closes re "<<mappability<<std::endl;
+				}
             passed_upstream = CheckRepeatOverlaps(dpnII, pIt->second.chr, pIt->second.TSS, left_res, 0, repeat_trees, reInfo.ifRepeatAvail, reInfo.ifMapAvail);
             passed_downstream = CheckRepeatOverlaps(dpnII, pIt->second.chr, pIt->second.TSS, right_res, 1, repeat_trees, reInfo.ifRepeatAvail, reInfo.ifMapAvail);
             
+            if(pIt->second.TSS==7579912){
+				std::cout<<"After right res "<<right_res<<std::endl;
+				//std::cout<<"Closes re "<<mappability<<std::endl;
+				}
             
             if (passed_upstream && passed_downstream) { //check if fragment is same and longer than 600
                 createNewEntry(OneDesign.back().Layer[it->second].repmap, OneDesign.back().Layer[it->second].repmap, it->second, pIt->first, left_res,0); 

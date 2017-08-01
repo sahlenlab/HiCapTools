@@ -272,7 +272,14 @@ If one wishes to use a subset of genes or transcripts for probe design or proxim
 
 ##### SNV Files
 
-The SNV files must be in the BED format with the additional optional field ‘name’. The file must have a single track line.
+The SNV files must be in the BED detail 4+2 format. The file must have a single track line as shown in the example below.
+
+```
+track name=SNVTrack type=bedDetail description="Example SNV track"
+chr4  135522740	135522740	rs10026364	PMID:21347282OA	Coronary_heart_disease_gwas
+chr10	104594507	104594507	rs1004467	PMID:19430479	Systolic_blood_pressure_gwas
+
+```
 
 ##### Forbidden regulatory regions File
 

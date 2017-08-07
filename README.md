@@ -71,7 +71,7 @@ Suggested steps in Linux
 $ export LD_LIBRARY_PATH=/path/to/HiCapTools/bamtools/:$LD_LIBRARY_PATH
 ```         
 
-Suggested steps in Mac
+Suggested steps in macOS
 
 1. Run the bash script 'buildHiCapTools.sh. The compiled executable ’HiCapTools’ is placed inside the ’bin’ directory.
 
@@ -107,8 +107,7 @@ To use the probe designer, run HiCapTools with the `ProbeDesigner` option.
 
 #### Required Inputs
 
-To run the HiCapTools `ProbeDesigner`, the ’ProbeConfig.txt’ file in the bin/config directory must be present and its fields populated. The
-fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Base Config’ fields and ’Negative Control Probe Design’ fields.
+To run the HiCapTools `ProbeDesigner`, the ’ProbeConfig.txt’ file in the bin/config directory must be present and its fields populated. The fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Base Config’ fields and ’Negative Control Probe Design’ fields. For certain required parameters, the given default values will be used if the the parameter value is left empty. 
 
 ##### 1. Base Config
 
@@ -132,7 +131,9 @@ fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Ba
 
 - Probe Length *(INTEGER: REQUIRED)* :   The required length of a probe in the current design. The default probe length of 120 base pairs is used if the field is left empty. The probe length should ideally be between 50 and 1000 base pairs.
 
-- Maximum distance from Probe to feature start (TSS if the feature is transcript) :   *(INTEGER: REQUIRED)* The maximum distance allowed from a Probe to the TSS of the promoter it targets. The default value of 2500 base pairs is used if the field is left empty.
+- Minimum distance between Probes *(INTEGER: REQUIRED)* : The minimum distance between two Probes allowed in the current design. The default value is 1000 base pairs.
+
+- Maximum distance from Probe to feature start (TSS if the feature is transcript)  *(INTEGER: REQUIRED)* : The maximum distance allowed from a Probe to the TSS of the promoter it targets. The default value of 2500 base pairs is used if the field is left empty.
 
 - Cluster Promoters *(INTEGER: REQUIRED)* :   If the distance between alternative promoters of the same transcript is less than the value given here, they will be clustered. The default value of 3000 base pairs is used if the field is left empty.
 

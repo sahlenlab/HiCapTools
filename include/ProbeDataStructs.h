@@ -41,6 +41,7 @@ namespace PrDes{
 		std::vector< std::string > prom_indexes; //feat_id
 		bool processed;
 		bool whichside; //direction, [0 = upstream - left (L)] // [1 = downstream - right (R)]
+		bool turnedoff;
 	};
 
 	struct REPosMap{ // This struct keeps the numbers of restriction fragments where there is at least one pair coming from a feature, one struct per chr
@@ -70,6 +71,7 @@ namespace PrDes{
 		bool sharedpromoter; 
 		std::vector < std::string > genes_sharingproms;
 		bool probesSkip;
+		int probeREs[2];
 	//restriction fragments will be numbered with respect to the closest site upstream [0] or downstream [1].
 	};
 

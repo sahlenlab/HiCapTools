@@ -45,10 +45,11 @@
 #include "bioioMod.h"
 #include "CallHiCUP.h"
 
-int DistanceBetweenProbes = 1000;
+
 
 int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, std::string probeOption) {
 	
+	int DistanceBetweenProbes = 1000;
 	int ClusterPromoters  = 1200;
 	int ProbeLen = 120;
 	int MaxDistancetoTSS = 2500;
@@ -222,11 +223,10 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, s
 					if(!(line.substr(line.find('=')+1).empty()))
 						ProbeLen=std::stoi(line.substr(line.find('=')+1));
 				}
-				/***
 				if(line.substr(0, line.find('=')).find("Minimum distance between Probes")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						DistanceBetweenProbes=std::stoi(line.substr(line.find('=')+1));
-				}***/
+				}
 				if(line.substr(0, line.find('=')).find("Maximum distance from Probe to feature start (TSS if the feature is transcript)")!=std::string::npos){
 					if(!(line.substr(line.find('=')+1).empty()))
 						MaxDistancetoTSS=std::stoi(line.substr(line.find('=')+1));
@@ -389,7 +389,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, s
 		log << std::setw(75)<<"Mappability File:" << mappabilityfile << std::endl;
     log << std::setw(75)<<"bigWigSummary executable path:" << bigwigsummarybinary << std::endl;
 	log << std::setw(75)<<"Probe Length:" << ProbeLen << std::endl;
-	//log << std::setw(75)<<"Minimum distance between Probes:" << DistanceBetweenProbes << std::endl;
+	log << std::setw(75)<<"Minimum distance between Probes:" << DistanceBetweenProbes << std::endl;
 	log << std::setw(75)<<"Maximum distance from Probe to TSS:"<<MaxDistancetoTSS << std::endl;
 	log << std::setw(75)<<"Cluster Promoters:"<< ClusterPromoters << std::endl;
 	if(reFileInfo.ifRepeatAvail)	
@@ -469,12 +469,13 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, s
 			//#pragma omp parallel for 
 			for(auto iChr=Features.ChrNames_proms.begin(); iChr < Features.ChrNames_proms.end(); ++iChr){
 			//for(auto &iChr: Features.ChrNames_proms){
-					designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, bigwigsummarybinary, mappabilityfile, *iChr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE, distFromTSS) ;
+					designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, bigwigsummarybinary, mappabilityfile, *iChr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE, distFromTSS, DistanceBetweenProbes) ;
 			}
+			log << "Designing Probes: Merging all chromosome outputs!" << std::endl;
 			designProbes.MergeAllChrOutputs(Features, reFileInfo);
 		}
 		else
-			designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, bigwigsummarybinary, mappabilityfile, whichchr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE, distFromTSS) ;
+			designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, bigwigsummarybinary, mappabilityfile, whichchr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE, distFromTSS, DistanceBetweenProbes) ;
 	
 		bool isFas = designProbes.ConstructSeq(reFileInfo, getSeq, whichchr);
 	

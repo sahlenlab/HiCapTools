@@ -59,7 +59,6 @@ void ProbeFeatureClass::GetTrFeats(std::stringstream &trx, temppars &tpars, std:
 	std::string field, start, end;
     
     //Transcript Line Format
-    //name2	 name	chrom	strand	txStart	txEnd	exonCount	exonStarts	exonEnds
     //#bin	name	chrom	strand	txStart	txEnd	cdsStart	cdsEnd	exonCount	exonStarts	exonEnds	score	name2	cdsStartStat	cdsEndStat	exonFrames
     
     //BED detail Line Format for SNP
@@ -308,6 +307,9 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
                 promFeatures[feature_id].ProbeID.push_back(probe_ids_of_clustered[y]);
                 promFeatures[feature_id].FeatureType = tp[0].FeatureType;
                 promFeatures[feature_id].end = tp[0].end;
+				promFeatures[feature_id].probeREs[0] = -1;
+				promFeatures[feature_id].probeREs[1] = -1;
+                
                                 
                 dpnIIsites.GettheREPositions(promFeatures[feature_id].chr, promFeatures[feature_id].TSS, promFeatures[feature_id].closestREsitenums, invalidRECoordinate);
             }
@@ -329,6 +331,8 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
             promFeatures[feature_id].ProbeID.push_back(probe_ids[0]);
             promFeatures[feature_id].FeatureType = tp[0].FeatureType;
             promFeatures[feature_id].end = tp[0].end;
+            promFeatures[feature_id].probeREs[0] = -1;
+			promFeatures[feature_id].probeREs[1] = -1;
             
             
 			if(chrIntervals.find(tp[0].chr)!=chrIntervals.end()){
@@ -397,8 +401,8 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
 	
 	if(fileReadCount==fileCount){ 
 		pLog<<"Total Number of Features annotated: "<< NofPromoters<<std::endl;
-		DealwithSharedPromoters();
-		pLog << "Shared Promoters Determined" << std::endl;
+		//DealwithSharedPromoters();
+		//pLog << "Shared Promoters Determined" << std::endl;
 		for(auto it = chrIntervals.begin(); it != chrIntervals.end(); ++it){
 				std::vector< Interval < std::string > > temp;
 				promIntTree[it->first] = IntervalTree< std::string >(it->second);

@@ -32,6 +32,9 @@ bigWigSummary executable path=bigWig/bigWigSummary
 /--The length of a Probe in this design. Enter an integer. The default is 120 base pairs--/
 Probe Length=120
 
+/--The minimum distance allowed between two Probes in this design. Enter an integer. The default is 1000 base pairs--/
+Minimum distance between Probes=1000
+
 /--The maximum distance allowed from a Probe to the TSS of the promoter it targets. Enter an integer. The default is 2500 base pairs--/
 Maximum distance from Probe to feature start (TSS if the feature is transcript)=2500
 

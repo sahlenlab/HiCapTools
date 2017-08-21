@@ -23,7 +23,7 @@
 
 //
 //  ProbeFeatureClass.cpp
-//  HiCapTools
+//  HiCapToolsFeatures Annotated
 //
 //  Created by Pelin Sahlen and Anandashankar Anil.
 //
@@ -61,33 +61,29 @@ void ProbeFeatureClass::GetTrFeats(std::stringstream &trx, temppars &tpars, std:
     //Transcript Line Format
     //#bin	name	chrom	strand	txStart	txEnd	cdsStart	cdsEnd	exonCount	exonStarts	exonEnds	score	name2	cdsStartStat	cdsEndStat	exonFrames
     
-    //BED detail Line Format for SNP
-    //chrom	Start	End	name	ID	Description
+    
+    //BED detail6+2 Line Format for SNP and transcript
+    //chrom	Start	End	name	score	strand	ID	Description
 	
-	if(option=="transcript"){
+	
+	if(option=="transcript-Yes"){
+		
 		getline(trx,field,'\t'); 
-		getline(trx,tpars.tr_id,'\t'); 
-    }
+		getline(trx,tpars.tr_id,'\t'); 		
+		getline(trx,tpars.chr,'\t'); 
+		getline(trx,tpars.strand,'\t');   
+		getline(trx,start,'\t');
+		getline(trx,end,'\t');
     
-    getline(trx,tpars.chr,'\t'); 
-    
-    if(option=="transcript"){
-		getline(trx,tpars.strand,'\t');
-    }
-    
-    getline(trx,start,'\t');
-    getline(trx,end,'\t');
-    
-    if(option=="transcript"){
 		getline(trx,field,'\t'); //cdsStart
 		getline(trx,field,'\t'); //cdsEnd
 		getline(trx,field,'\t'); //exonCount
 		getline(trx,field,'\t'); //exonStarts
 		getline(trx,field,'\t'); //exonEnds
 		getline(trx,field,'\t'); //score
-		
+	
 		getline(trx,tpars.name,'\t'); 
-		
+	
 		getline(trx,field,'\t'); //cdsStartStat
 		getline(trx,field,'\t'); //cdsEndStat
 		getline(trx,field,'\t'); //exonFrames
@@ -102,22 +98,56 @@ void ProbeFeatureClass::GetTrFeats(std::stringstream &trx, temppars &tpars, std:
 			tpars.end=std::stoi(start);
 			tpars.probe_id=tpars.tr_id+"."+end;
 		}
-		 tpars.FeatureType = 1;
-    }
-    
-   if(option=="SNV"){
+		tpars.FeatureType = 1;
+		
+    /***
+	if(option=="SNV"){
 	   
-	   tpars.start=std::stoi(start);
-	   tpars.end=std::stoi(end);
-	   tpars.strand="+";
+		tpars.start=std::stoi(start);
+		tpars.end=std::stoi(end);
+		tpars.strand="+";
 	   
-	   getline(trx,tpars.name,'\t');
-	   tpars.tr_id=tpars.name;
-	   tpars.FeatureType = 2;
-	   tpars.probe_id=tpars.tr_id+"."+start;
-	   getline(trx,field,'\t');
-	   getline(trx,tpars.tr_id,'\t');
-   }  
+		getline(trx,tpars.name,'\t');
+		tpars.tr_id=tpars.name;
+		tpars.FeatureType = 2;
+		tpars.probe_id=tpars.tr_id+"."+start;
+		getline(trx,field,'\t');
+		getline(trx,tpars.tr_id,'\t');
+	} ***/
+   }
+   else{ // for feature probes, SNVs
+		getline(trx,tpars.chr,'\t'); 
+		getline(trx,start,'\t');
+		getline(trx,end,'\t');
+		getline(trx,tpars.name,'\t');  //gene name
+		getline(trx,field,'\t'); //score
+		getline(trx,tpars.strand,'\t');
+	
+		getline(trx,tpars.tr_id,'\t');
+		getline(trx,field,'\t'); 
+		if(option=="transcript-No"){
+			tpars.FeatureType = 1;
+			if(tpars.strand=="+"){
+				tpars.start=std::stoi(start);
+				tpars.end=std::stoi(end);
+				tpars.probe_id=tpars.tr_id+"."+start;
+			}
+			else{
+				tpars.start=std::stoi(end);
+				tpars.end=std::stoi(start);
+				tpars.probe_id=tpars.tr_id+"."+end;
+			}
+		}
+   
+		if(option=="SNV") {
+			tpars.FeatureType = 2;
+			tpars.start=std::stoi(start);
+			tpars.end=std::stoi(end);
+			tpars.strand="+";
+			tpars.probe_id=tpars.name+"."+start;
+			tpars.tr_id = field;
+		}
+	}
 }
 
 int ProbeFeatureClass::FindLeftMostCoord(std::vector<int> coords){
@@ -222,7 +252,7 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
 
 	RefSeqfilename.append(transcriptfile);
 	    
-    pLog << option<< "File is " << RefSeqfilename << std::endl;
+    pLog << option.substr(0, option.find("-"))<< " File is " << RefSeqfilename << std::endl;
     
 	std::ifstream RefSeq_file(RefSeqfilename.c_str());
 
@@ -390,11 +420,11 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
 		++promindex;
 		
 		if(promindex%10000 == 0){
-		  pLog << "..."<< promindex<<" Features Annotated from "<< option <<" file"<< std::endl;
+		  pLog << "..."<< promindex<<" Features Annotated from "<< option.substr(0, option.find("-")) <<" file"<< std::endl;
 	  }
     }
 	
-	pLog << "Number of Features Annotated from "<< option <<" file: "<<promindex<< std::endl;
+	pLog << "Number of Features Annotated from "<< option.substr(0, option.find("-")) <<" file: "<<promindex<< std::endl;
 
 	NofPromoters += promindex; 
 	++fileReadCount; 
@@ -411,7 +441,7 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
 	}
 }
 
-
+/**Not used
 void ProbeFeatureClass::DealwithSharedPromoters(){ // If promoters are too close to each other
 	for (auto it = promFeatures.begin(); it != promFeatures.end(); ++it) {		
 		for (auto itj = std::next(it , 1); itj != promFeatures.end(); ++itj) {
@@ -468,3 +498,4 @@ void ProbeFeatureClass::DealwithSharedPromoters(){ // If promoters are too close
 		}
 	}
 }
+* ***/

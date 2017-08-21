@@ -35,6 +35,9 @@ Probe Length=120
 /--The minimum distance allowed between two Probes in this design. Enter an integer. The default is 1000 base pairs--/
 Minimum distance between Probes=1000
 
+/--The minimum distance allowed between a Feature and its probe(s) in this design. Enter an integer. The recommended and default is 300 base pairs--/
+Minimum distance between Feature and Probe=300
+
 /--The maximum distance allowed from a Probe to the TSS of the promoter it targets. Enter an integer. The default is 2500 base pairs--/
 Maximum distance from Probe to feature start (TSS if the feature is transcript)=2500
 
@@ -57,6 +60,9 @@ Fasta Index File=
 ..............................................................................................................
 ..................................Negative Control Probe Design...............................................
 ..............................................................................................................
+
+/--The file path to the Transcript File for Negative control generation in given format.--/
+Transcript File for Negative Controls=/path/to/CompleteTranscriptFile.txt
 
 /--The minimum length of the restriction enzyme fragment for which negative control probes are designed. Enter an integer. The recommended value is 500 base pairs--/
 Minimum fragment length for negative probe=500

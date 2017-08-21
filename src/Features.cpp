@@ -50,77 +50,59 @@ void FeatureClass::InitialiseData(int clustProm, int fCount, int featOverlapPadd
 
 void FeatureClass::GetTrFeats(std::stringstream &trx, temppars &tpars, std::string option){
 	
-	std::string field, start, end;
+	std::string field, start, end, desc;
     
-    //Transcript Line Format
-    //name2	 name	chrom	strand	txStart	txEnd	exonCount	exonStarts	exonEnds
-    //#bin	name	chrom	strand	txStart	txEnd	cdsStart	cdsEnd	exonCount	exonStarts	exonEnds	score	name2	cdsStartStat	cdsEndStat	exonFrames
     
-    //BED Line Format for SNP and Negative Control Region
+    //BED detail6+2 Line Format for SNP and transcript
+    //chrom	Start	End	name	score	strand	ID	Description
+    
+    //BED Line Format for Negative Control Region
     //chrom	Start	End	name
-	
-	if(option=="transcript"){
-		getline(trx,field,'\t'); 
-		getline(trx,tpars.tr_id,'\t'); 
-		
-		
-		//for (auto & c: tpars.name) c = toupper(c);
-		
-    }
     
     getline(trx,tpars.chr,'\t'); 
-    
-    if(option=="transcript"){
-		getline(trx,tpars.strand,'\t');
-    }
-    
     getline(trx,start,'\t');
     getline(trx,end,'\t');
+    getline(trx,tpars.name,'\t');  //gene name
     
-    if(option=="transcript"){
-		getline(trx,field,'\t'); //cdsStart
-		getline(trx,field,'\t'); //cdsEnd
-		getline(trx,field,'\t'); //exonCount
-		getline(trx,field,'\t'); //exonStarts
-		getline(trx,field,'\t'); //exonEnds
+    if(option!="neg_ctrl"){
 		getline(trx,field,'\t'); //score
-		
-		getline(trx,tpars.name,'\t'); 
-		
-		getline(trx,field,'\t'); //cdsStartStat
-		getline(trx,field,'\t'); //cdsEndStat
-		getline(trx,field,'\t'); //exonFrames
-    
+		getline(trx,tpars.strand,'\t');
+		getline(trx,tpars.tr_id,'\t');
+		getline(trx,desc,'\t'); 
+	}
+	
+	if(option=="transcript"){
+		tpars.FeatureType = 1;
 		if(tpars.strand=="+"){
 			tpars.start=std::stoi(start);
 			tpars.end=std::stoi(end);
-			tpars.probe_id=tpars.name+"_"+start;
+			tpars.probe_id=tpars.tr_id+"."+start;
 		}
 		else{
 			tpars.start=std::stoi(end);
 			tpars.end=std::stoi(start);
-			tpars.probe_id=tpars.name+"_"+end;
+			tpars.probe_id=tpars.tr_id+"."+end;
 		}
-		 tpars.FeatureType = 1;
     }
     
-   if(option=="SNV" || option=="neg_ctrl"){
-	   
-	   tpars.start=std::stoi(start);
-	   tpars.end=std::stoi(end);
-	   tpars.strand="+";
-	   
-	   getline(trx,tpars.name,'\t');
-	   //for (auto & c: tpars.name) c = toupper(c);
-	   tpars.tr_id=tpars.name;
-	   if(option=="SNV")
+    if(option=="SNV") {
 		tpars.FeatureType = 2;
-	   if(option=="neg_ctrl")
+		tpars.start=std::stoi(start);
+		tpars.end=std::stoi(end);
+		tpars.strand="+";
+		tpars.probe_id=tpars.name+"."+start;
+		tpars.tr_id = desc;
+	}
+	
+	if(option=="neg_ctrl"){
 		tpars.FeatureType = 3;
-	   tpars.probe_id=tpars.tr_id+"_"+start;
-	   getline(trx,field,'\t');
-	   getline(trx,tpars.tr_id,'\t'); 
-   }
+		tpars.start=std::stoi(start);
+		tpars.end=std::stoi(end);
+		tpars.strand="+";
+		tpars.tr_id=tpars.name;
+		tpars.probe_id=tpars.tr_id+"."+start;
+		
+	}
 }
 
 
@@ -336,7 +318,6 @@ void FeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::string T
             
             MetaFeatures[Features[feature_id].Name].push_back(feature_id);
         }
-        //feature_id ="";
         isoformprs.clear();
         clusteredcoords.clear();
         ids_of_clustered.clear();

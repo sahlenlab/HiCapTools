@@ -46,7 +46,7 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
 	designName=reInfo.desName;
 	fileName=reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".NegCtrlProbes."+reInfo.REName+"."+reInfo.currTime+".gff3";
 	fasFileName = reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".NegProbeSequences."+reInfo.REName+"."+reInfo.currTime+".txt";  
-	write2ProbesBedFileName =   reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".AllProbeSequences."+reInfo.REName+"."+reInfo.currTime+".bed";
+	write2ProbesBedFileName =   reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".AllNegativeControlProbeSequences."+reInfo.REName+"."+reInfo.currTime+".bed";
 	reLeftCut = reInfo.leftOfCut;
 	reRightCut = reInfo.rightOfCut;
 	mapThreshold = reInfo.mappabilityThreshold;
@@ -476,7 +476,7 @@ bool NegativeProbeDesign::CheckRepeatOverlaps(std::string chr, int& closest_re, 
     
 }
 
-void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
+void NegativeProbeDesign::WritetoFile(bioioMod& getSeq, PrDes::RENFileInfo& reInfo){
 	
 	std::string target, side;
 	int disttotss, probeStart, probeEnd;
@@ -485,6 +485,9 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
 	std::ofstream outfile(fileName, std::fstream::app);
 	std::ofstream outFasFile(fasFileName, std::fstream::app);
 	std::ofstream write2ProbesBedFile(write2ProbesBedFileName, std::fstream::app);
+	
+	outFasFile<<"TargetID"<<'\t'<<"ProbeID"<<'\t'<<"Sequence"<<'\t'<<"Replication"<<'\t'<<"Strand"<<'\t'<<"Coordinates"<<std::endl;	
+	write2ProbesBedFile<<"track name=\"AllNegativeControlProbes_"<<reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))<<"_"<<reInfo.REName<<"_"<<reInfo.currTime<<"\""<<std::endl;
 	
 	for(auto it=chrToIndex.begin(); it!=chrToIndex.end(); ++it){
 		std::sort(it->second.begin(), it->second.end(), [](negProbe const &a, negProbe const &b) { return a.start < b.start; });
@@ -497,7 +500,7 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
 			
 			outfile  << it -> first  << '\t' << "." << '\t' <<"probe"<<'\t';
     
-			outfile <<probeStart << '\t' << probeEnd << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
+			outfile <<probeStart << '\t' << probeEnd-1 << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
 			
 			outfile << "Name="<< ind.name <<"; " <<"transcriptid="<< "none"<<"; " << "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<designName<<"; "<< "featuresinvicinity=";
           
@@ -507,9 +510,9 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
 			
 			std::string getFas=getSeq.GetFasta(it->first+":"+std::to_string(probeStart-1)+"-"+std::to_string(probeEnd-1)); // subtract 1 for bioio coordinates on Left side
 			
-			outFasFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<"+"<<'\t'<<ind.name<<'\t'<<getFas<<std::endl;
+			outFasFile<<ind.name<<'\t'<< it->first<<"_"<<probeStart<<'\t'<<getFas<<'\t'<<"1"<<'\t'<<"+"<<'\t'<<it->first<<":"<<probeStart<<"-"<<probeEnd-1<<std::endl;
 			
-			write2ProbesBedFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<ind.name<<std::endl;
+			write2ProbesBedFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd-1<<'\t'<<ind.name<<std::endl;
 			
 			//right side
 			probeEnd=( ind.end + reRightCut );
@@ -518,7 +521,7 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
 			
 			outfile  << it -> first  << '\t' << "." << '\t' <<"probe"<<'\t';
     
-			outfile <<probeStart << '\t' << probeEnd << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
+			outfile <<probeStart + 1 << '\t' << probeEnd << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
         
 			outfile << "Name="<< ind.name <<"; " <<"transcriptid="<< "none"<<"; " << "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<designName<<"; "<< "featuresinvicinity=";
           
@@ -528,9 +531,9 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq){
 			
 			getFas=getSeq.GetFasta(it->first+":"+std::to_string(probeStart)+"-"+std::to_string(probeEnd));
 			
-			outFasFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<"+"<<'\t'<<ind.name<<'\t'<<getFas<<std::endl;
+			outFasFile<<ind.name<<'\t'<< it->first<<"_"<<probeStart+1<<'\t'<<getFas<<'\t'<<"1"<<'\t'<<"+"<<'\t'<<it->first<<":"<<probeStart+1<<"-"<<probeEnd<<std::endl;
 			
-			write2ProbesBedFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<ind.name<<std::endl;
+			write2ProbesBedFile<<it->first<<'\t'<<probeStart+1<<'\t'<<probeEnd<<'\t'<<ind.name<<std::endl;
 		}
 	}
 }

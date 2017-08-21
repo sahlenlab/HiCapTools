@@ -218,13 +218,24 @@ void DetermineBackgroundLevels::CalculateMeanandStdRegress(std::string eName, in
 	}
 }
 
-void DetermineBackgroundLevels::PrintBackgroundFrequency(int bSize, int bSizePP){
+void DetermineBackgroundLevels::PrintBackgroundFrequency(int bSize, int bSizePP, PrDes::RENFileInfo& reInfo){
 	
 	std::string FileNamePE, FileNamePP;
+	
 	FileNamePE.append(expName);
+	FileNamePE.append(".");
+	FileNamePE.append(reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(',')));
+	FileNamePE.append(".Probe_Distal.BackgroundLevels.");
+	FileNamePE.append(reInfo.currTime);
+	FileNamePE.append(".txt");
+	
 	FileNamePP.append(expName);
-	FileNamePE.append(".Probe_Distal.BackgroundLevels.txt");
-	FileNamePP.append(".Probe_Probe.BackgroundLevels.txt");
+	FileNamePP.append(".");
+	FileNamePP.append(reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(',')));	
+	FileNamePP.append(".Probe_Probe.BackgroundLevels.");
+	FileNamePP.append(reInfo.currTime);
+	FileNamePP.append(".txt");
+	
 	std::ofstream outfPE(FileNamePE.c_str());
 	std::ofstream outfPP(FileNamePP.c_str());
     outfPE << "Distance Bin" << '\t' << "Interaction Distance" << '\t' << "Mean " << '\t' << "Stdev" << '\t' << "Sample Size" << '\t' << "Mean (Smoothed)" << '\t' << "StDev (Smoothed)" <<  std::endl;

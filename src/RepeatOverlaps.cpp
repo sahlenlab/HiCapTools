@@ -46,7 +46,7 @@ int Repeats::ReadRepeatIntervals(std::string repeatfile, OutStream& log){
     
     
     while(infile >> tmp>> temp2 >> tmp>> tmp>>tmp>> chr>>start >> end >>tmp>> temp3>> temp1>>tmp>>tmp>>tmp>>tmp>>tmp>>tmp){
-        //infile >>  ;
+
         chr_of_vector = chr;
         ++index;
         bool endoffile = false;

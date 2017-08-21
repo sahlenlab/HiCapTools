@@ -77,7 +77,7 @@ double DesignClass::BigWigSummary(std::string chr, int start, int end){
     }
     
     if(pclose(fp))  {
-        dLog<<"BigWigSummary: Command not found or exited with error status"<<std::endl;
+        dLog<<"BigWigSummary: Command not found or exited with error status "<<std::endl;
         return -1;
     }
     return a;
@@ -152,33 +152,34 @@ bool DesignClass::CheckRESite(RESitesClass & dpnII, std::string chr, int tss, in
     bool checkMap = CheckMappability(chr, probeStart, probeEnd, ifMap);
     bool checkFrag = CheckFragmentSize(dpnII, chr, closest_re, whichside);
        
-    if(checkRep && checkMap && checkFrag){
+    if(checkRep && checkMap && checkFrag && abs(closest_re - tss) <= MaxDistancetoTSS){
 		passed = true;
 	}
 	else{
 		while(abs(closest_re - tss) <= MaxDistancetoTSS){
+			
 			refound = dpnII.GettheREPositions(chr,closest_re, resites, invalidRECoordinate);
 			if(refound){
 				closest_re = resites[whichside];
 			}
 			else
 				break;
-			
-				
-			if(CheckFragmentSize(dpnII, chr, closest_re, whichside)){ //Frag size passes
-				if (whichside == 1) {
-					 probeStart = closest_re - ProbeLen + reRightCut -1 ;
-					 probeEnd = closest_re + reRightCut - 1 ;
-				}
-				else{
-					probeStart = closest_re - reLeftCut - 1 ;
-					probeEnd = closest_re + ProbeLen - reLeftCut - 1 ; 
-				}				
-				checkRep = CheckRepeats(repeat_trees, chr, probeStart, probeEnd, ifRep);
-				checkMap = CheckMappability(chr, probeStart, probeEnd, ifMap);
-				if(checkRep && checkMap){
-					passed = true;
-					break;
+			if(abs(closest_re - tss) <= MaxDistancetoTSS){	
+				if(CheckFragmentSize(dpnII, chr, closest_re, whichside)){ //Frag size passes
+					if (whichside == 1) {
+						probeStart = closest_re - ProbeLen + reRightCut -1 ;
+						probeEnd = closest_re + reRightCut - 1 ;
+					}
+					else{
+						probeStart = closest_re - reLeftCut - 1 ;
+						probeEnd = closest_re + ProbeLen - reLeftCut - 1 ; 
+					}				
+					checkRep = CheckRepeats(repeat_trees, chr, probeStart, probeEnd, ifRep);
+					checkMap = CheckMappability(chr, probeStart, probeEnd, ifMap);
+					if(checkRep && checkMap){
+						passed = true;
+						break;
+					}
 				}
 			}			
 		}
@@ -294,13 +295,9 @@ void DesignClass::DesignProbes(ProbeFeatureClass & Feats, RESitesClass & dpnII, 
             left_res = CheckDistanceofProbetoTSS(dpnII, pIt->second.chr, pIt->second.TSS, pIt->second.closestREsitenums[0], 0);
             right_res = CheckDistanceofProbetoTSS(dpnII, pIt->second.chr, pIt->second.TSS, pIt->second.closestREsitenums[1], 1);
             //last parameter is design direction not the promoter (RE on the left or right side of TSS)
-            
-            
-            
+
             passed_upstream = CheckRESite(dpnII, pIt->second.chr, pIt->second.TSS, left_res, 0, repeat_trees, reInfo.ifRepeatAvail, reInfo.ifMapAvail);
             passed_downstream = CheckRESite(dpnII, pIt->second.chr, pIt->second.TSS, right_res, 1, repeat_trees, reInfo.ifRepeatAvail, reInfo.ifMapAvail);
-            
-           
             
             if (passed_upstream && passed_downstream) { //check if fragment is same and longer than ProbeLen
                 createNewEntry(OneDesign.back().Layer[it->second].repmap, OneDesign.back().Layer[it->second].repmap, it->second, pIt->first, left_res,0); 
@@ -409,7 +406,7 @@ bool DesignClass::WritetoFile(std::ofstream &outfile, std::string chr, int chrin
 			target="promoter";
 			break;
 		case 2:
-			target="SNP";
+			target="SNV";
 			break;
 		case 3:
 			target="neg_ctrl";
@@ -438,7 +435,7 @@ bool DesignClass::WritetoFile(std::ofstream &outfile, std::string chr, int chrin
 
     outfile  << chr  << '\t' << "." << '\t' <<"probe"<<'\t';
     
-    outfile <<probestart << '\t' << probeend << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
+    outfile <<probestart + 1 << '\t' << probeend << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
         
     outfile << "Name="<<feats.promFeatures[values[0]].genes[0]<<"; " <<"transcriptid="<< feats.promFeatures[values[0]].transcripts[0]<<"; "<< "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<design<<"; "<< "featuresinvicinity=";
         
@@ -532,15 +529,16 @@ bool DesignClass::ConstructSeq(PrDes::RENFileInfo& reInfo, bioioMod& getSeq, std
     outfile2.open(probesBedFile, std::fstream::app);
 
 	outfile2<<"track name=\"AllProbes_"<<reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))<<"_"<<reInfo.REName<<"_"<<reInfo.currTime<<"\""<<std::endl;
+	outfile<<"TargetID"<<'\t'<<"ProbeID"<<'\t'<<"Sequence"<<'\t'<<"Replication"<<'\t'<<"Strand"<<'\t'<<"Coordinates"<<std::endl;	
 	
 	for(auto &probeVar : probeList){
 		
-		outfile2<<probeVar.chr<<'\t'<<probeVar.start<<'\t'<<probeVar.end<<'\t'<<probeVar.feature<<std::endl;
+		outfile2<<probeVar.chr<<'\t'<<probeVar.start + 1<<'\t'<<probeVar.end<<'\t'<<probeVar.feature<<std::endl;
 		
 		std::string toFas = getSeq.GetFasta(probeVar.chr+":"+std::to_string(probeVar.start)+"-"+std::to_string(probeVar.end));
 		
 		if(toFas!="Error"){
-			outfile<<probeVar.chr<<'\t'<<probeVar.start<<'\t'<<probeVar.end<<'\t'<<probeVar.strand<<'\t'<<probeVar.feature<<'\t'<<toFas<<std::endl;
+			outfile<<probeVar.feature<<'\t'<< probeVar.chr<<"_"<<probeVar.start+1<<'\t'<<toFas<<'\t'<<"1"<<'\t'<<probeVar.strand<<'\t'<<probeVar.chr<<":"<<probeVar.start+1<<"-"<<probeVar.end<<std::endl;
 		}
 		else
 			return false;	

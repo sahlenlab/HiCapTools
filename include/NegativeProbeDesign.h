@@ -47,7 +47,7 @@ public:
 
     void InitialiseDesign(ProbeFeatureClass&, std::string, std::string, bool, int, std::string, std::string, int, PrDes::RENFileInfo&, int, std::string, int, int);
     int ConstructNegativeControlProbes(int, std::string,  Repeats);
-    void WritetoFile(bioioMod&);
+    void WritetoFile(bioioMod&, PrDes::RENFileInfo&);
     NegativeProbeDesign(OutStream& dlog) : DesignClass (dlog) {}
     
 private:

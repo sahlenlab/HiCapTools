@@ -627,11 +627,13 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		Interactions.CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo); //Print all same type of interactions
 	}
 	
+	//Print out background values
 	if(CALCULATE_P_VALUES){
 		for(auto it=background.begin(); it!=background.end(); ++it){
-			(*it).PrintBackgroundFrequency(BinSize, BinSizeProbeProbe);
+			(*it).PrintBackgroundFrequency(BinSize, BinSizeProbeProbe, reFileInfo);
 		}
 	}
+	
+	return 1;
 
-	return 1;		
 }

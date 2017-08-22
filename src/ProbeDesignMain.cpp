@@ -422,7 +422,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, s
 	log << std::setw(75)<<"Fasta File:"<< fastaFile << std::endl;
 
 	if(ifNeg=="Yes"){
-		log <<std::setw(75)<< "Transcript List File fro Negative controls:" << transcriptfileForNegCtrl << std::endl;
+		log <<std::setw(75)<< "Transcript List File for Negative controls:" << transcriptfileForNegCtrl << std::endl;
 		log << std::setw(75)<<"Design negative probe set:"<< ifNeg << std::endl;
 		log << std::setw(75)<<"Minimum fragment length for negative probe:"<< MinNegFragLen << std::endl;
 		log << std::setw(75)<<"Number of Intergenic Negative control probes:"<< intergenNegCtrls << std::endl;

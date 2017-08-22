@@ -119,9 +119,9 @@ To run the HiCapTools `ProbeDesigner`, the ’ProbeConfig.txt’ file in the bin
 
 - Genome assembly *(STRING: REQUIRED)* :   The genome assembly build version of the reference genome that is used to map the pairs. It should be in the format ’buildVersion,source’. Eg. hg19,UCSC
 
-- Transcript List File *(STRING: OPTIONAL/REQUIRED)* :   The path to the file containing the list of all transcripts in the genome used. Either Transcript List file or SNV List file is required. Both files can be used together. The file should be in the transcript file format as described in the [File Formats](#file-formats) section. 
+- Transcript List File *(STRING: OPTIONAL/REQUIRED)* :   The path to the file containing the list of transcripts in the genome for which Feature probes are to be created. Either Transcript List file or SNV List file is required. Both files can be used together. The file should be in the BED detail 6+2 file format as described in the [File Formats](#file-formats) section. 
 
-- SNV List File *(STRING: OPTIONAL/REQUIRED)* :   The path to the file containing the list of known Single Nucleotide Variants in the genome used. Either Transcript List file or SNV List file is required. Both files can be used together. The file must be in the SNV File format as described in the [File Formats](#file-formats) section
+- SNV List File *(STRING: OPTIONAL/REQUIRED)* :   The path to the file containing the list of Single Nucleotide Variants in the genome for which Feature probes are to be created. Either Transcript List file or SNV List file is required. Both files can be used together. The file must be in the BED detail 6+2 file format as described in the [File Formats](#file-formats) section
 
 - Repeat File *(STRING: OPTIONAL)* :   The path to the text file containing repeat regions. The field is to be left empty if not used. The repeat file for hg19 can be downloaded from the following link http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/rmsk.txt.gz . Please note that this is a large file (~430MB)
 
@@ -131,7 +131,9 @@ To run the HiCapTools `ProbeDesigner`, the ’ProbeConfig.txt’ file in the bin
 
 - Probe Length *(INTEGER: REQUIRED)* :   The required length of a probe in the current design. The default probe length of 120 base pairs is used if the field is left empty. The probe length should ideally be between 50 and 1000 base pairs.
 
-- Minimum distance between Probes *(INTEGER: REQUIRED)* : The minimum distance between two Probes allowed in the current design. The default value is 1000 base pairs.
+- Minimum distance between Probes *(INTEGER: REQUIRED)* : The minimum distance between two Probes allowed in the current design. The default value, which will be used if the field is left empty, is 1000 base pairs.
+
+- Minimum distance between Feature and Probe *(INTEGER: REQUIRED)* : The minimum distance allowed between a Feature and its probe(s) in the current design. The recommended and default value is 300 base pairs.
 
 - Maximum distance from Probe to feature start (TSS if the feature is transcript)  *(INTEGER: REQUIRED)* : The maximum distance allowed from a Probe to the TSS of the promoter it targets. The default value of 2500 base pairs is used if the field is left empty.
 
@@ -147,6 +149,8 @@ To run the HiCapTools `ProbeDesigner`, the ’ProbeConfig.txt’ file in the bin
 
 
 ##### 2. Negative Control Probe Design
+
+- Transcript File for Negative Controls *(STRING: REQUIRED)* : The path to the file containing the list of all transcripts in the genome used. The Transcript file is required for creating Negative Control Probes. The file should be in the transcript file format for negative control probes as described in the [File Formats](#file-formats) section.
 
 - Minimum fragment length for negative probe  *(INTEGER: REQUIRED)*  : The minimum length of the restriction enzyme fragment for which negative control probes are designed. The recommended and default value is 500 base pairs, used if the field is left empty.
 
@@ -227,9 +231,9 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
 
 - Fasta File *(STRING: OPTIONAL/REQUIRED)* :   The path to the fasta file containing the genomic sequence. This field is required if Digested Genome File is left empty.
 
-- Transcript List File *(STRING: OPTIONAL/REQUIRED)* :   The path to the file containing the list of annotated transcripts in the genome. It should be same file used to design probes. It should also be sorted by gene name(field 1). Either Transcript List file or SNV List file is required. Both can be used together. Please see [File Formats](#file-formats) section.
+- Transcript List File *(STRING: OPTIONAL/REQUIRED)* :   The path to the file containing the list of annotated transcripts in the genome. It should be same file used to design probes. It should also be sorted by gene name. Either Transcript List file or SNV List file is required. Both can be used together. The file must be in the BED detail 6+2 file format as described in the [File Formats](#file-formats) section.
 
-- SNV List File *(STRING: OPTIONAL/REQUIRED)* :   The path to the file containing the list of extra regions (such as SNVs or known enhancers) used. Either Transcript List file or SNV List file is required. Both files can be used together. The file must be in the BED format with the name additional optional field.
+- SNV List File *(STRING: OPTIONAL/REQUIRED)* :   The path to the file containing the list of extra regions (such as SNVs or known enhancers) used. Either Transcript List file or SNV List file is required. Both files can be used together. The file must be in the BED detail 6+2 file format as described in the [File Formats](#file-formats) section.
 
 - Negative control region File *(STRING: OPTIONAL/REQUIRED)* :   The path to the Negative Control Region File in BED format from HiCapTools `ProbeDesigner`. This field is required if Calculate p_values is ‘Yes’ in configFile.txt.
 
@@ -259,10 +263,21 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
 
 ##### Transcript Files
 
-The transcript file can be constructed from the UCSC Table browser by choosing the ’Genes and Gene Predictions’ from group, and relevant option from table and getting the output. 
-The file MUST then be SORTED by gene name and the fields separated by tabs. You can produce a sorted file using the sortTranscriptFile.sh script (sh sortTranscriptFile.sh /path/to/unsortedfile) available in the scripts directory. The headers are as from the UCSC refGene table. 
+* Transcript List File for Feature probes
 
-If one wishes to use a subset of genes or transcripts for probe design or proximity detection, one can paste or upload the names or accessions of the subset using option "identifiers (names/accessions): " in the UCSC Table Browser.
+The transcript list file must be in the BED detail 6+2 format. The file must have a single track line. The fourth column must contain the gene name and the seventh column must contain the transcript name. An example is shown below. The file MUST be sorted by gene name. The sortTranscriptFile.sh script available in the scripts directory can be used to sort the file (sh sortTranscriptFile.sh /path/to/unsortedfile).
+
+```
+track name=ExampleTranscriptList type=bedDetail description="Example TranscriptList track"
+chr1    34553   36081   FAM138A .       -       ENST00000417324.1       FAM138A
+chr1    69090   70008   OR4F5   .       +       NM_001005484    OR4F5
+chr1    367658  368597  OR4F16  .       +       NM_001005277    OR4F16
+```
+
+* Transcript File for Negative control probes
+
+The transcript file for negative controls can be constructed from the UCSC Table browser by choosing the ’Genes and Gene Predictions’ from group, and relevant option from table and getting the output. 
+The file MUST then be SORTED by gene name and the fields separated by tabs. A sorted file can be produced using the sortNegativeControlTranscriptFile.sh script (sh sortNegativeControlTranscriptFile.sh /path/to/unsortedfile) available in the scripts directory. The headers are as from the UCSC refGene table. 
     
 ```
 #bin  name  chrom strand  txStart txEnd cdsStart  cdsEnd  exonCount exonStarts  exonEnds  score name2 cdsStartStat  cdsEndStat  exonFrames
@@ -277,8 +292,8 @@ The SNV files must be in the BED detail 4+2 format. The file must have a single 
 
 ```
 track name=SNVTrack type=bedDetail description="Example SNV track"
-chr4  135522740	135522740	rs10026364	PMID:21347282OA	Coronary_heart_disease_gwas
-chr10	104594507	104594507	rs1004467	PMID:19430479	Systolic_blood_pressure_gwas
+chr4  135522740	135522740	rs10026364	 .  + PMID:21347282OA	Coronary_heart_disease_gwas
+chr10	104594507	104594507	rs1004467	. + PMID:19430479	Systolic_blood_pressure_gwas
 
 ```
 
@@ -288,8 +303,7 @@ This file must be in the standard BED format with minimum three fields.
 
 ##### Probe File
 
-The Probe files outputted by the `ProbeDesigner` and required as input by the `ProximityDetector` are in the gff3 format with some custom
-    tags in the Attributes field. The custom tags are
+The Probe files outputted by the `ProbeDesigner` and required as input by the `ProximityDetector` are in the gff3 format with some custom tags in the Attributes field. The custom tags are
 
  *   _side_ can be ‘L’ or ‘R’ depending on whether the probe is
         designed upstream or downstream of target position/fragment.
@@ -345,6 +359,7 @@ This file is required as input for the `ProximityDetector`. This should be in th
     
 `
 ##### II. ProximityDetector
+
 * ProxDetectLog File : This file contains the message log from a ProximityDetector run.
 
 * Background Levels files : These files contains the values of mean and standard deviation for background levels of 'Probe-Distal' and 'Probe-Probe' proximities calculated from the proximities of the negative control probe set. A file each for 'Probe-Distal' and 'Probe-Probe' background levels will be generated for each input experiment file.
@@ -361,6 +376,7 @@ This file is required as input for the `ProximityDetector`. This should be in th
  * Pairwise Interaction files : The files whose name is in the format 'BaseFileName.AssemblyVer.chrN.Proximities.Probe_XXXX.WashU.date.txt',where XXXX can be Probe or Distal, contain the proximity information in the long range interaction data format suitable for uploading to WashU browser for display.
         
 ##### III. Common
+
 * Restriction Enzyme Digest File : This file will be generated if the 'Digested Genome File' field is left blank in ProbeDesigner/ProximityDetector.
 
 ### References and Acknowledgements

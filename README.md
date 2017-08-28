@@ -107,7 +107,7 @@ To use the probe designer, run HiCapTools with the `ProbeDesigner` option.
 
 #### Required Inputs
 
-To run the HiCapTools `ProbeDesigner`, the ’ProbeConfig.txt’ file in the bin/config directory must be present and its fields populated. The fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Base Config’ fields and ’Negative Control Probe Design’ fields. For certain required parameters, the given default values will be used if the the parameter value is left empty. 
+To run the HiCapTools `ProbeDesigner`, the ’ProbeConfig.txt’ file in the bin/config directory must be present and its fields populated. The fields of the ’ProbeConfig.txt’ file are divided into two categories - ’Base Config’ fields and ’Negative Control Probe Design’ fields. For certain required parameters, the given default values will be used if the the parameter value is left empty. Both 'Base Config' parameters and 'Negative Control Probe Design' parameters should be filled while designing negative control probes.
 
 ##### 1. Base Config
 
@@ -151,8 +151,6 @@ To run the HiCapTools `ProbeDesigner`, the ’ProbeConfig.txt’ file in the bin
 ##### 2. Negative Control Probe Design
 
 - Transcript File for Negative Controls *(STRING: REQUIRED)* : The path to the file containing the list of all transcripts in the genome used. The Transcript file is required for creating Negative Control Probes. The file should be in the transcript file format for negative control probes as described in the [File Formats](#file-formats) section.
-
-- Minimum fragment length for negative probe  *(INTEGER: REQUIRED)*  : The minimum length of the restriction enzyme fragment for which negative control probes are designed. The recommended and default value is 500 base pairs, used if the field is left empty.
 
 - Number of Intergenic Negative control fragments *(INTEGER: OPTIONAL)* :   The number of intergenic negative control fragments to place probes. Empty field will be taken as zero. Two probes will be placed on each negative control fragment.
 
@@ -347,7 +345,7 @@ This file is required as input for the `ProximityDetector`. This should be in th
 
 * Probe file : This file contains the probe information in the gff3 file format and is required as input to ProximityDetector. It is named in the format "BaseFileName.assemblyVer_chrN.RestrictionEnzyme.date.gff3".
 
-* Probe Sequence File : This file contains the sequence information of the probes and is named in the format "BaseFileName.assemblyVer.ProbeSequences.RestrictionEnzyme.date.txt". 
+* Probe Sequence File : This file contains the sequence information of the probes and is named in the format "BaseFileName.assemblyVer.ProbeSequences.RestrictionEnzyme.date.txt". This file can be readily submitted to Agilent Technologies custom probe design tool.
 
 * Probe Design Summary file : This file contains the summary information of number of probes designed against features. It is named in the format "BaseFileName.assemblyVer.ProbeDesignSummary_chrN.RestrictionEnzyme.date.txt". 
 
@@ -355,7 +353,7 @@ This file is required as input for the `ProximityDetector`. This should be in th
 
 * Negative control Probe region File :This file in the BED format contains the list of restriction enzyme fragments for which negative control probes have been designed.  It is generated only when the "Design negative probe set option" is set to Yes.
 
-* Negative control Probe sequence file : This file in the TXT format contains the sequence information of the negative control probes. It is generated only when the "Design negative probe set option" is set to Yes.
+* Negative control Probe sequence file : This file in the TXT format contains the sequence information of the negative control probes. It is generated only when the "Design negative probe set option" is set to Yes. This file can be readily submitted to Agilent Technologies custom probe design tool.
     
 `
 ##### II. ProximityDetector

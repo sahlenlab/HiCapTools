@@ -64,9 +64,6 @@ Fasta Index File=
 /--The file path to the Transcript File for Negative control generation in given format.--/
 Transcript File for Negative Controls=/path/to/CompleteTranscriptFile.txt
 
-/--The minimum length of the restriction enzyme fragment for which negative control probes are designed. Enter an integer. The recommended value is 500 base pairs--/
-Minimum fragment length for negative probe=500
-
 /--The number of intergenic negative control fragments to place probes. Enter an integer. Two probes will be placed on each negative control fragment.--/
 Number of Intergenic Negative control fragments=500
 

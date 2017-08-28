@@ -533,7 +533,7 @@ bool DesignClass::ConstructSeq(PrDes::RENFileInfo& reInfo, bioioMod& getSeq, std
 	
 	for(auto &probeVar : probeList){
 		
-		outfile2<<probeVar.chr<<'\t'<<probeVar.start + 1<<'\t'<<probeVar.end<<'\t'<<probeVar.feature<<std::endl;
+		outfile2<<probeVar.chr<<'\t'<<probeVar.start <<'\t'<<probeVar.end<<'\t'<<probeVar.feature<<std::endl;
 		
 		std::string toFas = getSeq.GetFasta(probeVar.chr+":"+std::to_string(probeVar.start)+"-"+std::to_string(probeVar.end));
 		

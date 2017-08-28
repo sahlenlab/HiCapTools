@@ -102,6 +102,8 @@ namespace PrDes{
 		bool ifRepeatAvail;
 		bool ifMapAvail;
 		std::string genomeAssembly;
+		std::string fastafilepath;
+		std::string fastaindexpath;
 	};
 }
 

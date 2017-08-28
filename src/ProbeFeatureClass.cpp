@@ -309,12 +309,18 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
                 
                 //////////////Add intervals to vector clusteredcoords[y]
 				if(chrIntervals.find(tp[0].chr)!=chrIntervals.end()){
-					chrIntervals[tp[0].chr].push_back(Interval <std::string>((clusteredcoords[y] - promPadding),(clusteredcoords[y] + promPadding), feature_id));
+					int pstart = (clusteredcoords[y] - promPadding);
+					if(pstart<0)
+						pstart=0;
+					chrIntervals[tp[0].chr].push_back(Interval <std::string>((pstart),(clusteredcoords[y] + promPadding), feature_id));
 					
 				}
 				else{
+					int pstart = (clusteredcoords[y] - promPadding);
+					if(pstart<0)
+						pstart=0;
 					std::vector < Interval < std::string > > tempvector ;
-					tempvector.push_back(Interval <std::string>((clusteredcoords[y] - promPadding),(clusteredcoords[y] + promPadding), feature_id));
+					tempvector.push_back(Interval <std::string>((pstart),(clusteredcoords[y] + promPadding), feature_id));
 					chrIntervals.emplace(tp[0].chr, tempvector);
 					if(tp[0].chr.find("random")==std::string::npos)
 						ChrNames_proms.push_back(tp[0].chr);
@@ -366,12 +372,18 @@ void ProbeFeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::str
             
             
 			if(chrIntervals.find(tp[0].chr)!=chrIntervals.end()){
-				chrIntervals[tp[0].chr].push_back(Interval <std::string>((isoformprs[0] - promPadding),(isoformprs[0] + promPadding), feature_id));
+				int pstart = isoformprs[0] - promPadding;
+				if(pstart<0)
+					pstart=0;
+				chrIntervals[tp[0].chr].push_back(Interval <std::string>(pstart,(isoformprs[0] + promPadding), feature_id));
 				
 			}
 			else{
+				int pstart = isoformprs[0] - promPadding;
+				if(pstart<0)
+					pstart=0;
 				std::vector < Interval < std::string > > tempvector ;
-				tempvector.push_back(Interval <std::string>((isoformprs[0] - promPadding),(isoformprs[0] + promPadding), feature_id));
+				tempvector.push_back(Interval <std::string>(pstart,(isoformprs[0] + promPadding), feature_id));
 				chrIntervals.emplace(tp[0].chr, tempvector);
 				if(tp[0].chr.find("random")==std::string::npos)
 					ChrNames_proms.push_back(tp[0].chr);

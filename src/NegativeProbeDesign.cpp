@@ -35,13 +35,14 @@
 #include "NegativeProbeDesign.h"
 
 
-void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::string transcriptfile, std::string regRegionFile, bool ifRReg, int prlen, std::string bgwgsumbin, std::string mapfp, int minREfragLength, PrDes::RENFileInfo& reInfo, int bufSize, std::string digestFile, int dfI, int dfReg){
+int NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::string transcriptfile, std::string regRegionFile, bool ifRReg, int prlen, std::string bgwgsumbin, std::string mapfp, int maxDistToTss, PrDes::RENFileInfo& reInfo, int bufSize, std::string digestFile, int dfI, int dfReg, std::string extranscriptfile, int dfProm, int minDistToTss){
 	
 	//Set class variables
-	minREfragLen = minREfragLength;
+	MaxDistancetoTSS = maxDistToTss;
+	minDistToTSS = minDistToTss;
 	ProbeLen = prlen;
-    bigwigsummarybinary=bgwgsumbin;
-    mappabilityfile=mapfp;
+	bigwigsummarybinary=bgwgsumbin;
+	mappabilityfile=mapfp;
 	ifExistRegRegionFile=ifRReg;
 	designName=reInfo.desName;
 	fileName=reInfo.desName+"."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".NegCtrlProbes."+reInfo.REName+"."+reInfo.currTime+".gff3";
@@ -58,6 +59,12 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
 	summaryFileName = reInfo.desName + "."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".NegCtrlRegions_" +reInfo.REName+"."+reInfo.currTime+".bed";
 	distforbidIntergenic=dfI; 
 	distforbidReg=dfReg;
+	distforbidProm=dfProm;
+	
+
+	std::string temp, lineReadin;
+	std::string chr, start, end, strand, intId, discardtemp;	
+	std::string genename, tr_id, exonCounts, exonStarts, exonEnds;
 	
 	// Store gene
 	struct genetemp{
@@ -69,15 +76,14 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
 	
 	bool flag=true;
 	int istart, iend;
-	std::string temp, lineReadin;
-	std::string chr, start, end, strand, intId, discardtemp;	
-	std::string genename, tr_id, exonCounts, exonStarts, exonEnds;
+	
 	
 	std::map <std::string, genetemp> genemap;
 	std::map< std::string, std::vector < Interval < std::string > > > genechrIntervals;
 	std::map< std::string, std::vector < Interval < std::string > > > exonchrIntervals;
 	//std::map< std::string, std::vector < Interval < std::string > > > intronchrIntervals;
 	std::map< std::string, std::vector < Interval < std::string > > > regRegchrIntervals;
+	std::map< std::string, std::vector < Interval < std::string > > > extraTranscriptchrIntervals;
 	
 	std::ifstream fileReadin;
 	
@@ -223,6 +229,39 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
             it->second.swap(temp);
     }
     
+    //extra transcript checking
+    
+	fileReadin.open(extranscriptfile, std::ifstream::in);
+	while(!fileReadin.eof()){
+		getline(fileReadin, lineReadin);
+		if(lineReadin.substr(0,5)!="track"){
+			std::stringstream bedline(lineReadin);
+			getline(bedline,chr,'\t');
+			getline(bedline,start,'\t');
+			istart=std::stoi(start);
+			getline(bedline,end,'\t');
+			iend=std::stoi(end);
+			
+			intId=chr+":"+start+"-"+end;
+		
+			if(extraTranscriptchrIntervals.find(chr)!=extraTranscriptchrIntervals.end())
+				extraTranscriptchrIntervals[chr].push_back(Interval <std::string>(istart , iend, intId));
+			else{
+				std::vector < Interval < std::string > > tempvector ;
+				tempvector.push_back(Interval <std::string>(istart ,iend, intId));
+				extraTranscriptchrIntervals.emplace(chr, tempvector);
+				}			
+		}	
+	}
+		
+		//construct extra transcript tree
+	for(auto it = extraTranscriptchrIntervals.begin(); it != extraTranscriptchrIntervals.end(); ++it){
+		std::vector< Interval < std::string > > temp;
+        extraPromTree[it->first] = IntervalTree< std::string >(it->second);
+        it->second.swap(temp);
+	}
+	
+    fileReadin.close();
 		
 	//if user provided regulatory region file exists
     if(ifExistRegRegionFile){
@@ -257,6 +296,7 @@ void NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::str
 		}
 	}
 	ConstructPools(digestFile, Features);
+	return 1;
 }
 
 
@@ -264,7 +304,7 @@ void NegativeProbeDesign::ConstructPools(std::string digestFile, ProbeFeatureCla
 	
 	bool flag;
 	int istart, iend;
-	std::string temp, lineReadin, chr, start, end, ifGene, ifProm, ifRegulReg, ifExon, ifIntron;
+	std::string temp, lineReadin, chr, start, end, ifGene, ifProm, ifRegulReg, ifExon, ifIntron, ifExtraTrans;
 	std::ifstream fileReadin;
 	
 	fileReadin.open(digestFile, std::ifstream::in);
@@ -279,10 +319,17 @@ void NegativeProbeDesign::ConstructPools(std::string digestFile, ProbeFeatureCla
 		iend=std::stoi(end);
 		//Check if RE fragment overlaps with promoter regions
 		ifProm = FindOverlaps(Features.promIntTree, chr, istart, iend); // Check if overlaps with forbidden region - prom tree with intervals 50 kb both up/downstream of feature 
+		int transtart = istart-distforbidProm-MaxDistancetoTSS;
+		if(transtart<0)
+			transtart=0;
+		ifExtraTrans=FindOverlaps(extraPromTree, chr, transtart, iend+distforbidProm+MaxDistancetoTSS);
 		
 		//Check if RE fragments overlap with other regulatory regions
 		if(ifExistRegRegionFile){
-			ifRegulReg = FindOverlaps(regulRegIntTree, chr, istart-distforbidReg, iend+distforbidReg);
+			int regstart = istart-distforbidReg;
+			if(regstart<0)
+				regstart=0;
+			ifRegulReg = FindOverlaps(regulRegIntTree, chr, regstart, iend+distforbidReg);
 			if(ifRegulReg=="null"){
 				flag=true;
 			}
@@ -293,7 +340,7 @@ void NegativeProbeDesign::ConstructPools(std::string digestFile, ProbeFeatureCla
 			flag=true;
 		}
 		
-		if(ifProm=="null" && flag){
+		if(ifProm=="null" && ifExtraTrans == "null" && flag){
 			
 			PrDes::FeatureStruct feat;
 			feat.ProbeID.push_back(chr+":"+start+"-"+end);
@@ -301,20 +348,37 @@ void NegativeProbeDesign::ConstructPools(std::string digestFile, ProbeFeatureCla
 			feat.start=istart;
 			feat.end=iend;
 			
-			ifGene=FindOverlaps(geneIntTree, chr, istart-distforbidIntergenic, iend+distforbidIntergenic); //add 50 kb around gene get value from user
+			int genstart = istart-distforbidIntergenic;
+			if(genstart<0)
+				genstart=0;
+			
+			ifGene=FindOverlaps(geneIntTree, chr, genstart, iend+distforbidIntergenic); //add 50 kb around gene get value from user
 			
 			if(ifGene=="null"){
-				intergenicPool.push_back(feat);
+				if(intergenicPool.find(chr)==intergenicPool.end()){
+					std::vector <PrDes::FeatureStruct> tempvector ;
+					tempvector.push_back(feat);
+					intergenicPool.emplace(chr, tempvector);
+				}
+				else
+					intergenicPool[chr].push_back(feat);
 			}
 			else{
 				ifExon=FindOverlaps(exonIntTree, chr, istart, iend);
 				if(ifExon=="null"){
 					ifIntron=FindOverlaps(geneIntTree, chr, istart, iend); //check only gene region					
-					if(ifIntron!="null")						
-						intronPool.push_back(feat);
+					if(ifIntron!="null"){
+							intronPool.push_back(feat);
+					}
 				}
 				else{
-						exonPool.push_back(feat);
+					if(exonPool.find(chr)==exonPool.end()){
+							std::vector <PrDes::FeatureStruct> tempvector ;
+							tempvector.push_back(feat);
+							exonPool.emplace(chr, tempvector);
+					}
+					else
+						exonPool[chr].push_back(feat);
 					
 				}
 			}
@@ -335,12 +399,73 @@ std::string NegativeProbeDesign::FindOverlaps( std::map< std::string, IntervalTr
 }
 
 
-int NegativeProbeDesign::ConstructNegativeControlProbes(int nCtrls,std::string nCtrlType,  Repeats repeatTrees){
+int NegativeProbeDesign::ConstructNegativeControlProbes(int nCtrls,std::string nCtrlType,  Repeats& repeatTrees, PrDes::RENFileInfo& reInfo, RESitesClass& dpnII){
+	
+	if(nCtrls<=0)
+		return 1;
 	
 	std::string outFileName;
 	std::ofstream outFile, summaryFile;
 	bool flag=false;
+	auto cmp = [](std::pair<std::string,float> const & a, std::pair<std::string,float> const & b) {
+		return  a.second > b.second;
+    };
 	
+	std::string indPath, chr;
+	std::string temp, lineReadin, length;
+	std::map<std::string, long int> totalChr;
+	long int total=0;
+	////////////
+	if(nCtrlType!="intronic"){
+		if (reInfo.fastaindexpath.empty()) { 
+			indPath = reInfo.fastafilepath;
+			indPath.replace(indPath.begin() + indPath.find_last_of("."), indPath.end(), ".fai");
+		}
+		else
+			indPath=reInfo.fastaindexpath;
+		
+		std::ifstream indFile {indPath, std::ifstream::in};
+		if (!indFile) {
+			indFile.open(reInfo.fastafilepath + ".fai");
+			if (!indFile) {
+				dLog<<"Fasta index file not found!!!"<<std::endl;
+				return 0;
+			}
+		}
+	
+		if(indFile.good()){
+			while (getline(indFile, lineReadin)){  		
+				std::stringstream indLine ( lineReadin );
+				indLine>>chr>>length>>temp>>temp>>temp;
+				if(chr.length()<6){
+					totalChr.emplace(chr, std::stoi(length));
+					total=total + std::stoi(length);
+				}		
+			}
+		}
+		indFile.close();
+		int checkTotal=nCtrls;
+		std::vector<std::pair<std::string, float>> frac;
+		numProbesPerChr.clear();
+		for(auto it=totalChr.begin(); it!=totalChr.end(); ++it){
+			float num= (it->second/float(total))*nCtrls;
+			numProbesPerChr.emplace(it->first, (int)num);
+			checkTotal =checkTotal-(int)num;
+			frac.push_back(std::make_pair(it->first, num-(int)num)); 
+		}
+		
+		std::sort(frac.begin(), frac.end(), cmp);
+		
+		if(checkTotal>0){
+			while(checkTotal>0){
+				for(auto it=frac.begin(); it!=frac.end() && checkTotal>0; ++it){
+					numProbesPerChr[it->first]= numProbesPerChr[it->first]+1;
+					checkTotal=checkTotal-1;
+				}
+			}
+		}
+	}
+		
 	outFileName.append(fileName);
 
     std::ifstream checkFile(outFileName);
@@ -359,121 +484,183 @@ int NegativeProbeDesign::ConstructNegativeControlProbes(int nCtrls,std::string n
 		outFile<<"##genome-build "<<genAssem.substr(genAssem.find_first_of(',')+1)<<" "<<genAssem.substr(0, genAssem.find_first_of(',')) <<std::endl;
 		summaryFile<<"track name=\""<<designName<<"\" type=bedDetail description=\"Negative control probe target fragments for "<< designName<<"\""<<std::endl;
 	}
-
+	
+	size_t poolSize=0;
 	
 	if(nCtrlType=="exonic" && nCtrls>0){
-		if(nCtrls>exonPool.size()){
+		
+		for(auto it=exonPool.begin(); it!=exonPool.end();++it){
+			poolSize=poolSize+it->second.size();
+		}
+		if(nCtrls>poolSize){
 			dLog<<"!!!Error!!! The provided number of exonic negative control probes required are greater than the number of available candidate RE fragments. No exonic negative control probes designed"<<std::endl;
 			return 0;
 		}
-		chooseRandomProbesFromPool(nCtrls, exonPool, repeatTrees, outFile, "Exon", summaryFile);
+		chooseRandomProbesFromPool(nCtrls, exonPool, repeatTrees, outFile, "Exon", summaryFile, poolSize, dpnII);
 	}
-	else if(nCtrlType=="intronic" && nCtrls>0){
-		if(nCtrls>intronPool.size()){
+	else if(nCtrlType=="intronic" && nCtrls>0){		
+		poolSize=intronPool.size();
+		if(nCtrls>poolSize){
 			dLog<<"!!!Error!!! The provided number of intronic negative control probes required are greater than the number of available candidate RE fragments. No intronic negative control probes designed"<<std::endl;
 			return 0;
 		}
-		chooseRandomProbesFromPool(nCtrls, intronPool, repeatTrees, outFile, "Intron", summaryFile);
+			chooseRandomProbesFromPool(nCtrls, intronPool, repeatTrees, outFile, "Intron", summaryFile, poolSize, dpnII);
 	}
 	else if(nCtrlType=="intergenic" && nCtrls>0){
-		if(nCtrls>intergenicPool.size()){
+		for(auto it=intergenicPool.begin(); it!=intergenicPool.end();++it){
+			poolSize=poolSize+it->second.size();
+		}
+		if(nCtrls>poolSize){
 			dLog<<"!!!Error!!! The provided number of intergenic negative control probes required are greater than the number of available candidate RE fragments. No intergenic negative control probes designed"<<std::endl;
 			return 0;
 		}
-		chooseRandomProbesFromPool(nCtrls, intergenicPool, repeatTrees, outFile, "Intergen", summaryFile);
+		chooseRandomProbesFromPool(nCtrls, intergenicPool, repeatTrees, outFile, "Intergen", summaryFile, poolSize, dpnII);
 	}
 	return 1;
 }
 
-void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::vector<PrDes::FeatureStruct>& whichgenPool, Repeats& repeatTrees, std::ofstream &outfile, std::string whichPool, std::ofstream &summaryfile){
+void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::map<std::string, std::vector<PrDes::FeatureStruct>>& whichgenPool, Repeats& repeatTrees, std::ofstream &outfile, std::string whichPool, std::ofstream &summaryfile, int poolSize, RESitesClass& dpnII){
 	
 	bool leftEnd, rightEnd;
-	int loopIndex;
+	int loopIndex, total=0;
 	std::mt19937_64 rng;
-	std::uniform_int_distribution<int> fragDist(0, whichgenPool.size());
-	std::vector<int> fragSeen;
+	for(auto it=numProbesPerChr.begin(); it!=numProbesPerChr.end();++it){
+		std::uniform_int_distribution<int> fragDist(0, whichgenPool[it->first].size()-1);
+		std::vector<int> fragSeen;
+		std::vector<int> fragSelected;
 	
-	rng.seed(std::random_device()());
-	loopIndex=0;
+		rng.seed(std::random_device()());
+		loopIndex=0;
 		
-	while(loopIndex<nProbesReq){
+		while(loopIndex<it->second){
 		//below gives you index of negative control probe to write
-		int currIndex=fragDist(rng);
+			int currIndex=fragDist(rng);
+			bool checkDistFlag=true;
 		
-		if(std::find(fragSeen.begin(), fragSeen.end(), currIndex)==fragSeen.end()){
-		
-			fragSeen.push_back(currIndex);
-			//check repeat overlap'
-			//RE fragment start
-		
-			if((abs(whichgenPool[currIndex].start - whichgenPool[currIndex].end)) > minREfragLen){
+			if(std::find(fragSeen.begin(), fragSeen.end(), currIndex)==fragSeen.end()){
 				
-				leftEnd = CheckRepeatOverlaps(whichgenPool[currIndex].chr, whichgenPool[currIndex].start, false, repeatTrees);
+				for(auto elem=fragSelected.begin(); elem < fragSelected.end(); ++elem){
+					int checkDist;
+					if(whichgenPool[it->first][currIndex].start<whichgenPool[it->first][*elem].start)
+						checkDist=whichgenPool[it->first][*elem].start-whichgenPool[it->first][currIndex].end;
+					else
+						checkDist=whichgenPool[it->first][currIndex].start-whichgenPool[it->first][*elem].end;
+						
+					if(checkDist<50000){//hard coded value
+						checkDistFlag=false;
+						break;
+					}
+				}
 		
-				if(leftEnd){
-					rightEnd = CheckRepeatOverlaps(whichgenPool[currIndex].chr, whichgenPool[currIndex].end, true, repeatTrees);
-					if(rightEnd){
+				fragSeen.push_back(currIndex);
+				if(fragSeen.size()>=whichgenPool[it->first].size()){
+					dLog<<"Not enough valid candidate fragments for "<<whichPool <<" in "<<it->first<<" for provided parameters. The provided number of negative controls may not have been selected. Please try running again with/without changing parameters!!"<<std::endl;
+					break;
+				}
+				//check repeat overlap'
+				//RE fragment start
+				if(checkDistFlag){
+					int takeTSS=(whichgenPool[it->first][currIndex].start + whichgenPool[it->first][currIndex].end)/2;
+					int left_res, right_res; 	
+					bool passed_upstream = false, passed_downstream = false;
+            
+					left_res = CheckDistanceofProbetoTSS(dpnII, it->first, takeTSS, whichgenPool[it->first][currIndex].start, 0);
+					right_res = CheckDistanceofProbetoTSS(dpnII, it->first, takeTSS, whichgenPool[it->first][currIndex].end, 1);
+					
+					passed_upstream = CheckRESite(dpnII, it->first, takeTSS, left_res, 0, repeatTrees, ifRep, ifMap);
+					passed_downstream = CheckRESite(dpnII, it->first, takeTSS, right_res, 1, repeatTrees, ifRep, ifMap);
+					
+									
+					if (passed_upstream && passed_downstream){
 					//write to file	 - 2 probes for each fragment
-						if(chrToIndex.find(whichgenPool[currIndex].chr)!=chrToIndex.end())
-							chrToIndex[whichgenPool[currIndex].chr].push_back(negProbe(whichgenPool[currIndex].start, whichgenPool[currIndex].end, "NegCtrl_"+whichPool+std::to_string(loopIndex+1)));
+						if(chrToIndex.find(whichgenPool[it->first][currIndex].chr)!=chrToIndex.end())
+							chrToIndex[it->first].push_back(negProbe(left_res, right_res, "NegCtrl_"+whichPool+std::to_string(total+1)));
 						else{
 							std::vector<negProbe> temp;
-							temp.push_back(negProbe(whichgenPool[currIndex].start, whichgenPool[currIndex].end, "NegCtrl_"+whichPool+std::to_string(loopIndex+1)));
-							chrToIndex.emplace(whichgenPool[currIndex].chr, temp);
+							temp.push_back(negProbe(left_res, right_res, "NegCtrl_"+whichPool+std::to_string(total+1)));
+							chrToIndex.emplace(it->first, temp);
 						}
-						summaryfile << whichgenPool[currIndex].chr << '\t'  << whichgenPool[currIndex].start << '\t' << whichgenPool[currIndex].end << '\t' << "NegCtrl_"<<whichPool<<loopIndex+1 << '\t' << "NegCtrl_"<<whichPool<<loopIndex+1 << '\t'<< "Neg_Ctrl"<< std::endl;
+						summaryfile << it->first << '\t'  << whichgenPool[it->first][currIndex].start << '\t' << whichgenPool[it->first][currIndex].end << '\t' << "NegCtrl_"<<whichPool<<total+1 << '\t'<<"."<<'\t'<<"+"<<'\t' << "NegCtrl_"<<whichPool<<total+1 << '\t'<< "Neg_Ctrl"<< std::endl;
 						++loopIndex;
+						++total;
+						fragSelected.push_back(currIndex);
 					}				
-				}	
+				}
 			}
 		}
 	}
 }
 
-
-bool NegativeProbeDesign::CheckRepeatOverlaps(std::string chr, int& closest_re, bool rightside, Repeats& repeat_trees){
-    
-	if(!ifRep && !ifMap){
-		return true;
-	}
+void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::vector<PrDes::FeatureStruct>& whichgenPool, Repeats& repeatTrees, std::ofstream &outfile, std::string whichPool, std::ofstream &summaryfile, int poolSize, RESitesClass& dpnII){
 	
-    int overlaprepeats;
-    double mappability;  
-    int probeStart, probeEnd;
-    
-    if (rightside) {
-        
-        probeStart=( closest_re - ProbeLen + reRightCut ); //add
-		probeEnd=( closest_re + reRightCut );    ///////check 1 based 0 based
+	bool leftEnd, rightEnd;
+	int loopIndex, total=0;
+	std::mt19937_64 rng;
 	
-    }
-    else{
-		probeStart = ( closest_re - reLeftCut); /////check 1 based 0 based
-		probeEnd =( closest_re + ProbeLen - reLeftCut);
+	std::uniform_int_distribution<int> fragDist(0, whichgenPool.size()-1);
+	std::vector<int> fragSeen;
+	std::vector<int> fragSelected;
 	
-    }
-    
-    if(ifRep && !ifMap){
-		overlaprepeats = repeat_trees.FindOverlaps(chr, probeStart, probeEnd);
-		mappability = mapThreshold;
+	rng.seed(std::random_device()());
+	loopIndex=0;
+		
+	while(loopIndex<nProbesReq){
+	//	while(loopIndex<it->second){
+		//below gives you index of negative control probe to write
+		int currIndex=fragDist(rng);
+		bool checkDistFlag=true;
+		
+		if(std::find(fragSeen.begin(), fragSeen.end(), currIndex)==fragSeen.end()){
+				
+			for(auto elem=fragSelected.begin(); elem < fragSelected.end(); ++elem){
+				int checkDist=50000;
+				if(whichgenPool[currIndex].chr==whichgenPool[*elem].chr){	
+					if(whichgenPool[currIndex].start<whichgenPool[*elem].start)
+						checkDist=whichgenPool[*elem].start-whichgenPool[currIndex].end;
+					else
+						checkDist=whichgenPool[currIndex].start-whichgenPool[*elem].end;
+				}	
+				if(checkDist<30000){//hard coded value
+					checkDistFlag=false;
+					break;
+				}
+			}
+		
+			fragSeen.push_back(currIndex);
+			if(fragSeen.size()>=whichgenPool.size()){
+				dLog<<"Not enough valid candidate fragments in "<<whichPool<<" Pool for provided parameters. Please try running again with/without changing parameters!!"<<std::endl;
+				break;
+			}
+			//check repeat overlap'
+			//RE fragment start
+			if(checkDistFlag){
+				int takeTSS=(whichgenPool[currIndex].start + whichgenPool[currIndex].end)/2;
+				int left_res, right_res; 	
+				bool passed_upstream = false, passed_downstream = false;
+            
+				left_res = CheckDistanceofProbetoTSS(dpnII, whichgenPool[currIndex].chr, takeTSS, whichgenPool[currIndex].start, 0);
+				right_res = CheckDistanceofProbetoTSS(dpnII, whichgenPool[currIndex].chr, takeTSS, whichgenPool[currIndex].end, 1);
+					
+				passed_upstream = CheckRESite(dpnII, whichgenPool[currIndex].chr, takeTSS, left_res, 0, repeatTrees, ifRep, ifMap);
+				passed_downstream = CheckRESite(dpnII, whichgenPool[currIndex].chr, takeTSS, right_res, 1, repeatTrees, ifRep, ifMap);
+							
+				if (passed_upstream && passed_downstream){
+					//write to file	 - 2 probes for each fragment
+					if(chrToIndex.find(whichgenPool[currIndex].chr)!=chrToIndex.end())
+						chrToIndex[whichgenPool[currIndex].chr].push_back(negProbe(left_res, right_res, "NegCtrl_"+whichPool+std::to_string(total+1)));
+					else{
+						std::vector<negProbe> temp;
+						temp.push_back(negProbe(left_res, right_res, "NegCtrl_"+whichPool+std::to_string(total+1)));
+						chrToIndex.emplace(whichgenPool[currIndex].chr, temp);
+					}
+					summaryfile << whichgenPool[currIndex].chr << '\t'  << whichgenPool[currIndex].start << '\t' << whichgenPool[currIndex].end << '\t' << "NegCtrl_"<<whichPool<<total+1 << '\t'<<"."<<'\t'<<"+"<<'\t' << "NegCtrl_"<<whichPool<<total+1 << '\t'<< "Neg_Ctrl"<< std::endl;
+					++loopIndex;
+					++total;
+					fragSelected.push_back(currIndex);
+				}
+			}
+		}
 	}
-	if(!ifRep && ifMap){
-		overlaprepeats = 0;
-		mappability = BigWigSummary(chr, probeStart, probeEnd);
-	}
-	if(ifRep && ifMap){
-		overlaprepeats = repeat_trees.FindOverlaps(chr, probeStart, probeEnd);
-		mappability = BigWigSummary(chr, probeStart, probeEnd);
-	}
-	
-    		
-	if(overlaprepeats > repOverlapExtent || mappability < mapThreshold ){
-		return false;
-	}
-	else 
-		return true;
-    
-    
 }
 
 void NegativeProbeDesign::WritetoFile(bioioMod& getSeq, PrDes::RENFileInfo& reInfo){
@@ -494,13 +681,13 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq, PrDes::RENFileInfo& reIn
 		for(auto ind : it->second){
 			//left side
 			
-			probeStart = ( ind.start ); /////check 1 based 0 based
+			probeStart = ( ind.start+1 ); /////check 1 based 0 based
 			probeEnd =probeStart+ProbeLen;
 			side="L";
 			
 			outfile  << it -> first  << '\t' << "." << '\t' <<"probe"<<'\t';
     
-			outfile <<probeStart << '\t' << probeEnd-1 << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
+			outfile <<probeStart+1 << '\t' << probeEnd << '\t'<< "." << '\t'<< "." << '\t'<< "." << '\t'; // to adjust for 1-based coords
 			
 			outfile << "Name="<< ind.name <<"; " <<"transcriptid="<< "none"<<"; " << "side="<<side<<"; "<<"target="<<target<<"; "<<"design="<<designName<<"; "<< "featuresinvicinity=";
           
@@ -512,7 +699,7 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq, PrDes::RENFileInfo& reIn
 			
 			outFasFile<<ind.name<<'\t'<< it->first<<"_"<<probeStart<<'\t'<<getFas<<'\t'<<"1"<<'\t'<<"+"<<'\t'<<it->first<<":"<<probeStart<<"-"<<probeEnd-1<<std::endl;
 			
-			write2ProbesBedFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd-1<<'\t'<<ind.name<<std::endl;
+			write2ProbesBedFile<<it->first<<'\t'<<probeStart-1<<'\t'<<probeEnd-1<<'\t'<<ind.name<<std::endl;
 			
 			//right side
 			probeEnd=( ind.end + reRightCut );
@@ -533,7 +720,7 @@ void NegativeProbeDesign::WritetoFile(bioioMod& getSeq, PrDes::RENFileInfo& reIn
 			
 			outFasFile<<ind.name<<'\t'<< it->first<<"_"<<probeStart+1<<'\t'<<getFas<<'\t'<<"1"<<'\t'<<"+"<<'\t'<<it->first<<":"<<probeStart+1<<"-"<<probeEnd<<std::endl;
 			
-			write2ProbesBedFile<<it->first<<'\t'<<probeStart+1<<'\t'<<probeEnd<<'\t'<<ind.name<<std::endl;
+			write2ProbesBedFile<<it->first<<'\t'<<probeStart<<'\t'<<probeEnd<<'\t'<<ind.name<<std::endl;
 		}
 	}
 }

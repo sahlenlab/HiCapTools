@@ -55,6 +55,8 @@ protected:
 	double mapThreshold;
 	int repOverlapExtent;
 	int BUFSIZE;
+	int MaxDistancetoTSS;
+	int minDistToTSS;
 	struct BaseProbe{
 		std::string chr;
 		int start;
@@ -66,12 +68,6 @@ protected:
 	
 	bool CheckFragmentSize(RESitesClass &, std::string, int, int);
     double BigWigSummary(std::string, int, int);   
-    
-private:
-	
-	int MaxDistancetoTSS;
-	int minDistToTSS;
-	
     bool CheckRESite(RESitesClass&, std::string, int, int&, bool, Repeats&, bool, bool);
     bool createNewEntry(std::unordered_map<int, PrDes::REposStruct >&, std::unordered_map<int, PrDes::REposStruct >&, int, std::string, int,bool);
     int CheckREsiteAroundProbe(RESitesClass&, std::string, int, int);

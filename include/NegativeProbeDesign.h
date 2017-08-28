@@ -40,13 +40,14 @@ public:
 	std::map< std::string, IntervalTree <std::string> > geneIntTree;
     std::map< std::string, IntervalTree <std::string> > exonIntTree;
     std::map< std::string, IntervalTree <std::string> > regulRegIntTree;
+    std::map< std::string, IntervalTree <std::string> > extraPromTree;
     
-    std::vector<PrDes::FeatureStruct> intergenicPool;
-    std::vector<PrDes::FeatureStruct> exonPool;
+    std::map<std::string, std::vector<PrDes::FeatureStruct>> intergenicPool;
+    std::map<std::string, std::vector<PrDes::FeatureStruct>> exonPool;
     std::vector<PrDes::FeatureStruct> intronPool;
 
-    void InitialiseDesign(ProbeFeatureClass&, std::string, std::string, bool, int, std::string, std::string, int, PrDes::RENFileInfo&, int, std::string, int, int);
-    int ConstructNegativeControlProbes(int, std::string,  Repeats);
+    int InitialiseDesign(ProbeFeatureClass&, std::string, std::string, bool, int, std::string, std::string, int, PrDes::RENFileInfo&, int, std::string, int, int, std::string, int, int);
+    int ConstructNegativeControlProbes(int, std::string,  Repeats&, PrDes::RENFileInfo&, RESitesClass&);
     void WritetoFile(bioioMod&, PrDes::RENFileInfo&);
     NegativeProbeDesign(OutStream& dlog) : DesignClass (dlog) {}
     
@@ -60,15 +61,16 @@ private:
 	
 	std::map <std::string, std::vector<negProbe>> chrToIndex;
 	
-	int minREfragLen, distforbidIntergenic, distforbidReg;
+	int distforbidIntergenic, distforbidReg, distforbidProm;
 	bool ifExistRegRegionFile;
     std::string fileName, summaryFileName, designName, genAssem, fasFileName, write2ProbesBedFileName;
     bool ifRep, ifMap;
+    std::map<std::string, int> numProbesPerChr;
     
     void ConstructPools(std::string, ProbeFeatureClass&);
     std::string FindOverlaps( std::map< std::string, IntervalTree <std::string> >& , std::string, unsigned long int, unsigned long int);
-    void chooseRandomProbesFromPool(int, std::vector<PrDes::FeatureStruct>&, Repeats&, std::ofstream &, std::string, std::ofstream &);
-    bool CheckRepeatOverlaps(std::string, int&, bool, Repeats&);
+    void chooseRandomProbesFromPool(int, std::map<std::string, std::vector<PrDes::FeatureStruct>>&, Repeats&, std::ofstream &, std::string, std::ofstream &, int, RESitesClass&);
+    void chooseRandomProbesFromPool(int, std::vector<PrDes::FeatureStruct>&, Repeats&, std::ofstream &, std::string, std::ofstream &, int, RESitesClass&);
     
 };
 

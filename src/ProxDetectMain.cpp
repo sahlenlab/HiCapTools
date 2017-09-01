@@ -626,7 +626,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		Interactions.CalculatePvalAndPrintInteractionsProbeProbe(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo);//Print all same type of interactions
 		Interactions.CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo); //Print all same type of interactions
 	}
-	
+	log<<"Printing Background Values!!"<<std::endl;
 	//Print out background values
 	if(CALCULATE_P_VALUES){
 		for(auto it=background.begin(); it!=background.end(); ++it){
@@ -634,6 +634,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		}
 	}
 	
+	log<<"Execution Complete...................."<<std::endl;
 	return 1;
 
 }

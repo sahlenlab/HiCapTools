@@ -109,10 +109,10 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 	
     outf1 << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_ID" << '\t' << "Probe_ID" << '\t' << "Feature Chr" << '\t' << "Feature Start" << '\t' << "Feature End" << '\t' << "Annotation" << '\t' <<  "Strand" << '\t';
     
-    outf1 << "Interactor Chr" << '\t' << "Interactor Start" << '\t' << "Interactor End" << '\t' << "distance" << '\t';
+    outf1 << "Interactor Chr" << '\t' << "Interactor Start" << '\t' << "Interactor End" << '\t' << "distance" ;
     
 	for (int e = 0; e < NumberofExperiments; ++e)
-		outf1 << ExperimentNames[e] << "_SuppPairs" << '\t' << ExperimentNames[e] << "_p_value" ;
+		outf1 << '\t'<< ExperimentNames[e] << "_SuppPairs" << '\t' << ExperimentNames[e] << "_p_value" ;
     outf1 << std::endl;
 
     std::map<std::string, FeatureStruct>::iterator featiter;

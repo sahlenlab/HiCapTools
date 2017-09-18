@@ -258,14 +258,14 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 				outf2 << featiter->second.chr << ':' << wStart << '-' << wEnd<< '\t'<< featiter->second.chr<<':' << it->first << '-' << it->second.refragend << '\t';
                
                
-                outf1 << it->second.distance << '\t';
+                outf1 << it->second.distance;
                 
                 //WashU
                 double avgscore=0;
                 
                 for (int e = 0; e < NumberofExperiments; ++e){
                     
-                    outf1 << it->second.paircount[e] << '\t' << it->second.p_val[e] ;
+                    outf1 << '\t' << it->second.paircount[e] << '\t' << it->second.p_val[e] ;
                     
                     //calculate washU score
                     avgscore = avgscore + (it->second.paircount[e]/double(NumberofExperiments));
@@ -318,13 +318,13 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 							dEnd= itt->second.refragend;	
 						}
 						
-						outf2 << featiter->second.chr << ':' << wStart << '-' << wEnd<< '\t'<< itx->maptochrname<<':' << dStart << '-' << dEnd << '\t';
+						outf2 << featiter->second.chr << ':' << wStart << '-' << wEnd<< '\t'<< itx->maptochrname<<':' << dStart << '-' << dEnd ;
 						
 						//WashU
 						double avgscore=0;
 						
 						for (int e = 0; e < NumberofExperiments; ++e){
-							outf1 << itt->second.paircount[e] << '\t' << -1 ;
+							outf1 << '\t'<< itt->second.paircount[e] << '\t' << -1 ;
 							
 							//calculate washU score
 							avgscore = avgscore + (itt->second.paircount[e]/double(NumberofExperiments));
@@ -389,7 +389,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
     outf3 << "abs(Distance)";
 
     for (int e = 0; e < NumberofExperiments; ++e)
-        outf3 << '\t' << ExperimentNames[e] << "_SuppPairs" << ExperimentNames[e] << "_p_value";
+        outf3 << '\t' << ExperimentNames[e] << "_SuppPairs"<< '\t' << ExperimentNames[e] << "_p_value";
     outf3 << std::endl;
 	std::vector< FeattoFeatSignalStruct >::const_iterator itff; //first: REpos, second: signal
 	std::string f;
@@ -455,18 +455,18 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
                 bin=0;
                 flag=0;
                 if(featiter->second.chr == featiter2->second.chr){
-                    outf3 << abs(featiter->second.start - featiter2->second.start) << '\t';
+                    outf3 << abs(featiter->second.start - featiter2->second.start) ;
                     bin=abs(featiter->second.start - featiter2->second.start) / BinSizeProbeProbe;
                     flag=1;   
 				}
                 else
-                    outf3 << -1 << '\t';
+                    outf3 << -1 ;
                     
                 //WashU
 				double avgscore=0;
 				
                 for (int e = 0; e < NumberofExperiments; ++e){
-                    outf3 << itff->signal[e] << '\t';
+                    outf3 << '\t' << itff->signal[e] << '\t';
                     
                     //WashU
                     if(!seen)
@@ -554,9 +554,9 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
     outf2 << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_ID" << '\t' << "Probe_ID" << '\t' << "Feature Chr" << '\t' << "Feature Start" << '\t' << "Feature End" << '\t' << "Annotation" << '\t' <<  "Strand" << '\t';
     
     
-    outf2 << "Interactor Chr" << '\t' << "Interactor Start" << '\t' << "Interactor End" << '\t' << "distance" << '\t';
+    outf2 << "Interactor Chr" << '\t' << "Interactor Start" << '\t' << "Interactor End" << '\t' << "distance" ;
     for (int e = 0; e < NumberofExperiments; ++e)
-        outf2 << ExperimentNames[e] << "_SuppPairs" << '\t' << ExperimentNames[e] << "_p_value";
+        outf2 << '\t'<< ExperimentNames[e] << "_SuppPairs" << '\t' << ExperimentNames[e] << "_p_value";
     outf2 << std::endl;
 
     std::map<std::string, FeatureStruct>::iterator featiter;
@@ -668,7 +668,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
                     
                     outf2 << featiter->second.chr << '\t' << it->first << '\t' << it->second.refragend << '\t';
                     
-                    outf2 << it->second.distance << '\t';
+                    outf2 << it->second.distance ;
                    /*** 
                     //WashU
                     outf3 << featiter->second.chr << ':' << featiter->second.start << '-' << featiter->second.end<< '\t'<< featiter->second.chr <<':' << it->first << '-' << it->second.refragend << '\t';
@@ -678,7 +678,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
                     ***/
                     for (int e = 0; e < NumberofExperiments; ++e){
                                      
-                        outf2 << it->second.paircount[e] << '\t' << it->second.p_val[e] ;
+                        outf2 << '\t'<< it->second.paircount[e] << '\t' << it->second.p_val[e] ;
                         //WashU
                         //avgscore = avgscore + (it->second.paircount[e]/double(NumberofExperiments));
                         
@@ -699,7 +699,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
                         << featiter->second.chr << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
                         << featiter->second.FeatureType << '\t' <<  featiter->second.strand << '\t';
                         
-                        outf2 << itx->maptochrname << '\t' << itt->first << '\t' << itt->second.refragend << '\t' << -1 << '\t';
+                        outf2 << itx->maptochrname << '\t' << itt->first << '\t' << itt->second.refragend << '\t' << -1 ;
                         
                         //WashU
 						//outf3 << featiter->second.chr << ':' << featiter->second.start << '-' << featiter->second.end<< '\t'<< itx->maptochrname<<':' << itt->first << '-' << itt->second.refragend << '\t';
@@ -708,7 +708,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
                        // double avgscore=0;
                         
                         for (int e = 0; e < NumberofExperiments; ++e){
-                            outf2 << itt->second.paircount[e] << '\t' << -1 ;
+                            outf2 << '\t' << itt->second.paircount[e] << '\t' << -1 ;
                             
                             //WashU
                          //   avgscore = avgscore + (itt->second.paircount[e]/double(NumberofExperiments));
@@ -783,11 +783,11 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(Pr
                     flag=1;
 				}
                 else
-                    outf4 << -1 << '\t';
+                    outf4 << -1 ;
                     
                 			    
                 for (int e = 0; e < NumberofExperiments; ++e){
-                    outf4 << itff->signal[e] << '\t';
+                    outf4 << '\t' << itff->signal[e] << '\t';
                     
                     ///////Pval calc begins
                                       					

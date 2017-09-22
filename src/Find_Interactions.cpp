@@ -107,9 +107,9 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 	std::ofstream outf2(FileName2.c_str());
     
 	
-    outf1 << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_ID" << '\t' << "Probe_ID" << '\t' << "Feature Chr" << '\t' << "Feature Start" << '\t' << "Feature End" << '\t' << "Annotation" << '\t' <<  "Strand" << '\t';
+    outf1 << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_ID" << '\t' << "Probe_ID" << '\t' << "Feature_Chr" << '\t' << "Feature_Start" << '\t' << "Feature_End" << '\t' << "Annotation" << '\t' <<  "Strand" << '\t';
     
-    outf1 << "Interactor Chr" << '\t' << "Interactor Start" << '\t' << "Interactor End" << '\t' << "distance" ;
+    outf1 << "Interactor_Chr" << '\t' << "Interactor_Start" << '\t' << "Interactor_End" << '\t' << "distance" ;
     
 	for (int e = 0; e < NumberofExperiments; ++e)
 		outf1 << '\t'<< ExperimentNames[e] << "_SuppPairs" << '\t' << ExperimentNames[e] << "_p_value" ;
@@ -291,7 +291,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 							<< featiter->second.chr << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
 							<< featiter->second.FeatureType << '\t' <<  featiter->second.strand << '\t';
                           
-						outf1 << itx->maptochrname << '\t' << itt->first << '\t' << itt->second.refragend << '\t' << -1 << '\t';
+						outf1 << itx->maptochrname << '\t' << itt->first << '\t' << itt->second.refragend << '\t' << -1 ;
 						
 						//WashU
 						int wStart, wEnd;
@@ -551,10 +551,9 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
     washUFileName.append(".txt");
     std::ofstream outf3(washUFileName.c_str());
     ***/
-    outf2 << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_ID" << '\t' << "Probe_ID" << '\t' << "Feature Chr" << '\t' << "Feature Start" << '\t' << "Feature End" << '\t' << "Annotation" << '\t' <<  "Strand" << '\t';
+    outf2 << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_ID" << '\t' << "Probe_ID" << '\t' << "Feature_Chr" << '\t' << "Feature_Start" << '\t' << "Feature_End" << '\t' << "Annotation" << '\t' <<  "Strand" << '\t';
     
-    
-    outf2 << "Interactor Chr" << '\t' << "Interactor Start" << '\t' << "Interactor End" << '\t' << "distance" ;
+    outf2 << "Interactor_Chr" << '\t' << "Interactor_Start" << '\t' << "Interactor_End" << '\t' << "distance" ;
     for (int e = 0; e < NumberofExperiments; ++e)
         outf2 << '\t'<< ExperimentNames[e] << "_SuppPairs" << '\t' << ExperimentNames[e] << "_p_value";
     outf2 << std::endl;

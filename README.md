@@ -371,7 +371,6 @@ This file is required as input for the `ProximityDetector`. This should be in th
     2. Probe region 2: Target feature, location in chromosome, type of probe
     3. Proximity : Distance between interacting fragments, and Supporting pairs and p-value from each input experiment file.
     
- * Pairwise Interaction files : The files whose name is in the format 'BaseFileName.AssemblyVer.chrN.Proximities.Probe_XXXX.WashU.date.txt',where XXXX can be Probe or Distal, contain the proximity information in the long range interaction data format suitable for uploading to WashU browser for display.
         
 ##### III. Common
 

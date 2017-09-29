@@ -96,6 +96,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 	FileName.append(".txt");
 	std::ofstream outf1(FileName.c_str());
 	
+	/**
 	FileName2.append(BaseFileName); //washU ouput
 	FileName2.append(".");
 	FileName2.append(reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(',')));
@@ -105,7 +106,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 	FileName2.append(reInfo.currTime);
 	FileName2.append(".txt");
 	std::ofstream outf2(FileName2.c_str());
-    
+    **/
 	
     outf1 << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_ID" << '\t' << "Probe_ID" << '\t' << "Feature_Chr" << '\t' << "Feature_Start" << '\t' << "Feature_End" << '\t' << "Annotation" << '\t' <<  "Strand" << '\t';
     
@@ -239,43 +240,43 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
                       << featiter->second.FeatureType << '\t' << featiter->second.strand << '\t';
                 
                 outf1 << featiter->second.chr << '\t' << it->first << '\t' << it->second.refragend << '\t';
-               
+               /**
                //WashU
 				int wStart, wEnd;
                if(featiter->second.start > featiter->second.end){
-					wStart=featiter->second.end;
-					wEnd= featiter->second.start;	
+					wStart=featiter->second.end - 100;
+					wEnd= featiter->second.end + 100;	
 			   }
                else if(featiter->second.start == featiter->second.end){
-					wStart=featiter->second.start;
-					wEnd= featiter->second.end + 1;	
+					wStart=featiter->second.start-100;
+					wEnd= featiter->second.end + 100;	
 			   }
                else if(featiter->second.start < featiter->second.end){
-					wStart=featiter->second.start;
-					wEnd= featiter->second.end;	
+					wStart=featiter->second.start - 100;
+					wEnd= featiter->second.start + 100;	
 			   }
                
 				outf2 << featiter->second.chr << ':' << wStart << '-' << wEnd<< '\t'<< featiter->second.chr<<':' << it->first << '-' << it->second.refragend << '\t';
                
-               
+               **/
                 outf1 << it->second.distance;
                 
                 //WashU
-                double avgscore=0;
+               // double avgscore=0;
                 
                 for (int e = 0; e < NumberofExperiments; ++e){
                     
                     outf1 << '\t' << it->second.paircount[e] << '\t' << it->second.p_val[e] ;
                     
                     //calculate washU score
-                    avgscore = avgscore + (it->second.paircount[e]/double(NumberofExperiments));
+                    //avgscore = avgscore + (it->second.paircount[e]/double(NumberofExperiments));
                     
                     
                 }
                 outf1 << std::endl;
                 
                 //washU
-                outf2 << avgscore <<std::endl;
+               // outf2 << avgscore <<std::endl;
             }
 		  }
         }
@@ -293,19 +294,20 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
                           
 						outf1 << itx->maptochrname << '\t' << itt->first << '\t' << itt->second.refragend << '\t' << -1 ;
 						
+						/**
 						//WashU
 						int wStart, wEnd;
 						if(featiter->second.start > featiter->second.end){
-							wStart=featiter->second.end;
-							wEnd= featiter->second.start;	
+							wStart=featiter->second.end - 100;
+							wEnd= featiter->second.end + 100;	
 						}
 						else if(featiter->second.start == featiter->second.end){
-							wStart=featiter->second.start;
-							wEnd= featiter->second.end + 1;	
+							wStart=featiter->second.start - 100;
+							wEnd= featiter->second.end + 100;	
 						}
 						else if(featiter->second.start < featiter->second.end){
-							wStart=featiter->second.start;
-							wEnd= featiter->second.end;	
+							wStart=featiter->second.start -100;
+							wEnd= featiter->second.start + 100;	
 						}
 						
 						int dStart, dEnd;
@@ -321,19 +323,19 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 						outf2 << featiter->second.chr << ':' << wStart << '-' << wEnd<< '\t'<< itx->maptochrname<<':' << dStart << '-' << dEnd ;
 						
 						//WashU
-						double avgscore=0;
+						double avgscore=0; **/
 						
 						for (int e = 0; e < NumberofExperiments; ++e){
 							outf1 << '\t'<< itt->second.paircount[e] << '\t' << -1 ;
 							
 							//calculate washU score
-							avgscore = avgscore + (itt->second.paircount[e]/double(NumberofExperiments));
+							//avgscore = avgscore + (itt->second.paircount[e]/double(NumberofExperiments));
 							
 						}
 						outf1 << std::endl;
 						
 						//washU
-						outf2 << avgscore <<std::endl;
+						//outf2 << avgscore <<std::endl;
 					}
 				}
 			}
@@ -354,7 +356,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
 	std::string FileName3, FileNameWashU;
 	
 	//WashU
-	std::vector<std::string> seenPP;
+	//std::vector<std::string> seenPP;
 	
 	FileName3.append(BaseFileName);
     FileName3.append(".");
@@ -366,7 +368,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
 	FileName3.append(".txt");
 	
 	std::ofstream outf3(FileName3.c_str());
-	
+	/**
 	//WashU
 	FileNameWashU.append(BaseFileName);
     FileNameWashU.append(".");
@@ -378,7 +380,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
 	FileNameWashU.append(".txt");
 		
 	std::ofstream outfwu(FileNameWashU.c_str());
-
+	**/
     
 	outf3 << "RefSeqName_1" << '\t' << "TranscriptName_1" << '\t' << "Feature_ID_1" << '\t' << "Probe_ID_1" << '\t' << "FeatureChr_1" << '\t' << "FeatureStart_1" << '\t' << "FeatureEnd_1"
     << '\t' << "Annotation_1" << '\t' <<  "Strand_1" << '\t';
@@ -415,6 +417,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
                 outf3 << featiter2->second.Name << '\t' << featiter2->second.TranscriptName << '\t' << featiter2->first << '\t' << featiter2->second.probe_name << '\t'
                       << featiter2->second.chr << '\t' << featiter2->second.start << '\t' << featiter2->second.end << '\t'
                       << featiter2->second.FeatureType << '\t' << featiter2->second.strand << '\t';
+                /***
                 //WashU
                 bool seen=false;      
                 std::string constructPP = featiter2->first+":"+featiter->first;      
@@ -422,36 +425,36 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
 					seenPP.push_back(constructPP);
 					int start1, end1, start2, end2;
 					if(featiter->second.start>featiter->second.end){
-						start1=featiter->second.end;
-						end1=featiter->second.start;
+						start1=featiter->second.end - 100;
+						end1=featiter->second.end + 100;
 					}
 					else if(featiter->second.start==featiter->second.end){
-						start1=featiter->second.start;
-						end1=featiter->second.end + 1;
+						start1=featiter->second.start -100;
+						end1=featiter->second.end + 100;
 					}
 					else if(featiter->second.start<featiter->second.end){
-						start1=featiter->second.start;
-						end1=featiter->second.end;
+						start1=featiter->second.start -100;
+						end1=featiter->second.start + 100;
 					}
 					
 					if(featiter2->second.start > featiter2->second.end){
-						start2=featiter2->second.end;
-						end2=featiter2->second.start;
+						start2=featiter2->second.end -100;
+						end2=featiter2->second.end + 100;
 					}
 					else if(featiter2->second.start==featiter2->second.end){
-						start2=featiter2->second.start;
-						end2=featiter2->second.end + 1;
+						start2=featiter2->second.start - 100;
+						end2=featiter2->second.end + 100;
 					}
 					else if(featiter2->second.start < featiter2->second.end){
-						start2=featiter2->second.start;
-						end2=featiter2->second.end;
+						start2=featiter2->second.start -100;
+						end2=featiter2->second.start + 100;
 					}
 					
 					outfwu<< featiter->second.chr << ':' << start1 << '-' << end1<< '\t'<< featiter2->second.chr<<':' << start2 << '-' << end2 << '\t';
 				} 
 				else 
 					seen = true;
-                
+                ***/
                 bin=0;
                 flag=0;
                 if(featiter->second.chr == featiter2->second.chr){
@@ -463,14 +466,14 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
                     outf3 << -1 ;
                     
                 //WashU
-				double avgscore=0;
+				//double avgscore=0;
 				
                 for (int e = 0; e < NumberofExperiments; ++e){
                     outf3 << '\t' << itff->signal[e] << '\t';
                     
                     //WashU
-                    if(!seen)
-						avgscore = avgscore + (itff->signal[e]/double(NumberofExperiments));
+                  //  if(!seen)
+					//	avgscore = avgscore + (itff->signal[e]/double(NumberofExperiments));
                     
                     ///////Pval calc begins
                                       					
@@ -511,8 +514,8 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
                 outf3 << std::endl;
                 
                 //WashU
-                if(!seen)
-					outfwu<<  avgscore<<std::endl;
+               // if(!seen)
+				//	outfwu<<  avgscore<<std::endl;
             }
   
         }
@@ -539,18 +542,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
     FileName2.append(".txt");
     std::ofstream outf2(FileName2.c_str());
     
-    /***
-    //WashU
-    washUFileName.append(BaseFileName);
-    washUFileName.append(".");
-    washUFileName.append(reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(',')));
-	washUFileName.append(".");
-    washUFileName.append(whichchr);
-    washUFileName.append(".Proximities.Probe_Distal.NegCtrls.WashU.");
-    washUFileName.append(reInfo.currTime);
-    washUFileName.append(".txt");
-    std::ofstream outf3(washUFileName.c_str());
-    ***/
+
     outf2 << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_ID" << '\t' << "Probe_ID" << '\t' << "Feature_Chr" << '\t' << "Feature_Start" << '\t' << "Feature_End" << '\t' << "Annotation" << '\t' <<  "Strand" << '\t';
     
     outf2 << "Interactor_Chr" << '\t' << "Interactor_Start" << '\t' << "Interactor_End" << '\t' << "distance" ;
@@ -668,23 +660,15 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
                     outf2 << featiter->second.chr << '\t' << it->first << '\t' << it->second.refragend << '\t';
                     
                     outf2 << it->second.distance ;
-                   /*** 
-                    //WashU
-                    outf3 << featiter->second.chr << ':' << featiter->second.start << '-' << featiter->second.end<< '\t'<< featiter->second.chr <<':' << it->first << '-' << it->second.refragend << '\t';
-                    
-                    //WashU
-					double avgscore=0;
-                    ***/
+  
                     for (int e = 0; e < NumberofExperiments; ++e){
                                      
                         outf2 << '\t'<< it->second.paircount[e] << '\t' << it->second.p_val[e] ;
-                        //WashU
-                        //avgscore = avgscore + (it->second.paircount[e]/double(NumberofExperiments));
+                        
                         
                     }
                     outf2 << std::endl;
-                    //WashU
-                    //outf3 << avgscore<<std::endl;
+                    
                 }
             }
         }
@@ -700,22 +684,14 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
                         
                         outf2 << itx->maptochrname << '\t' << itt->first << '\t' << itt->second.refragend << '\t' << -1 ;
                         
-                        //WashU
-						//outf3 << featiter->second.chr << ':' << featiter->second.start << '-' << featiter->second.end<< '\t'<< itx->maptochrname<<':' << itt->first << '-' << itt->second.refragend << '\t';
                         
-                        //WashU
-                       // double avgscore=0;
                         
                         for (int e = 0; e < NumberofExperiments; ++e){
                             outf2 << '\t' << itt->second.paircount[e] << '\t' << -1 ;
                             
-                            //WashU
-                         //   avgscore = avgscore + (itt->second.paircount[e]/double(NumberofExperiments));
                             
                         }
                         outf2 << std::endl;
-                        //WashU
-						//outf3 << avgscore<<std::endl;
                     }
                 }
             }

@@ -54,6 +54,33 @@ int main(int argc, const char * argv[]) {
     }
     
     whichMod = argv[1];
+    if (argc == 4 ||argc == 6 || argc == 8 || argc==10) {
+		for(int i=2; i<argc; i+=2){
+			if(std::string(argv[i])=="-o" || std::string(argv[i])=="--option"){
+				probeOption=argv[i+1];
+			}
+			else if(std::string(argv[i])=="-config"){
+				extraConfig=argv[i+1];
+			}
+			else if((std::string(argv[i])=="-c" || std::string(argv[i])=="--chr")){
+				whichChr=argv[i+1];
+			}
+			else if(std::string(argv[i])=="-m" || std::string(argv[i])=="--outputmode"){
+				statsOption=argv[i+1];
+			}
+			else if(std::string(argv[i])=="-p" || std::string(argv[i])=="--proximitytype"){
+				printOption=argv[i+1];
+			}
+			else{
+				print_usage();
+				return 1;
+			}
+		}
+	}
+	else{
+		print_usage();
+		return 1;
+	}
     
     if(whichMod=="ProbeDesigner"){
 		if (!(argc == 4 || argc == 6 || argc == 8)){
@@ -61,40 +88,27 @@ int main(int argc, const char * argv[]) {
 			return 1;
 		}
 		else{
-			for(int i=2; i<argc; i+=2){
-				if((std::string(argv[i])=="-o" || std::string(argv[i])=="--option")){
-					probeOption=argv[i+1];
-					if(probeOption=="FeatureProbes" && argc <= 4){
-						print_usage();
-						return 1;
-					}
-					continue;
+			if(probeOption=="FeatureProbes" && argc <= 4){
+				print_usage();
+				return 1;
+			}
+			if(probeOption!="FeatureProbes" && probeOption!="NegativeControls" ){						
+				std::cerr<<"!!Error!! Invalid argument for -o"<<std::endl;
+				print_usage();
+				return 1;
+			}
+		
+			if(probeOption=="FeatureProbes" && (argc == 6 || argc == 8) ){										
+				if(whichChr.empty()){
+					std::cerr<<"!!Error!! option 'FeatureProbes' requires input chromosome!"<<std::endl;
+					print_usage();
+					return 1;
 				}
-				if(probeOption=="FeatureProbes" && argc > 4){										
-					if((std::string(argv[i])=="-c" || std::string(argv[i])=="--chr")){
-						whichChr=argv[i+1];
-					}
-					else if(argc==8 && (std::string(argv[i])=="-config")){
-						extraConfig=argv[i+1];
-					}
-					else{
-						print_usage();
-						return 1;
-					}
-				}
-				else if(probeOption=="NegativeControls"){
-					if(argc==6 && (std::string(argv[i])=="-config")){
-						extraConfig=argv[i+1];
-					}
-					else{
-						print_usage();
-						return 1;
-					}
-				}
-				else{
-						print_usage();
-						return 1;
-				}
+			}
+			else if(probeOption=="NegativeControls"){
+				if(!whichChr.empty()){
+					std::cerr<<"!!Warning!! option 'NegativeControls' does not require input chromosome! Negative Controls will be generated for all chromosomes"<<std::endl;
+				}			
 			}
 			prde.ProbeDesignMain(whichChr, extraConfig, probeOption);
 		}
@@ -102,42 +116,34 @@ int main(int argc, const char * argv[]) {
 	}
 	
 	else if(whichMod=="ProximityDetector"){
-		if (!(argc == 8 || argc==10)) {
+		if (!(argc == 4 ||argc == 6 || argc == 8 || argc==10)) {
 			print_usage();
 			return 1;
 		}
 		else{
-			for(int i=2; i<argc; i+=2){
-				if(std::string(argv[i])=="-c" || std::string(argv[i])=="--chr"){
-					whichChr=argv[i+1];
-				}
-				else if(std::string(argv[i])=="-m" || std::string(argv[i])=="--outputmode"){
-					if(std::string(argv[i+1])=="ComputeStatsOnly" || std::string(argv[i+1]) == "PrintProximities")
-						statsOption=argv[i+1];
-					else{
-						std::cout<<"!!Error!! Invalid argument for -m"<<std::endl;
-						print_usage();
-						return 1;
+				if(statsOption=="ComputeStatsOnly"){
+					if(!whichChr.empty() || !printOption.empty()){
+						std::cerr<<"!!Warning!! mode 'ComputeStatsOnly' does not require input chromosome or proximitytype! Stats will be generated for all chromosomes and proximity types"<<std::endl;
 					}
 				}
-				else if(std::string(argv[i])=="-p" || std::string(argv[i])=="--proximitytype"){
-					if(std::string(argv[i+1])=="Neg" || std::string(argv[i+1]) == "NonNeg"||std::string(argv[i+1])=="Both")
-						printOption=argv[i+1];
-					else{
-						std::cout<<"!!Error!! Invalid argument for -p"<<std::endl;
-						print_usage();
-						return 1;
+				else if(statsOption=="PrintProximities" && (argc == 6 || argc == 8 || argc == 10)){
+					if(printOption=="Neg"){
+						if(!whichChr.empty()){
+							std::cerr<<"!!Warning!! proximitytype 'Neg' does not require input chromosome! Negative Control proximities will be generated for all chromosomes"<<std::endl;
+						}
 					}
-				}
-				else if(argc==10 && (std::string(argv[i])=="-config")){
-						extraConfig=argv[i+1];
+					else if(printOption=="NonNeg" || printOption=="Both"){
+						if(whichChr.empty()){
+							std::cerr<<"!!Error!! proximitytype 'NonNeg' or 'Both' require input chromosome!"<<std::endl;
+							print_usage();
+							return 1;
+						}
+					}
 				}
 				else{
 					print_usage();
 					return 1;
 				}
-					
-			}
 				
 		}
 		prde.ProxDetectMain(whichChr, statsOption, printOption, extraConfig);

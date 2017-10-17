@@ -535,8 +535,8 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
     FileName2.append(BaseFileName);
     FileName2.append(".");
     FileName2.append(reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(',')));
-	FileName2.append(".");
-    FileName2.append(whichchr);
+	//FileName2.append(".");
+    //FileName2.append(whichchr);
     FileName2.append(".Proximities.Probe_Distal.NegCtrls.");
     FileName2.append(reInfo.currTime);
     FileName2.append(".txt");
@@ -714,8 +714,8 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(Pr
     FileName4.append(BaseFileName);
     FileName4.append(".");
     FileName4.append(reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(',')));
-	FileName4.append(".");
-    FileName4.append(whichchr);
+	//FileName4.append(".");
+    //FileName4.append(whichchr);
     FileName4.append(".Proximities.Probe_Probe.NegCtrls.");
     FileName4.append(reInfo.currTime);
     FileName4.append(".txt");

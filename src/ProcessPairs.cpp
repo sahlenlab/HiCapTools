@@ -323,6 +323,62 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 			}
 		}
 	}
+	//------------------
+	if(StatsOption=="ComputeStatsOnly"){
+		
+		for(int i = 0; i < Design_NegCtrl[DesignName].Probes.size(); i++){
+		probeRefID = ChrNamestoRefID[Design_NegCtrl[DesignName].Probes[i].chr];
+		probeRegion.LeftRefID = probeRefID;
+		probeRegion.RightRefID = probeRefID;
+	
+		//left and right
+		if(Design_NegCtrl[DesignName].Probes[i].side=="L"){
+			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start;
+			probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end + padding;
+		}
+		else if(Design_NegCtrl[DesignName].Probes[i].side=="R"){
+			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start- padding;;
+			probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end;
+		}
+		
+		reader.SetRegion(probeRegion);
+
+		while(reader.GetNextAlignmentCore(al)){
+			++NumberofPairs;
+			pairinfo.chr1 = RefIDtoChrNames[al.RefID];
+			pairinfo.chr2 = RefIDtoChrNames[al.MateRefID];
+			pairinfo.probeid1 = i;
+			pairinfo.probeid2 = ProbeClass.FindOverlaps_NegCtrls(pairinfo.chr2, al.MatePosition, (al.MatePosition + ReadLen), DesignName);
+			feature_id1 = Design_NegCtrl[DesignName].Probes[pairinfo.probeid1].feature_id;
+                 //Find the closest RE
+            re1r = dpnII.GettheREPositions(pairinfo.chr2, (al.MatePosition), pairinfo.resites2, invalidRECoord);
+            if ( !re1r){
+                pairinfo.resites2[0] = al.MatePosition;
+                pairinfo.resites2[1] = al.MatePosition;
+            }
+     
+                
+           if((pairinfo.probeid2 != -1)){
+			   feature_id2 = Design_NegCtrl[DesignName].Probes[pairinfo.probeid2].feature_id;
+			   ++NofPairs_Both_on_Probe;
+               }
+               else{
+				   std::string checkFeat = proms.FindOverlaps(pairinfo.chr2, al.MatePosition, (al.MatePosition + ReadLen));
+				   if(checkFeat!="null"){
+					   feature_id2 = checkFeat;
+						++NofPairs_Both_on_Probe;
+					}
+					else{
+						feature_id2 = "null";
+						++NofPairs_One_on_Probe;
+					}
+			   }
+        if(NumberofPairs % 20000000 == 0)
+           bLog << NumberofPairs/1000000 << " million pairs are processed  " << BAMFILENAME << std::endl;  
+		}
+	}
+	//=-------------------------------------------	
+	}
 	if(invalidRECoord>0)
 		bLog<<"!!Warning!! Some invalid coordinates were encountered with coordinates out of chromosome boundaries and were therefore skipped. Number of Skipped coordinates:"<<invalidRECoord<<std::endl;
 	bLog << BAMFILENAME <<  "    BAM file finished" << std::endl;

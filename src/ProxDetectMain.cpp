@@ -55,6 +55,8 @@ const int coreprom_downstream = 1000;
 
 int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, std::string interactiontype, std::string extraConfig){
 	
+	if(statsOption == "ComputeStatsOnly")
+		whichchr="chrAll";
 	
 	struct Experiment{
 		std::string filepath;
@@ -261,8 +263,8 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
-					if(s.empty() && CALCULATE_P_VALUES){
-						log<<"!!Error!! : Negative Control Probe File Path is empty when Calculate p_values is Yes. It is required!" <<std::endl;
+					if(s.empty() && (CALCULATE_P_VALUES || statsOption=="ComputeStatsOnly")){
+						log<<"!!Error!! : Negative Control Probe File Path is empty when Calculate p_values is Yes or mode is ComputeStatsOnly. It is required!" <<std::endl;
 						emptyErrFlag=true;
 					}
 					NegCtrlProbeFileName = s;
@@ -333,8 +335,8 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
-					if(s.empty() && CALCULATE_P_VALUES){
-						log<<"!!Error!! : Negative Control region File Path is empty when Calculate p_values is Yes. It is required!" <<std::endl;
+					if(s.empty() && (CALCULATE_P_VALUES || statsOption=="ComputeStatsOnly")){
+						log<<"!!Error!! : Negative Control region File Path is empty when Calculate p_values is Yes or mode is ComputeStatsOnly. It is required!" <<std::endl;
 						emptyErrFlag = true;
 					}
 					negCtrlRegFile=s;
@@ -537,7 +539,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 			break;
 			
 	}
-	if(CALCULATE_P_VALUES)
+	if(CALCULATE_P_VALUES || statsOption == "ComputeStatsOnly")
 		proms.ReadFeatureAnnotation(dpnII, negCtrlRegFile, "neg_ctrl");
 		
 	log << "Reading Feature files and annotating features: Done!" << std::endl;
@@ -546,7 +548,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	
 	ProbeSet ProbeClass(log, (1+CALCULATE_P_VALUES), 0); // 1 for feature probe file, 2 if Neg ctrl probe file.
     ProbeClass.ReadProbeCoordinates(ProbeFileName, probeType, padding, false, reFileInfo);
-    if(CALCULATE_P_VALUES)	
+    if(CALCULATE_P_VALUES || statsOption == "ComputeStatsOnly")	
 		ProbeClass.ReadProbeCoordinates(NegCtrlProbeFileName, probeType, padding, true, reFileInfo);
     
     //---------------------------------------------------------------------------------
@@ -582,18 +584,19 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 			log << "Number_of_Pairs_Both_Reads_on_Probe" << '\t' << NofPairs_Both_on_Probe << std::endl;
 			log << "Number_of_Pairs_One_Read_on_Probe" << '\t' << NofPairs_One_on_Probe << std::endl;
 			log << "Number_of_Pairs_None_on_Probe" << '\t' << NofPairsNoAnn << std::endl;
-			log << "FractionofPairsOnProbe" << '\t' << (NumberofPairs)/double(totalNumberofPairs) << std::endl; 	    
+			log << "FractionofPairsOnProbe" << '\t' << (NumberofPairs)/double(totalNumberofPairs/2) << std::endl; 	    
 			totalNumberofPairs = 0; NumberofPairs = 0; NofPairs_Both_on_Probe = 0; NofPairs_One_on_Probe = 0; NofPairsNoAnn = 0;
 		}
-       	bamfile.ProcessSortedBAMFile(ProbeClass, dpnII, proximities, Exptemp.filepath, ExperimentNo, whichchr, Exptemp.designname, statsOption, proms);
+		if(interactiontype!="Neg"){
+			bamfile.ProcessSortedBAMFile(ProbeClass, dpnII, proximities, Exptemp.filepath, ExperimentNo, whichchr, Exptemp.designname, statsOption, proms);
          
-		log << "Total_Number_of_Pairs" << '\t' << totalNumberofPairs/2 << std::endl;
-		log << "Total_Number_of_Pairs on Probes" << '\t' << NumberofPairs << std::endl;
-		log << "Number_of_Pairs_Both_Reads_on_Probe" << '\t' << NofPairs_Both_on_Probe << std::endl;
-		log << "Number_of_Pairs_One_Read_on_Probe" << '\t' << NofPairs_One_on_Probe << std::endl;
-		log << "Number_of_Pairs_None_on_Probe" << '\t' << NofPairsNoAnn << std::endl;
-		log << "On_Probe_Pair_Fraction" << '\t' << (NumberofPairs)/double(totalNumberofPairs) << std::endl; 	    
-			
+			log << "Total_Number_of_Pairs" << '\t' << totalNumberofPairs/2 << std::endl;
+			log << "Total_Number_of_Pairs on Probes" << '\t' << NumberofPairs << std::endl;
+			log << "Number_of_Pairs_Both_Reads_on_Probe" << '\t' << NofPairs_Both_on_Probe << std::endl;
+			log << "Number_of_Pairs_One_Read_on_Probe" << '\t' << NofPairs_One_on_Probe << std::endl;
+			log << "Number_of_Pairs_None_on_Probe" << '\t' << NofPairsNoAnn << std::endl;
+			log << "On_Probe_Pair_Fraction" << '\t' << (NumberofPairs)/double(totalNumberofPairs/2) << std::endl; 	    
+		}
 		if(statsOption=="ComputeStatsOnly"){
 			statsFile <<  Exptemp.name << std::endl;
 			statsFile << totalNumberofPairs/2 << '\t' <<NumberofPairs << '\t' << NofPairs_Both_on_Probe<< '\t' << NofPairs_One_on_Probe<< '\t' << NofPairsNoAnn << '\t' << (NumberofPairs)/double(totalNumberofPairs) << std::endl;
@@ -609,31 +612,32 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		log << Exptemp.filepath << "     finished" << std::endl;
 	}
     
-	if(interactiontype=="Neg"){
+    if(statsOption!="ComputeStatsOnly"){
+		if(interactiontype=="Neg"){
 			
-		Interactions.CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo); //Print all same type of interactions
-		Interactions.CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo); //Print all same type of interactions
-	}
-	else if(interactiontype=="NonNeg"){
+			Interactions.CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo); //Print all same type of interactions
+			Interactions.CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo); //Print all same type of interactions
+		}
+		else if(interactiontype=="NonNeg"){
 			
-		Interactions.CalculatePvalAndPrintInteractionsProbeDistal(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo);//Print all same type of interactions
-		Interactions.CalculatePvalAndPrintInteractionsProbeProbe(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo);//Print all same type of interactions
-	}
-	else{	
+			Interactions.CalculatePvalAndPrintInteractionsProbeDistal(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo);//Print all same type of interactions
+			Interactions.CalculatePvalAndPrintInteractionsProbeProbe(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo);//Print all same type of interactions
+		}
+		else{	
 	
-		Interactions.CalculatePvalAndPrintInteractionsProbeDistal(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo);//Print all same type of interactions
-		Interactions.CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo); //Print all same type of interactions
-		Interactions.CalculatePvalAndPrintInteractionsProbeProbe(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo);//Print all same type of interactions
-		Interactions.CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo); //Print all same type of interactions
-	}
-	log<<"Printing Background Values!!"<<std::endl;
-	//Print out background values
-	if(CALCULATE_P_VALUES){
-		for(auto it=background.begin(); it!=background.end(); ++it){
-			(*it).PrintBackgroundFrequency(BinSize, BinSizeProbeProbe, reFileInfo);
+			Interactions.CalculatePvalAndPrintInteractionsProbeDistal(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo);//Print all same type of interactions
+			Interactions.CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo); //Print all same type of interactions
+			Interactions.CalculatePvalAndPrintInteractionsProbeProbe(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo);//Print all same type of interactions
+			Interactions.CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo); //Print all same type of interactions
+		}
+		log<<"Printing Background Values!!"<<std::endl;
+		//Print out background values
+		if(CALCULATE_P_VALUES){
+			for(auto it=background.begin(); it!=background.end(); ++it){
+				(*it).PrintBackgroundFrequency(BinSize, BinSizeProbeProbe, reFileInfo);
+			}
 		}
 	}
-	
 	log<<"Execution Complete...................."<<std::endl;
 	return 1;
 

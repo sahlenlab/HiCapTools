@@ -307,12 +307,12 @@ void FeatureClass::ReadFeatureAnnotation(RESitesClass& dpnIIsites, std::string T
             
             if(chrIntervals.find(tp[0].chr)!=chrIntervals.end()){
 				//chrIntervals[tp[0].chr].push_back(Interval <std::string>((isoformprs[0] - promPadding),(isoformprs[0] + promPadding), feature_id));
-				chrIntervals[tp[0].chr].push_back(Interval <std::string>((isoformprs[0]),(isoformprs[0]), feature_id));
+				chrIntervals[tp[0].chr].push_back(Interval <std::string>((isoformprs[0])- fOverlapPad,(isoformprs[0]) + fOverlapPad, feature_id));
 			}
 			else{
 				std::vector < Interval < std::string > > tempvector ;
 				//tempvector.push_back(Interval <std::string>((isoformprs[0] - promPadding),(isoformprs[0] + promPadding), feature_id));
-				tempvector.push_back(Interval <std::string>((isoformprs[0]),(isoformprs[0]), feature_id));
+				tempvector.push_back(Interval <std::string>((isoformprs[0]) - fOverlapPad,(isoformprs[0]) + fOverlapPad, feature_id));
 				chrIntervals.emplace(tp[0].chr, tempvector);
 			}
             

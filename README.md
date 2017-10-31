@@ -263,7 +263,7 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
 
 * Transcript List File for Feature probes
 
-The transcript list file must be in the BED detail 6+2 format. The file must have a single track line. The fourth column must contain the gene name and the seventh column must contain the transcript name. An example is shown below. The file MUST be sorted by gene name. The sortTranscriptFile.sh script available in the scripts directory can be used to sort the file (sh sortTranscriptFile.sh /path/to/unsortedfile).
+The transcript list file must be in the BED detail 6+2 format. The file must have a single track line. The fourth column must contain the gene name and the seventh column must contain the transcript name (which will be reported in the output file). An example is shown below. The file MUST be sorted by gene name. The sortTranscriptFile.sh script available in the scripts directory can be used to sort the file (sh sortTranscriptFile.sh /path/to/unsortedfile).
 
 ```
 track name=ExampleTranscriptList type=bedDetail description="Example TranscriptList track"
@@ -286,7 +286,7 @@ The file MUST then be SORTED by gene name and the fields separated by tabs. A so
 
 ##### SNV Files
 
-The SNV files must be in the BED detail 4+2 format. The file must have a single track line as shown in the example below.
+The SNV files must be in the BED detail 6+2 format. The file must have a single track line as shown in the example below. The description field (eigth column) will be reported in the output file.
 
 ```
 track name=SNVTrack type=bedDetail description="Example SNV track"

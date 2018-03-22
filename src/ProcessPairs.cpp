@@ -90,6 +90,7 @@ void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClas
     
     Alignment pairinfo;
     int strandcomb = 0, sc_index=0;
+    bool read1_strand, read2_strand;
     std::string feature_id1, feature_id2;
     bool re1f, re1r;
     pairinfo.resites1 = new int [2];
@@ -150,7 +151,22 @@ void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClas
 			   }
 			   
 			   if(StatsOption!="ComputeStatsOnly"){
-					proximities.RecordProximities(pairinfo, feature_id1, feature_id2, ExperimentNo);
+				   read1_strand = al.IsReverseStrand();
+				   read2_strand = al.IsMateReverseStrand();
+				   if(read1_strand == 0){
+					   if(read2_strand == 0)
+						   strandcomb = 0; // forward-forward
+						else
+							strandcomb = 1; //forward-reverse
+					}
+					else{
+						if(read2_strand == 0)
+							strandcomb = 2; // reverse-forward
+						if(read2_strand == 1)
+							strandcomb = 3; // reverse-reverse
+					}
+					sc_index = (ExperimentNo*4) + strandcomb;
+					proximities.RecordProximities(pairinfo, feature_id1, feature_id2, sc_index, ExperimentNo);
 				}
         if(NumberofPairs % 20000000 == 0)
            bLog << NumberofPairs/1000000 << " million pairs are processed  " << BAMFILENAME << std::endl;  
@@ -277,7 +293,7 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 								strandcomb = 3; // reverse-reverse
 						}
 						sc_index = (ExperimentNo*4) + strandcomb;
-						proximities.RecordProximities(pairinfo, feature_id1, feature_id2, ExperimentNo);
+						proximities.RecordProximities(pairinfo, feature_id1, feature_id2, sc_index, ExperimentNo);
 					}
        
 					if(NumberofPairs % 20000000 == 0)
@@ -314,7 +330,22 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 				}
             
 				if(StatsOption!="ComputeStatsOnly"){
-					proximities.RecordProximities(pairinfo, feature_id1, feature_id2, ExperimentNo);
+					read1_strand = al.IsReverseStrand();
+					read2_strand = al.IsMateReverseStrand();
+					if(read1_strand == 0){
+						if(read2_strand == 0)
+							strandcomb = 0; // forward-forward
+						else
+							strandcomb = 1; //forward-reverse
+					}
+					else{
+						if(read2_strand == 0)
+							strandcomb = 2; // reverse-forward
+						if(read2_strand == 1)
+							strandcomb = 3; // reverse-reverse
+					}
+					sc_index = (ExperimentNo*4) + strandcomb;
+					proximities.RecordProximities(pairinfo, feature_id1, feature_id2, sc_index, ExperimentNo);
 				}
        
 				if(NumberofPairs % 20000000 == 0)

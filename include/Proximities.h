@@ -53,10 +53,10 @@ class ProximityClass{
 
 public:
 
-	void RecordProximities(Alignment, std::string, std::string, int);
-	void AnnotateDistalInteractor(std::string, std::string, std::string, int*, int);
-	void AnnotateFeatFeatInteraction(std::string, std::string, int);
-	void PopulateInteractions(std::map<int, Junction >&, int*, int);
+	void RecordProximities(Alignment, std::string, std::string, int, int);
+	void AnnotateDistalInteractor(std::string, std::string, std::string, int*, int, int);
+	void AnnotateFeatFeatInteraction(std::string, std::string, int, int);
+	void PopulateInteractions(std::map<int, Junction >&, int*, int, int);
 	void CountProximities(ProbeSet, int);
 	ProximityClass(int nOfExp) : NOFEXPERIMENTS (nOfExp) {}
 

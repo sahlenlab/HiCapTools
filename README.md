@@ -384,12 +384,13 @@ This file is required as input for the `ProximityDetector`. This should be in th
 * Probe_Distal Proximities files : The files contain information about the proximities with distal interacting regions gainst the Probe sets called from the input experiment files. They are named in the format 'BaseFileName.AssemblyVer.chrN.Proximities.Probe_Distal.date.txt'. The file with proximities from the negative control probe set will be indicated with a 'NegCtrl' in the file name. The following information is reported for each proximity
     1. Probe : Target feature, location in chromosome, type of probe
     2. Distal region : location in chromosome
-    3. Proximity : Distance between interacting fragments, and Supporting pairs and p-value from each input experiment file.
+    3. Proximity : Distance between interacting fragments, and Supporting pairs, p-value and strand combination\* from each input experiment file.
 * Probe_Probe Proximities files : The files contain information about the proximities with Probe regions against the Probe sets called from the input experiment files. These files are named in the format 'BaseFileName.AssemblyVer.chrN.Proximities.Probe_Probe.date.txt'. The file with proximities from the negative control probe set will be indicated with a 'NegCtrl' in the file name. The following information is reported for each proximity
     1. Probe region 1: Target feature, location in chromosome, type of probe
     2. Probe region 2: Target feature, location in chromosome, type of probe
-    3. Proximity : Distance between interacting fragments, and Supporting pairs and p-value from each input experiment file.
-    
+    3. Proximity : Distance between interacting fragments, and Supporting pairs, p-value and strand combination\* from each input experiment file.
+   
+   \* The strand combination (or orientation) gives the read orientations of the read pairs, that is, if the reads are on the forward or reverse strands. This means that there will be four possible combinations - forward-forward, forward-reverse, reverse-forward and reverse-reverse depending on the orientation of the first and second read pairs respectively. The ProximityDetector output files report the strand combination in the format a_b_c_d, where a gives the number of forward-forward read pair combinations,  b gives the number of forward-reverse, c the reverse-forward and d the reverse-reverse. The sum of a, b, c and d is equal to the total number of supporting pairs, which is also reported separately. The strand combination information may reveal information on how constrained the chromosome conformation is at that location.
         
 ##### III. Common
 

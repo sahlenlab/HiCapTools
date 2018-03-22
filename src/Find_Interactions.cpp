@@ -108,12 +108,13 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 	std::ofstream outf2(FileName2.c_str());
     **/
 	
-    outf1 << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_ID" << '\t' << "Probe_ID" << '\t' << "Feature_Chr" << '\t' << "Feature_Start" << '\t' << "Feature_End" << '\t' << "Annotation" << '\t' <<  "Strand" << '\t';
+    outf1 << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_ID" << '\t' 
+		<< "Feature_Chr" << '\t' << "Feature_Start" << '\t' << "Feature_End" << '\t' << "Annotation" << '\t' <<  "Strand" << '\t';
     
     outf1 << "Interactor_Chr" << '\t' << "Interactor_Start" << '\t' << "Interactor_End" << '\t' << "distance" ;
     
 	for (int e = 0; e < NumberofExperiments; ++e)
-		outf1 << '\t'<< ExperimentNames[e] << "_SuppPairs" << '\t' << ExperimentNames[e] << "_p_value" ;
+		outf1 << '\t'<< ExperimentNames[e] << "_SuppPairs" << '\t' << ExperimentNames[e] << "_p_value"  << '\t' << ExperimentNames[e] << "_StrandCombination" ;
     outf1 << std::endl;
 
     std::map<std::string, FeatureStruct>::iterator featiter;
@@ -235,7 +236,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
             
             if(it->second.reportit){
                
-                outf1 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' << featiter->second.probe_name << '\t'
+                outf1 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' 
                       << featiter->second.chr  << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
                       << featiter->second.FeatureType << '\t' << featiter->second.strand << '\t';
                 
@@ -266,7 +267,10 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
                 
                 for (int e = 0; e < NumberofExperiments; ++e){
                     
-                    outf1 << '\t' << it->second.paircount[e] << '\t' << it->second.p_val[e] ;
+                    outf1 << '\t' << it->second.paircount[e] << '\t' << it->second.p_val[e] << '\t';
+                    for(int s = 0; s < 3; ++s)
+                        outf1 << it->second.strandcombination[(e*4)+s] << "_";
+					outf1 << it->second.strandcombination[(e*4)+3];
                     
                     //calculate washU score
                     //avgscore = avgscore + (it->second.paircount[e]/double(NumberofExperiments));
@@ -288,7 +292,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 					enoughpairs = CheckSupportingPairs(itt->second.paircount, NumberofExperiments);
 					if(enoughpairs){
                     
-						outf1 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' << featiter->second.probe_name << '\t'
+						outf1 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t'
 							<< featiter->second.chr << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
 							<< featiter->second.FeatureType << '\t' <<  featiter->second.strand << '\t';
                           
@@ -326,7 +330,10 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 						double avgscore=0; **/
 						
 						for (int e = 0; e < NumberofExperiments; ++e){
-							outf1 << '\t'<< itt->second.paircount[e] << '\t' << -1 ;
+							outf1 << '\t'<< itt->second.paircount[e] << '\t' << -1 << '\t';
+							for(int s = 0; s < 3; ++s)
+								outf1 << itt->second.strandcombination[(e*4) + s] << "_";
+							outf1 << itt->second.strandcombination[(e*4) + 3];
 							
 							//calculate washU score
 							//avgscore = avgscore + (itt->second.paircount[e]/double(NumberofExperiments));
@@ -382,16 +389,18 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
 	std::ofstream outfwu(FileNameWashU.c_str());
 	**/
     
-	outf3 << "RefSeqName_1" << '\t' << "TranscriptName_1" << '\t' << "Feature_ID_1" << '\t' << "Probe_ID_1" << '\t' << "FeatureChr_1" << '\t' << "FeatureStart_1" << '\t' << "FeatureEnd_1"
+	outf3 << "RefSeqName_1" << '\t' << "TranscriptName_1" << '\t' << "Feature_ID_1" << '\t' 
+	<< "FeatureChr_1" << '\t' << "FeatureStart_1" << '\t' << "FeatureEnd_1"
     << '\t' << "Annotation_1" << '\t' <<  "Strand_1" << '\t';
     
-    outf3 << "RefSeqName_2" << '\t' << "TranscriptName_2" << '\t' << "Feature_ID_2" << '\t' << "Probe_ID_2" << '\t' << "FeatureChr_2" << '\t' << "FeatureStart_2" << '\t' << "FeatureEnd_2"
+    outf3 << "RefSeqName_2" << '\t' << "TranscriptName_2" << '\t' << "Feature_ID_2" << '\t' 
+    << "FeatureChr_2" << '\t' << "FeatureStart_2" << '\t' << "FeatureEnd_2"
     << '\t' << "Annotation_2" << '\t' <<  "Strand_2" << '\t';
    
     outf3 << "abs(Distance)";
 
     for (int e = 0; e < NumberofExperiments; ++e)
-        outf3 << '\t' << ExperimentNames[e] << "_SuppPairs"<< '\t' << ExperimentNames[e] << "_p_value";
+        outf3 << '\t' << ExperimentNames[e] << "_SuppPairs"<< '\t' << ExperimentNames[e] << "_p_value" << '\t' << ExperimentNames[e] << "_StrandCombination";
     outf3 << std::endl;
 	std::vector< FeattoFeatSignalStruct >::const_iterator itff; //first: REpos, second: signal
 	std::string f;
@@ -410,11 +419,11 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
 				
 				
 								
-                outf3 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' << featiter->second.probe_name << '\t'
+                outf3 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' 
                       << featiter->second.chr << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
                       << featiter->second.FeatureType << '\t' <<  featiter->second.strand << '\t';
                 
-                outf3 << featiter2->second.Name << '\t' << featiter2->second.TranscriptName << '\t' << featiter2->first << '\t' << featiter2->second.probe_name << '\t'
+                outf3 << featiter2->second.Name << '\t' << featiter2->second.TranscriptName << '\t' << featiter2->first << '\t' 
                       << featiter2->second.chr << '\t' << featiter2->second.start << '\t' << featiter2->second.end << '\t'
                       << featiter2->second.FeatureType << '\t' << featiter2->second.strand << '\t';
                 /***
@@ -506,10 +515,12 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
 					else
                        outf3 << "1.0";
                        
-					
                    /////Pval calc ends
-                  
-                  
+                   outf3<<"\t";
+                   for(int s=0; s<3; ++s){
+					   outf3 << itff->strandcombination[(e*4) + s] << "_";
+				   }
+				   outf3 << itff->strandcombination[(e*4) + 3];
                 }
                 outf3 << std::endl;
                 
@@ -543,11 +554,12 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
     std::ofstream outf2(FileName2.c_str());
     
 
-    outf2 << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_ID" << '\t' << "Probe_ID" << '\t' << "Feature_Chr" << '\t' << "Feature_Start" << '\t' << "Feature_End" << '\t' << "Annotation" << '\t' <<  "Strand" << '\t';
+    outf2 << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_ID" << '\t'
+    << "Feature_Chr" << '\t' << "Feature_Start" << '\t' << "Feature_End" << '\t' << "Annotation" << '\t' <<  "Strand" << '\t';
     
     outf2 << "Interactor_Chr" << '\t' << "Interactor_Start" << '\t' << "Interactor_End" << '\t' << "distance" ;
     for (int e = 0; e < NumberofExperiments; ++e)
-        outf2 << '\t'<< ExperimentNames[e] << "_SuppPairs" << '\t' << ExperimentNames[e] << "_p_value";
+        outf2 << '\t'<< ExperimentNames[e] << "_SuppPairs" << '\t' << ExperimentNames[e] << "_p_value" << '\t' << ExperimentNames[e] << "_StrandCombination";
     outf2 << std::endl;
 
     std::map<std::string, FeatureStruct>::iterator featiter;
@@ -653,7 +665,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
 				}
                 
                 if(it->second.reportit){
-                    outf2 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' << featiter->second.probe_name << '\t'
+                    outf2 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' 
                     << featiter->second.chr  << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
                     << featiter->second.FeatureType << '\t' << featiter->second.strand << '\t';
                     
@@ -663,9 +675,10 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
   
                     for (int e = 0; e < NumberofExperiments; ++e){
                                      
-                        outf2 << '\t'<< it->second.paircount[e] << '\t' << it->second.p_val[e] ;
-                        
-                        
+                        outf2 << '\t'<< it->second.paircount[e] << '\t' << it->second.p_val[e] << '\t';
+                        for(int s = 0; s < 3; ++s)
+							 outf2 << it->second.strandcombination[(e*4)+s] << "_";
+						outf2 << it->second.strandcombination[(e*4)+3];  
                     }
                     outf2 << std::endl;
                     
@@ -678,7 +691,7 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
                 for(itt = itx->junctions_ctx.begin(); itt != itx->junctions_ctx.end(); ++itt){
                     enoughpairs = CheckSupportingPairs(itt->second.paircount, NumberofExperiments);
                     if(enoughpairs){
-                        outf2 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' << featiter->second.probe_name << '\t'
+                        outf2 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' 
                         << featiter->second.chr << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
                         << featiter->second.FeatureType << '\t' <<  featiter->second.strand << '\t';
                         
@@ -687,9 +700,10 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
                         
                         
                         for (int e = 0; e < NumberofExperiments; ++e){
-                            outf2 << '\t' << itt->second.paircount[e] << '\t' << -1 ;
-                            
-                            
+                            outf2 << '\t' << itt->second.paircount[e] << '\t' << -1 << '\t';
+                            for(int s = 0; s < 3; ++s)
+								outf2 << itt->second.strandcombination[(e*4) + s] << "_";
+							outf2 << itt->second.strandcombination[(e*4) + 3];     
                         }
                         outf2 << std::endl;
                     }
@@ -721,13 +735,13 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(Pr
     FileName4.append(".txt");
     std::ofstream outf4(FileName4.c_str());
     
-    outf4<< "RefSeqName_1" << '\t' << "TranscriptName_1" << '\t' << "Feature_ID_1" << '\t' << "Probe_ID_1" << '\t' << "FeatureChr_1" << '\t' << "FeatureStart_1" << '\t' << "FeatureEnd_1" << '\t' << "Annotation_1" << '\t' <<  "Strand_1" << '\t';
+    outf4<< "RefSeqName_1" << '\t' << "TranscriptName_1" << '\t' << "Feature_ID_1" << '\t' << "FeatureChr_1" << '\t' << "FeatureStart_1" << '\t' << "FeatureEnd_1" << '\t' << "Annotation_1" << '\t' <<  "Strand_1" << '\t';
     
-    outf4 << "RefSeqName_2" << '\t' << "TranscriptName_2" << '\t' << "Feature_ID_2" << '\t' << "Probe_ID_2" << '\t' << "FeatureChr_2" << '\t' << "FeatureStart_2" << '\t' << "FeatureEnd_2" << '\t' << "Annotation_2" << '\t' <<  "Strand_2" << '\t';
+    outf4 << "RefSeqName_2" << '\t' << "TranscriptName_2" << '\t' << "Feature_ID_2" << '\t' << "FeatureChr_2" << '\t' << "FeatureStart_2" << '\t' << "FeatureEnd_2" << '\t' << "Annotation_2" << '\t' <<  "Strand_2" << '\t';
    
     outf4 << "abs(Distance)";
     for (int e = 0; e < NumberofExperiments; ++e)
-        outf4 << '\t' << ExperimentNames[e] << "_SuppPairs"<< '\t' << ExperimentNames[e]<<"_pval";
+        outf4 << '\t' << ExperimentNames[e] << "_SuppPairs"<< '\t' << ExperimentNames[e]<<"_pval" << '\t' << ExperimentNames[e]<<"_StrandCombination";
     outf4 << std::endl;
     
     std::vector< FeattoFeatSignalStruct >::const_iterator itff; //first: REpos, second: signal
@@ -740,11 +754,11 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(Pr
             f = itff->interacting_feature_id;
             auto featiter2 = Features.find(f);
             if((featiter->second.FeatureType == 3 || featiter2->second.FeatureType == 3) && featiter->second.TranscriptName != featiter2->second.TranscriptName && (abs(featiter->second.start - featiter2->second.start) >= MinimumJunctionDistance)){
-                outf4 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' << featiter->second.probe_name << '\t'
+                outf4 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t'
                 << featiter->second.chr << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
                 << featiter->second.FeatureType << '\t' <<  featiter->second.strand << '\t';
                 
-                outf4 << featiter2->second.Name << '\t' << featiter2->second.TranscriptName << '\t' << featiter2->first << '\t' << featiter2->second.probe_name << '\t'
+                outf4 << featiter2->second.Name << '\t' << featiter2->second.TranscriptName << '\t' << featiter2->first << '\t' 
                 << featiter2->second.chr << '\t' << featiter2->second.start << '\t' << featiter2->second.end << '\t'
                 << featiter2->second.FeatureType << '\t' << featiter2->second.strand << '\t';
                 
@@ -798,6 +812,10 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(Pr
                        
 					
                    /////Pval calc ends
+                   outf4 << "\t" ;
+                   for(int s = 0; s < 3; ++s)
+					   outf4 << itff->strandcombination[(e*4) + s] << "_";
+				   outf4 << itff->strandcombination[(e*4) + 3];
 
                 }
                 outf4 << std::endl;

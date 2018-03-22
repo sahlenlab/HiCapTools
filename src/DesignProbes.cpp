@@ -450,7 +450,7 @@ bool DesignClass::WritetoFile(std::ofstream &outfile, std::string chr, int chrin
 		outfile <<"; ";
 	}       
     else{
-		outfile << "none"<<"; " <<'\t';
+		outfile << "none"<<"; ";
 	}
 	
 	outfile<< "targettss="<<feats.promFeatures[values[0]].TSS<<"; "<<"distancetotss="<<disttotss<< std::endl;

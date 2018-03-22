@@ -599,7 +599,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		}
 		if(statsOption=="ComputeStatsOnly"){
 			statsFile <<  Exptemp.name << std::endl;
-			statsFile << totalNumberofPairs/2 << '\t' <<NumberofPairs << '\t' << NofPairs_Both_on_Probe<< '\t' << NofPairs_One_on_Probe<< '\t' << NofPairsNoAnn << '\t' << (NumberofPairs)/double(totalNumberofPairs) << std::endl;
+			statsFile << totalNumberofPairs/2 << '\t' <<NumberofPairs << '\t' << NofPairs_Both_on_Probe<< '\t' << NofPairs_One_on_Probe<< '\t' << NofPairsNoAnn << '\t' << (NumberofPairs)/double(totalNumberofPairs/2) << std::endl;
 		}
 		
         totalNumberofPairs = 0;

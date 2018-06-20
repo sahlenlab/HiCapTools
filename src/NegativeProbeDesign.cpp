@@ -546,7 +546,7 @@ void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::map<st
 					else
 						checkDist=whichgenPool[it->first][currIndex].start-whichgenPool[it->first][*elem].end;
 						
-					if(checkDist<50000){//hard coded value
+					if(checkDist<5000){//hard coded value
 						checkDistFlag=false;
 						break;
 					}
@@ -613,14 +613,14 @@ void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::vector
 		if(std::find(fragSeen.begin(), fragSeen.end(), currIndex)==fragSeen.end()){
 				
 			for(auto elem=fragSelected.begin(); elem < fragSelected.end(); ++elem){
-				int checkDist=50000;
+				int checkDist=5000;
 				if(whichgenPool[currIndex].chr==whichgenPool[*elem].chr){	
 					if(whichgenPool[currIndex].start<whichgenPool[*elem].start)
 						checkDist=whichgenPool[*elem].start-whichgenPool[currIndex].end;
 					else
 						checkDist=whichgenPool[currIndex].start-whichgenPool[*elem].end;
 				}	
-				if(checkDist<30000){//hard coded value
+				if(checkDist<5000){//hard coded value
 					checkDistFlag=false;
 					break;
 				}

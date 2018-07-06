@@ -59,22 +59,26 @@ void DetermineBackgroundLevels::CalculateMeanandStdRegress(std::string eName, in
         //////////Probe-distal
         if(whichProx=="ProbeDistal"){
 			for (iter = Features[feature_id].proximities.junctions.begin(); iter != Features[feature_id].proximities.junctions.end(); ++iter){
+				
 				distance = iter->first - Design_NegCtrl[DesignName].Probes[i].end;
             
 				int bin = abs(distance) / binsize;
+
+				if(iter->second.paircount[ExperimentNo] > 0){
            
-				if(bglevelsloc.mean.find(bin) == bglevelsloc.mean.end())
-					bglevelsloc.mean[bin] = iter->second.paircount[ExperimentNo];
-				else
-					bglevelsloc.mean[bin] = bglevelsloc.mean[bin] + iter->second.paircount[ExperimentNo];
+					if(bglevelsloc.mean.find(bin) == bglevelsloc.mean.end())
+						bglevelsloc.mean[bin] = iter->second.paircount[ExperimentNo];
+					else
+						bglevelsloc.mean[bin] = bglevelsloc.mean[bin] + iter->second.paircount[ExperimentNo];
                 
-				if(nofentries_perBin.find(bin) == nofentries_perBin.end()){
-					nofentries_perBin[bin] = 1;
-					signal_square[bin] = (iter->second.paircount[ExperimentNo])*(iter->second.paircount[ExperimentNo]);
-				}
-				else{
-					nofentries_perBin[bin] = nofentries_perBin[bin] + 1;
-					signal_square[bin] = (signal_square[bin] + ((iter->second.paircount[ExperimentNo])*(iter->second.paircount[ExperimentNo])));
+					if(nofentries_perBin.find(bin) == nofentries_perBin.end()){
+						nofentries_perBin[bin] = 1;
+						signal_square[bin] = (iter->second.paircount[ExperimentNo])*(iter->second.paircount[ExperimentNo]);
+					}
+					else{
+						nofentries_perBin[bin] = nofentries_perBin[bin] + 1;
+						signal_square[bin] = (signal_square[bin] + ((iter->second.paircount[ExperimentNo])*(iter->second.paircount[ExperimentNo])));
+					}
 				}
 			}
 		}
@@ -87,18 +91,20 @@ void DetermineBackgroundLevels::CalculateMeanandStdRegress(std::string eName, in
 				if((Features[feature_id].FeatureType == 3 && Features[(*iter).interacting_feature_id].FeatureType == 3) && Features[feature_id].TranscriptName != Features[(*iter).interacting_feature_id].TranscriptName && (abs(distance) >= MinimumJunctionDistance)){
             
 					int bin = abs(distance) / binsize; 
-					if(bglevelsloc.mean.find(bin) == bglevelsloc.mean.end())
-						bglevelsloc.mean[bin] = (*iter).signal[ExperimentNo];
-					else
-						bglevelsloc.mean[bin] = bglevelsloc.mean[bin] + (*iter).signal[ExperimentNo];
+					if((*iter).signal[ExperimentNo] > 0){
+						if(bglevelsloc.mean.find(bin) == bglevelsloc.mean.end())
+							bglevelsloc.mean[bin] = (*iter).signal[ExperimentNo];
+						else
+							bglevelsloc.mean[bin] = bglevelsloc.mean[bin] + (*iter).signal[ExperimentNo];
                 
-					if(nofentries_perBin.find(bin) == nofentries_perBin.end()){
-						nofentries_perBin[bin] = 1;
-						signal_square[bin] = ((*iter).signal[ExperimentNo])*((*iter).signal[ExperimentNo]);
-					}
-					else{
-						nofentries_perBin[bin] = nofentries_perBin[bin] + 1;
-						signal_square[bin] = (signal_square[bin] + (((*iter).signal[ExperimentNo])*((*iter).signal[ExperimentNo])));
+						if(nofentries_perBin.find(bin) == nofentries_perBin.end()){
+							nofentries_perBin[bin] = 1;
+							signal_square[bin] = ((*iter).signal[ExperimentNo])*((*iter).signal[ExperimentNo]);
+						}
+						else{
+							nofentries_perBin[bin] = nofentries_perBin[bin] + 1;
+							signal_square[bin] = (signal_square[bin] + (((*iter).signal[ExperimentNo])*((*iter).signal[ExperimentNo])));
+						}
 					}
 				}
 			}

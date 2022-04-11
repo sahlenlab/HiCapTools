@@ -17,7 +17,7 @@
 	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
 	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
 	HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+	CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 	OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ***/
 
@@ -151,7 +151,6 @@ bool RESitesClass::GettheREPositions(std::string chr, int pos, int* renums, int&
             REposat = posvector[i];
             REposnext = posvector[i + 1];
         }
-        //When the read coordinate overlapped RE site, it maps the read to the previous fragment
         renums[0] = REposprev;
         renums[1] = REposat;
     }

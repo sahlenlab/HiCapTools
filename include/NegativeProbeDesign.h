@@ -47,7 +47,7 @@ public:
     std::vector<PrDes::FeatureStruct> intronPool;
 
     int InitialiseDesign(ProbeFeatureClass&, std::string, std::string, bool, int, std::string, std::string, int, PrDes::RENFileInfo&, int, std::string, int, int, std::string, int, int);
-    int ConstructNegativeControlProbes(int, std::string,  Repeats&, PrDes::RENFileInfo&, RESitesClass&);
+    int ConstructNegativeControlProbes(int, std::string,  Repeats&, PrDes::RENFileInfo&, RESitesClass&,bioioMod& getSeq);
     void WritetoFile(bioioMod&, PrDes::RENFileInfo&);
     NegativeProbeDesign(OutStream& dlog) : DesignClass (dlog) {}
     
@@ -64,13 +64,13 @@ private:
 	int distforbidIntergenic, distforbidReg, distforbidProm;
 	bool ifExistRegRegionFile;
     std::string fileName, summaryFileName, designName, genAssem, fasFileName, write2ProbesBedFileName;
-    bool ifRep, ifMap;
+    bool ifRep, ifMap, ifCountNs;
     std::map<std::string, int> numProbesPerChr;
     
     void ConstructPools(std::string, ProbeFeatureClass&);
     std::string FindOverlaps( std::map< std::string, IntervalTree <std::string> >& , std::string, unsigned long int, unsigned long int);
-    void chooseRandomProbesFromPool(int, std::map<std::string, std::vector<PrDes::FeatureStruct>>&, Repeats&, std::ofstream &, std::string, std::ofstream &, int, RESitesClass&);
-    void chooseRandomProbesFromPool(int, std::vector<PrDes::FeatureStruct>&, Repeats&, std::ofstream &, std::string, std::ofstream &, int, RESitesClass&);
+    void chooseRandomProbesFromPool(int, std::map<std::string, std::vector<PrDes::FeatureStruct>>&, Repeats&, std::ofstream &, std::string, std::ofstream &, int, RESitesClass&,bioioMod& getSeq);
+    void chooseRandomProbesFromPool(int, std::vector<PrDes::FeatureStruct>&, Repeats&, std::ofstream &, std::string, std::ofstream &, int, RESitesClass&,bioioMod& getSeq);
     
 };
 

@@ -101,6 +101,7 @@ namespace PrDes{
 		int repeatOverlapExtent;
 		bool ifRepeatAvail;
 		bool ifMapAvail;
+		bool ifCountNs;
 		std::string genomeAssembly;
 		std::string fastafilepath;
 		std::string fastaindexpath;

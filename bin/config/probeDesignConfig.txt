@@ -26,6 +26,9 @@ Repeat File=/path/to/Repeat.txt
 /--The file path to the Mappability File in bigWig format(.bw). Leave the field empty if not used--/
 Mappability File=/path/to/Mappability.bw
 
+/--Use this option on if the genome is repeat-masked. This option is useful when no mappability scores are available--/
+Count Ns to remove nonunique sequences?=Yes
+
 /--The file path to the bigWigSummary executable. The path to executable for linux x86_64 included in the package is entered by default.--/
 bigWigSummary executable path=bigWig/bigWigSummary
 

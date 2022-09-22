@@ -69,6 +69,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, s
     int exonNegCtrls, intronNegCtrls, intergenNegCtrls;
     std::string ifNeg;
     bool ifRegRegion=false;
+	bool ifCountNs=false;
     std::string regRegionFile;
     PrDes::RENFileInfo reFileInfo;
     bool emptyErrFlag = false;
@@ -207,6 +208,15 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, s
 					else
 						reFileInfo.ifMapAvail=true;
 					mappabilityfile=s;
+				}
+				if(line.substr(0, line.find('=')).find("Count Ns to remove nonunique sequences?")!=std::string::npos){
+					std::string s;
+					s=line.substr(line.find('=')+1);
+					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
+					if(s=="Yes")
+						reFileInfo.ifCountNs=true;
+					else
+						reFileInfo.ifCountNs=false;
 				}
 				if(line.substr(0, line.find('=')).find("bigWigSummary executable path")!=std::string::npos){
 					std::string s;
@@ -405,6 +415,8 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, s
 		log << std::setw(75)<<"Repeat File:" << repeatfile << std::endl;
 	if(reFileInfo.ifMapAvail)
 		log << std::setw(75)<<"Mappability File:" << mappabilityfile << std::endl;
+	if(reFileInfo.ifCountNs)
+		log << std::setw(75)<<"Sequences with Ns will be removed, use a repeat-masked genome" << std::endl;		
     log << std::setw(75)<<"bigWigSummary executable path:" << bigwigsummarybinary << std::endl;
 	log << std::setw(75)<<"Probe Length:" << ProbeLen << std::endl;
 	log << std::setw(75)<<"Minimum distance between Probes:" << DistanceBetweenProbes << std::endl;
@@ -496,13 +508,13 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, s
 			//#pragma omp parallel for 
 			for(auto iChr=Features.ChrNames_proms.begin(); iChr < Features.ChrNames_proms.end(); ++iChr){
 			//for(auto &iChr: Features.ChrNames_proms){
-					designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, bigwigsummarybinary, mappabilityfile, *iChr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE, distFromTSS, DistanceBetweenProbes) ;
+					designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, getSeq, bigwigsummarybinary, mappabilityfile, *iChr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE, distFromTSS, DistanceBetweenProbes) ;
 			}
 			log << "Designing Probes: Merging all chromosome outputs!" << std::endl;
 			designProbes.MergeAllChrOutputs(Features, reFileInfo);
 		}
 		else
-			designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, bigwigsummarybinary, mappabilityfile, whichchr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE, distFromTSS, DistanceBetweenProbes) ;
+			designProbes.DesignProbes(Features, dpnIIsites, hg19repeats, getSeq, bigwigsummarybinary, mappabilityfile, whichchr, MaxDistancetoTSS, ProbeLen, reFileInfo, BUFSIZE, distFromTSS, DistanceBetweenProbes) ;
 	
 		bool isFas = designProbes.ConstructSeq(reFileInfo, getSeq, whichchr);
 	
@@ -522,9 +534,9 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, s
 		int res;
 		NegctrlProbes.InitialiseDesign(Features, transcriptfileForNegCtrl, regRegionFile, ifRegRegion, ProbeLen, bigwigsummarybinary, mappabilityfile, MaxDistancetoTSS, reFileInfo, BUFSIZE, DigestedGenomeFileName, dforbidIntergen, dforbidRegReg, transcriptfile, dforbidProm, distFromTSS);
 							
-		res = NegctrlProbes.ConstructNegativeControlProbes(exonNegCtrls, "exonic",  hg19repeats, reFileInfo, dpnIIsites);
-		res = NegctrlProbes.ConstructNegativeControlProbes(intronNegCtrls,"intronic",  hg19repeats, reFileInfo, dpnIIsites);
-		res = NegctrlProbes.ConstructNegativeControlProbes(intergenNegCtrls, "intergenic", hg19repeats, reFileInfo, dpnIIsites);
+		res = NegctrlProbes.ConstructNegativeControlProbes(exonNegCtrls, "exonic",  hg19repeats, reFileInfo, dpnIIsites,getSeq);
+		res = NegctrlProbes.ConstructNegativeControlProbes(intronNegCtrls,"intronic",  hg19repeats, reFileInfo, dpnIIsites,getSeq);
+		res = NegctrlProbes.ConstructNegativeControlProbes(intergenNegCtrls, "intergenic", hg19repeats, reFileInfo, dpnIIsites,getSeq);
 		NegctrlProbes.WritetoFile(getSeq, reFileInfo);
 		
 		log << "Designing Negative control Probes: Done!" << std::endl;

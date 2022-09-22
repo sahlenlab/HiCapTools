@@ -31,7 +31,7 @@
 #include "DesignProbes.h"
 #include <fstream>
 #include <cstdio>
-
+#include <algorithm>
 
 void DesignClass::InitialiseDesign(ProbeFeatureClass& proms, std::vector<PrDes::REPosMap>& fragmap ){
      
@@ -126,10 +126,22 @@ bool DesignClass::CheckMappability(std::string chr, int probe_start, int probe_e
 	else
 		return false;
 }
+bool DesignClass::CheckCountofNs(bioioMod& getSeq, std::string chr, int probe_start, int probe_end, bool ifCountNs){
+	if(!ifCountNs)
+		return true;
 
-bool DesignClass::CheckRESite(RESitesClass & dpnII, std::string chr, int tss, int& closest_re, bool whichside, Repeats& repeat_trees, bool ifRep, bool ifMap){
+	std::string toFas = getSeq.GetFasta(chr+":"+std::to_string(probe_start)+"-"+std::to_string(probe_end));
+	int cnt = std::count(toFas.begin(), toFas.end(), 'N');
+	if(cnt>0){
+		return false;
+	}
+	else{
+		return true;
+	}
+}
+bool DesignClass::CheckRESite(RESitesClass & dpnII, bioioMod& getSeq, std::string chr, int tss, int& closest_re, bool whichside, Repeats& repeat_trees, bool ifRep, bool ifMap, bool ifCountNs){
     
-    if(!ifRep && !ifMap){
+    if(!ifRep && !ifMap && !ifCountNs){
 		return true;
 	}
 	int probeStart, probeEnd;
@@ -150,9 +162,10 @@ bool DesignClass::CheckRESite(RESitesClass & dpnII, std::string chr, int tss, in
     
     bool checkRep = CheckRepeats(repeat_trees, chr, probeStart, probeEnd, ifRep);
     bool checkMap = CheckMappability(chr, probeStart, probeEnd, ifMap);
+	bool checkNs = CheckCountofNs(getSeq, chr,probeStart,probeEnd,ifCountNs); // For genomes no mappability or repeat files available
     bool checkFrag = CheckFragmentSize(dpnII, chr, closest_re, whichside);
        
-    if(checkRep && checkMap && checkFrag && abs(closest_re - tss) <= MaxDistancetoTSS){
+    if(checkRep && checkMap && checkNs && checkFrag && abs(closest_re - tss) <= MaxDistancetoTSS){
 		passed = true;
 	}
 	else{
@@ -176,7 +189,8 @@ bool DesignClass::CheckRESite(RESitesClass & dpnII, std::string chr, int tss, in
 					}				
 					checkRep = CheckRepeats(repeat_trees, chr, probeStart, probeEnd, ifRep);
 					checkMap = CheckMappability(chr, probeStart, probeEnd, ifMap);
-					if(checkRep && checkMap){
+					checkNs = CheckCountofNs(getSeq, chr,probeStart,probeEnd,ifCountNs);
+					if(checkRep && checkMap && checkNs){
 						passed = true;
 						break;
 					}
@@ -233,7 +247,7 @@ bool DesignClass::createNewEntry(std::unordered_map<int, PrDes::REposStruct >& t
 }
 
 
-void DesignClass::DesignProbes(ProbeFeatureClass & Feats, RESitesClass & dpnII, Repeats& repeat_trees, std::string bgwgsumbin, std::string mappabilityfilepath, std::string whichchr, int mDisttoTSS, int prlen, PrDes::RENFileInfo& reInfo, int bufSize, int dFromTSS, int minDistBetProbes){
+void DesignClass::DesignProbes(ProbeFeatureClass & Feats, RESitesClass & dpnII, Repeats& repeat_trees, bioioMod& getSeq, std::string bgwgsumbin, std::string mappabilityfilepath, std::string whichchr, int mDisttoTSS, int prlen, PrDes::RENFileInfo& reInfo, int bufSize, int dFromTSS, int minDistBetProbes){
     
     // There is only one design layer which contains both upstream and downstream designs. Each feature will have two probes if possible.
     ProbeLen = prlen;
@@ -296,8 +310,8 @@ void DesignClass::DesignProbes(ProbeFeatureClass & Feats, RESitesClass & dpnII, 
             right_res = CheckDistanceofProbetoTSS(dpnII, pIt->second.chr, pIt->second.TSS, pIt->second.closestREsitenums[1], 1);
             //last parameter is design direction not the promoter (RE on the left or right side of TSS)
 
-            passed_upstream = CheckRESite(dpnII, pIt->second.chr, pIt->second.TSS, left_res, 0, repeat_trees, reInfo.ifRepeatAvail, reInfo.ifMapAvail);
-            passed_downstream = CheckRESite(dpnII, pIt->second.chr, pIt->second.TSS, right_res, 1, repeat_trees, reInfo.ifRepeatAvail, reInfo.ifMapAvail);
+            passed_upstream = CheckRESite(dpnII, getSeq, pIt->second.chr, pIt->second.TSS, left_res, 0, repeat_trees, reInfo.ifRepeatAvail, reInfo.ifMapAvail,reInfo.ifCountNs);
+            passed_downstream = CheckRESite(dpnII, getSeq, pIt->second.chr, pIt->second.TSS, right_res, 1, repeat_trees, reInfo.ifRepeatAvail, reInfo.ifMapAvail,reInfo.ifCountNs);
             
             if (passed_upstream && passed_downstream) { //check if fragment is same and longer than ProbeLen
                 createNewEntry(OneDesign.back().Layer[it->second].repmap, OneDesign.back().Layer[it->second].repmap, it->second, pIt->first, left_res,0); 

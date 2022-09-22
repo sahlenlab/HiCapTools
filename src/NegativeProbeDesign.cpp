@@ -54,6 +54,7 @@ int NegativeProbeDesign::InitialiseDesign(ProbeFeatureClass& Features, std::stri
 	repOverlapExtent = reInfo.repeatOverlapExtent;
 	ifRep = reInfo.ifRepeatAvail;
 	ifMap = reInfo.ifMapAvail;
+	ifCountNs = reInfo.ifCountNs;
 	BUFSIZE=bufSize;
 	genAssem=reInfo.genomeAssembly;
 	summaryFileName = reInfo.desName + "."+reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','))+".NegCtrlRegions_" +reInfo.REName+"."+reInfo.currTime+".bed";
@@ -399,7 +400,7 @@ std::string NegativeProbeDesign::FindOverlaps( std::map< std::string, IntervalTr
 }
 
 
-int NegativeProbeDesign::ConstructNegativeControlProbes(int nCtrls,std::string nCtrlType,  Repeats& repeatTrees, PrDes::RENFileInfo& reInfo, RESitesClass& dpnII){
+int NegativeProbeDesign::ConstructNegativeControlProbes(int nCtrls,std::string nCtrlType,  Repeats& repeatTrees, PrDes::RENFileInfo& reInfo, RESitesClass& dpnII,bioioMod& getSeq){
 	
 	if(nCtrls<=0)
 		return 1;
@@ -496,7 +497,7 @@ int NegativeProbeDesign::ConstructNegativeControlProbes(int nCtrls,std::string n
 			dLog<<"!!!Error!!! The provided number of exonic negative control probes required are greater than the number of available candidate RE fragments. No exonic negative control probes designed"<<std::endl;
 			return 0;
 		}
-		chooseRandomProbesFromPool(nCtrls, exonPool, repeatTrees, outFile, "Exon", summaryFile, poolSize, dpnII);
+		chooseRandomProbesFromPool(nCtrls, exonPool, repeatTrees, outFile, "Exon", summaryFile, poolSize, dpnII, getSeq);
 	}
 	else if(nCtrlType=="intronic" && nCtrls>0){		
 		poolSize=intronPool.size();
@@ -504,7 +505,7 @@ int NegativeProbeDesign::ConstructNegativeControlProbes(int nCtrls,std::string n
 			dLog<<"!!!Error!!! The provided number of intronic negative control probes required are greater than the number of available candidate RE fragments. No intronic negative control probes designed"<<std::endl;
 			return 0;
 		}
-			chooseRandomProbesFromPool(nCtrls, intronPool, repeatTrees, outFile, "Intron", summaryFile, poolSize, dpnII);
+			chooseRandomProbesFromPool(nCtrls, intronPool, repeatTrees, outFile, "Intron", summaryFile, poolSize, dpnII, getSeq);
 	}
 	else if(nCtrlType=="intergenic" && nCtrls>0){
 		for(auto it=intergenicPool.begin(); it!=intergenicPool.end();++it){
@@ -514,12 +515,12 @@ int NegativeProbeDesign::ConstructNegativeControlProbes(int nCtrls,std::string n
 			dLog<<"!!!Error!!! The provided number of intergenic negative control probes required are greater than the number of available candidate RE fragments. No intergenic negative control probes designed"<<std::endl;
 			return 0;
 		}
-		chooseRandomProbesFromPool(nCtrls, intergenicPool, repeatTrees, outFile, "Intergen", summaryFile, poolSize, dpnII);
+		chooseRandomProbesFromPool(nCtrls, intergenicPool, repeatTrees, outFile, "Intergen", summaryFile, poolSize, dpnII, getSeq);
 	}
 	return 1;
 }
 
-void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::map<std::string, std::vector<PrDes::FeatureStruct>>& whichgenPool, Repeats& repeatTrees, std::ofstream &outfile, std::string whichPool, std::ofstream &summaryfile, int poolSize, RESitesClass& dpnII){
+void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::map<std::string, std::vector<PrDes::FeatureStruct>>& whichgenPool, Repeats& repeatTrees, std::ofstream &outfile, std::string whichPool, std::ofstream &summaryfile, int poolSize, RESitesClass& dpnII, bioioMod& getSeq){
 	
 	bool leftEnd, rightEnd;
 	int loopIndex, total=0;
@@ -567,8 +568,8 @@ void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::map<st
 					left_res = CheckDistanceofProbetoTSS(dpnII, it->first, takeTSS, whichgenPool[it->first][currIndex].start, 0);
 					right_res = CheckDistanceofProbetoTSS(dpnII, it->first, takeTSS, whichgenPool[it->first][currIndex].end, 1);
 					
-					passed_upstream = CheckRESite(dpnII, it->first, takeTSS, left_res, 0, repeatTrees, ifRep, ifMap);
-					passed_downstream = CheckRESite(dpnII, it->first, takeTSS, right_res, 1, repeatTrees, ifRep, ifMap);
+					passed_upstream = CheckRESite(dpnII, getSeq, it->first, takeTSS, left_res, 0, repeatTrees, ifRep, ifMap, ifCountNs);
+					passed_downstream = CheckRESite(dpnII, getSeq, it->first, takeTSS, right_res, 1, repeatTrees, ifRep, ifMap, ifCountNs);
 					
 									
 					if (passed_upstream && passed_downstream){
@@ -591,7 +592,7 @@ void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::map<st
 	}
 }
 
-void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::vector<PrDes::FeatureStruct>& whichgenPool, Repeats& repeatTrees, std::ofstream &outfile, std::string whichPool, std::ofstream &summaryfile, int poolSize, RESitesClass& dpnII){
+void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::vector<PrDes::FeatureStruct>& whichgenPool, Repeats& repeatTrees, std::ofstream &outfile, std::string whichPool, std::ofstream &summaryfile, int poolSize, RESitesClass& dpnII, bioioMod& getSeq){
 	
 	bool leftEnd, rightEnd;
 	int loopIndex, total=0;
@@ -641,8 +642,8 @@ void NegativeProbeDesign::chooseRandomProbesFromPool(int nProbesReq, std::vector
 				left_res = CheckDistanceofProbetoTSS(dpnII, whichgenPool[currIndex].chr, takeTSS, whichgenPool[currIndex].start, 0);
 				right_res = CheckDistanceofProbetoTSS(dpnII, whichgenPool[currIndex].chr, takeTSS, whichgenPool[currIndex].end, 1);
 					
-				passed_upstream = CheckRESite(dpnII, whichgenPool[currIndex].chr, takeTSS, left_res, 0, repeatTrees, ifRep, ifMap);
-				passed_downstream = CheckRESite(dpnII, whichgenPool[currIndex].chr, takeTSS, right_res, 1, repeatTrees, ifRep, ifMap);
+				passed_upstream = CheckRESite(dpnII, getSeq, whichgenPool[currIndex].chr, takeTSS, left_res, 0, repeatTrees, ifRep, ifMap, ifCountNs);
+				passed_downstream = CheckRESite(dpnII, getSeq, whichgenPool[currIndex].chr, takeTSS, right_res, 1, repeatTrees, ifRep, ifMap, ifCountNs);
 							
 				if (passed_upstream && passed_downstream){
 					//write to file	 - 2 probes for each fragment

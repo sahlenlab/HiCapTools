@@ -33,16 +33,18 @@
 
 #include "ProbeDataStructs.h"
 #include "OutStream.h"
+#include <utility>
 
 class RESitesClass{
 public :
 	int span;
 	std::vector <std::string> chr_names;
-	std::unordered_map< std::string, int > chroffsets_indexfile;
-	std::unordered_map<std::string, int > chr_starts; // first RE site
-	std::unordered_map<std::string, int > chr_ends; // last RE site
-	std::vector < PrDes::REindexes > indexes;
-	std::vector < int > posvector;
+        std::unordered_map< std::string, int > chroffsets_indexfile;
+        std::unordered_map<std::string, int > chr_starts; // first RE site
+        std::unordered_map<std::string, int > chr_ends; // last RE site
+        std::unordered_map<std::string, std::pair<size_t, size_t>> chr_ranges; // offset and count of sites per chr
+        std::vector < PrDes::REindexes > indexes;
+        std::vector < int > posvector;
 	
 	RESitesClass(OutStream& rlog) : rLog (rlog) {}
 	

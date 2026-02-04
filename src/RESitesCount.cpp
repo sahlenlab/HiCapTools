@@ -29,147 +29,151 @@
 //
 
 #include "RESitesCount.h"
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 
 void RESitesClass::InitialiseVars(std::string DigestedGenomeFileName){
 
+    posvector.clear();
+    chr_names.clear();
+    indexes.clear();
+    chroffsets_indexfile.clear();
+    chr_starts.clear();
+    chr_ends.clear();
+    chr_ranges.clear();
+
     std::string s;
     s.append(DigestedGenomeFileName);
-	std::ifstream RESitesf(s.c_str());
-    
+    std::ifstream RESitesf(s.c_str());
+
     rLog << "Digest File is " << s << std::endl;
-    
-	s.clear();
 
-	std::string chrname, chrp, temp;
-	int pos, chrstart; 
-	int startpos;
-	int span = 1000000; // Window size
-	
-	//For indexing
-	rLog << "Initialising RE site Class..." << std::endl;
+    s.clear();
 
-	bool f=0;
+    std::string chrp, temp;
+    int pos;
+    span = 1000000; // Window size
 
-	std::getline(RESitesf,temp); //get the header row1
-	std::getline(RESitesf,temp); //get the header row
-	
-	
-	RESitesf >> chrp >> temp >> pos >> temp >> temp >> temp >> temp; // Read the first line
-	
-	chrname = chrp; // get the chr name outside the loop
-	chr_names.push_back(chrp);
-	chrstart = (pos ); // chromosome start
-	indexes.push_back(PrDes::REindexes());
-	chroffsets_indexfile[chrp] = (indexes.size()-1);
-	chr_starts[chrp] = chrstart;
-	
-	while(!(RESitesf.eof())){
-		int binstart = (pos);
-		int binend = binstart + span;
-		startpos = posvector.size();
-		while( chrname == chrp && (pos >= binstart && pos <= binend)){
-			posvector.push_back(pos );
-			RESitesf >> chrp >> temp >> pos >> temp >> temp >> temp >> temp;
-			if(RESitesf.eof()){
-				f = 1; //End of file
-				break;
-			}
-		}
-		
-		if(indexes.back().binend.empty())
-			indexes.back().binstart.push_back(chrstart);
-		else
-			indexes.back().binstart.push_back((indexes.back().binend.back())+1);
-		
-		indexes.back().binend.push_back((posvector.back() + 1));
-		indexes.back().offset.push_back(startpos);
-		indexes.back().count.push_back((posvector.size()-startpos));
-		
-		if((chrname != chrp) || f ){
-			chr_ends[chrname] = indexes.back().binend.back();
-			indexes.push_back(PrDes::REindexes());
-			chroffsets_indexfile[chrp] = (indexes.size()-1);
-			chrname = chrp;
-			chrstart = (pos);
-			chr_names.push_back(chrp);
-			chr_starts[chrp] = chrstart;
-		}
-	}
-	rLog << "RE site class initialised " << std::endl;
+    //For indexing
+    rLog << "Initialising RE site Class..." << std::endl;
+
+    std::getline(RESitesf,temp); //get the header row1
+    std::getline(RESitesf,temp); //get the header row
+
+    std::string currentChr;
+    std::vector<int> positions;
+
+    auto finalizeChromosome = [&](const std::string& chr, const std::vector<int>& chrPositions){
+        if(chr.empty() || chrPositions.empty()){
+            return;
+        }
+
+        chr_names.push_back(chr);
+        chroffsets_indexfile[chr] = static_cast<int>(indexes.size());
+        chr_starts[chr] = chrPositions.front();
+        chr_ends[chr] = chrPositions.back();
+
+        const size_t startOffset = posvector.size();
+        posvector.insert(posvector.end(), chrPositions.begin(), chrPositions.end());
+        chr_ranges[chr] = std::make_pair(startOffset, chrPositions.size());
+
+        indexes.push_back(PrDes::REindexes());
+        auto& idx = indexes.back();
+
+        size_t binStartIndex = 0;
+        while(binStartIndex < chrPositions.size()){
+            const int binStartCoord = chrPositions[binStartIndex];
+            const int binLimit = binStartCoord + span;
+
+            size_t binEndIndex = binStartIndex;
+            while(binEndIndex < chrPositions.size() && chrPositions[binEndIndex] <= binLimit){
+                ++binEndIndex;
+            }
+
+            idx.binstart.push_back(binStartCoord);
+            idx.binend.push_back(chrPositions[binEndIndex - 1] + 1);
+            idx.offset.push_back(static_cast<int>(startOffset + binStartIndex));
+            idx.count.push_back(static_cast<int>(binEndIndex - binStartIndex));
+
+            binStartIndex = binEndIndex;
+        }
+    };
+
+    while(RESitesf >> chrp >> temp >> pos >> temp >> temp >> temp >> temp){
+        if(currentChr.empty()){
+            currentChr = chrp;
+        }
+
+        if(chrp != currentChr){
+            finalizeChromosome(currentChr, positions);
+            positions.clear();
+            currentChr = chrp;
+        }
+
+        positions.push_back(pos);
+    }
+
+    finalizeChromosome(currentChr, positions);
+
+    rLog << "RE site class initialised " << std::endl;
 
 }
 
 bool RESitesClass::GettheREPositions(std::string chr, int pos, int* renums, int& invalidCounter){ // Returns closest RE sites to a position
-	
-    int HalfClusterDist = 5000; //in case the pos is at the end of a bin
-    int rightchr;
-    int starttosearch = 0;
-    int bitcount = 0;
-    int REposprev, REposat, REposnext;
 
-    std::unordered_map< std::string, int >::iterator it = chroffsets_indexfile.find(chr);
-    
-    if(it == chroffsets_indexfile.end()){ // Chromosome is not in the list
+    std::unordered_map<std::string, std::pair<size_t, size_t>>::iterator rangeIt = chr_ranges.find(chr);
+
+    if(rangeIt == chr_ranges.end()){ // Chromosome is not in the list
         return 0;
     }
-    
-    rightchr = it->second; // Get the right index vector
+
     std::unordered_map< std::string, int >::iterator its = chr_starts.find(chr);
     std::unordered_map< std::string, int >::iterator ite = chr_ends.find(chr);
-    
-    if ((pos ) <= its->second || (pos ) >= ite->second){
-		//rLog<<"!!Error!! : Encountered invalid coordinates. A coordinate is out of chromosome boundaries and is therefore skipped: chr "<< chr<<" Position "<< pos <<". Check if the correct genome assembly is being used"<< std::endl;
-		invalidCounter=invalidCounter+1;
+
+    if (pos < its->second || pos > ite->second){
+                //rLog<<"!!Error!! : Encountered invalid coordinates. A coordinate is out of chromosome boundaries and is therefore skipped: chr "<< chr<<" Position "<< pos <<". Check if the correct genome assembly is being used"<< std::endl;
+                invalidCounter=invalidCounter+1;
         return 0;
     }
-    
-    for(int i = 0; i < indexes[rightchr].binstart.size();++i){ // Iterate over the bins
-        if (indexes[rightchr].binstart[i] <= (pos) && indexes[rightchr].binend[i] >= (pos)){ // If start-HalfClusterDist is within a bin
-            if(i > 0){
-                starttosearch = indexes[rightchr].offset[i-1]; // mark the index in the posvector to start to search
-                bitcount = indexes[rightchr].count[i-1]; // this many elements of the posvector is contained within that bin
-                bitcount += indexes[rightchr].count[i];
-            }
-            else{
-                starttosearch = indexes[rightchr].offset[i]; // mark the index in the posvector to start to search
-                bitcount = indexes[rightchr].count[i]; // this many elements of the posvector is contained within that bin
-            }
-            if (((pos + HalfClusterDist) > indexes[rightchr].binend[i]) && (i+1 < indexes[rightchr].binstart.size())) // if end is included in the next bin
-                bitcount += indexes[rightchr].count[i+1]; // mark the number of elements in the next bin
-            break;
-        }
+
+    const size_t startOffset = rangeIt->second.first;
+    const size_t siteCount = rangeIt->second.second;
+
+    const auto startIter = posvector.begin() + startOffset;
+    const auto endIter = startIter + siteCount;
+
+    auto lower = std::lower_bound(startIter, endIter, pos);
+
+    int upstreamSite;
+    int downstreamSite;
+
+    if(lower == endIter){
+        upstreamSite = downstreamSite = *(endIter - 1);
     }
-    for (int i = (starttosearch + 1); i < starttosearch + bitcount; i++){
-        REposprev = posvector[i - 1];
-        REposat   = posvector[i];
-        REposnext = posvector[i + 1];
-        while (REposat <  pos){
-            REposprev = REposat;
-            ++i;
-            REposat = posvector[i];
-            REposnext = posvector[i + 1];
-        }
-        if (REposat == pos) {
-            renums[0] = REposprev;
-            renums[1] = REposnext;
-            break;
-        }
-        else{
-            renums[0] = REposprev;
-            renums[1] = REposat;
-            break;
-        }
+    else if(*lower == pos){
+        upstreamSite = (lower == startIter) ? *lower : *(lower - 1);
+        downstreamSite = (std::next(lower) == endIter) ? *lower : *std::next(lower);
     }
+    else{ // *lower > pos
+        downstreamSite = *lower;
+        upstreamSite = (lower == startIter) ? *lower : *(lower - 1);
+    }
+
+    renums[0] = upstreamSite;
+    renums[1] = downstreamSite;
+
     return 1;
 }
 
 
 void RESitesClass::CleanClass(){
 
-	posvector.clear();
-	chr_names.clear();
-	indexes.clear();
-	chroffsets_indexfile.clear();
+        posvector.clear();
+        chr_names.clear();
+        indexes.clear();
+        chroffsets_indexfile.clear();
+        chr_starts.clear();
+        chr_ends.clear();
+        chr_ranges.clear();
 }

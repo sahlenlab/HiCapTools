@@ -48,7 +48,6 @@ void ProcessBAM::Initialize(std::string bamfilename, int nOfExp, int padd, int r
     bLog << bamfilename << "  opened" << std::endl;
     
     // retrieve 'metadata' from BAM files, these are required by BamWriter
-    const SamHeader header = reader.GetHeader();
     const RefVector references = reader.GetReferenceData();
     
     // Make a map of chr names to RefIDs
@@ -113,8 +112,12 @@ void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClas
 			probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end + padding;
 		}
 		else if(Design_NegCtrl[DesignName].Probes[i].side=="R"){
-			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start- padding;;
+			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start - padding;
 			probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end;
+		}
+		else if(Design_NegCtrl[DesignName].Probes[i].side=="M"){
+			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start - padding;
+			probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end  + padding;
 		}
 		
 		reader.SetRegion(probeRegion);
@@ -237,8 +240,12 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 			probeRegion.RightPosition =  Design[DesignName].Probes[i].end + padding;
 		}
 		else if(Design[DesignName].Probes[i].side=="R"){
-			probeRegion.LeftPosition =  Design[DesignName].Probes[i].start- padding;;
+			probeRegion.LeftPosition =  Design[DesignName].Probes[i].start - padding;
 			probeRegion.RightPosition =  Design[DesignName].Probes[i].end;
+		}
+		else if(Design[DesignName].Probes[i].side=="M"){
+			probeRegion.LeftPosition =  Design[DesignName].Probes[i].start - padding;
+			probeRegion.RightPosition =  Design[DesignName].Probes[i].end + padding;
 		}
 		
 		reader.SetRegion(probeRegion);
@@ -368,8 +375,12 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 			probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end + padding;
 		}
 		else if(Design_NegCtrl[DesignName].Probes[i].side=="R"){
-			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start- padding;;
+			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start - padding;
 			probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end;
+		}
+		else if(Design_NegCtrl[DesignName].Probes[i].side=="M"){
+			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start - padding;
+			probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end + padding;
 		}
 		
 		reader.SetRegion(probeRegion);

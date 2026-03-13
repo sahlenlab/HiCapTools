@@ -48,7 +48,6 @@ void ProcessBAM::Initialize(std::string bamfilename, int nOfExp, int padd, int r
     bLog << bamfilename << "  opened" << std::endl;
     
     // retrieve 'metadata' from BAM files, these are required by BamWriter
-    const SamHeader header = reader.GetHeader();
     const RefVector references = reader.GetReferenceData();
     
     // Make a map of chr names to RefIDs

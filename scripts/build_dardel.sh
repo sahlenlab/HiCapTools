@@ -20,7 +20,6 @@ fi
 cmake -S "${project_root}" -B "${build_dir}" \
     -DCMAKE_BUILD_TYPE=Release \
     -DHICAPTOOLS_USE_SYSTEM_BAMTOOLS=OFF \
-    -DHICAPTOOLS_USE_SYSTEM_BOOST=ON \
     -DBOOST_INCLUDE_DIR="${boost_root}/include"
 cmake --build "${build_dir}" --parallel "${build_jobs}"
 

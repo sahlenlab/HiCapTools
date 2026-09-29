@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.10)
 project(HiCapTools CXX)
 
 option(HICAPTOOLS_USE_SYSTEM_BAMTOOLS "Prefer an installed BamTools library" ON)
-option(HICAPTOOLS_USE_SYSTEM_BOOST "Prefer installed Boost headers" ON)
 
 #find_package(OpenMP REQUIRED)
 #include(FindOpenMP)
@@ -81,22 +80,17 @@ file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/ExterAlg/*.cpp")
 	  set_target_properties(HiCapTools PROPERTIES BUILD_RPATH "\$ORIGIN/../bamtools")
 	endif()
   endif()
-  if(HICAPTOOLS_USE_SYSTEM_BOOST)
-	find_path(BOOST_INCLUDE_DIR boost/accumulators/accumulators.hpp
-	  HINTS ENV BOOST_HOME ENV BOOST_ROOT ENV EBROOTBOOST
-	  PATHS /opt/homebrew/include /usr/local/include
-	  PATH_SUFFIXES include)
-  endif()
+  find_path(BOOST_INCLUDE_DIR boost/accumulators/accumulators.hpp
+	HINTS ENV BOOST_HOME ENV BOOST_ROOT ENV EBROOTBOOST
+	PATHS /opt/homebrew/include /usr/local/include
+	PATH_SUFFIXES include)
 
   if(BOOST_INCLUDE_DIR)
 	message(STATUS "Using system Boost headers: ${BOOST_INCLUDE_DIR}")
 	include_directories(BEFORE "${BOOST_INCLUDE_DIR}")
-  elseif(EXISTS "${CMAKE_SOURCE_DIR}/boost/boost/accumulators/accumulators.hpp")
-	message(STATUS "Using bundled Boost headers")
-	include_directories("${CMAKE_SOURCE_DIR}/boost")
   else()
 	message(FATAL_ERROR
-	  "Boost headers were not found. On Dardel, run 'ml PDC', 'ml PrgEnv-gnu', and 'ml boost' before building.")
+	  "Boost headers were not found. Install or load Boost, or configure with -DBOOST_INCLUDE_DIR=/path/to/include.")
   endif()
   include_directories( "${CMAKE_SOURCE_DIR}/ExterAlg")
   include_directories("${CMAKE_SOURCE_DIR}/include")

@@ -77,6 +77,8 @@ Use CMake to compile the application.
 
 -   Bamtools is required.
 
+-   Boost headers are required.
+
 -   Zlib is required
 
 #### Steps

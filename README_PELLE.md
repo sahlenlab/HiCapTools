@@ -14,8 +14,8 @@ cd HiCapTools
 ```
 
 The repository contains `CMakeLists.txt`, `src`, `include`, `bamtools`, and
-`bin`. The large bundled `boost` directory is not required on Pelle because
-Boost is provided as a module.
+`bin`. Boost is intentionally not bundled; the build uses Pelle's Boost
+module.
 
 ## 2. Load the build environment
 
@@ -55,7 +55,6 @@ Configure a Pelle-specific build directory:
 cmake -S . -B build-pelle \
     -DCMAKE_BUILD_TYPE=Release \
     -DHICAPTOOLS_USE_SYSTEM_BAMTOOLS=OFF \
-    -DHICAPTOOLS_USE_SYSTEM_BOOST=ON \
     -DBOOST_INCLUDE_DIR="$EBROOTBOOST/include"
 ```
 

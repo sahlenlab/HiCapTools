@@ -14,8 +14,8 @@ cd HiCapTools
 ```
 
 The repository contains `CMakeLists.txt`, `src`, `include`, `scripts`,
-`bamtools`, and `bin`. The large bundled `boost` directory is not required on
-Dardel because Boost is provided as a module.
+`bamtools`, and `bin`. Boost is intentionally not bundled; the build uses
+Dardel's Boost module.
 
 ## 2. Load the build environment
 

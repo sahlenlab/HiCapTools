@@ -65,46 +65,101 @@ Table of Contents
 
 ## How to Compile HiCapTools?
 
-#### Recommended
+### Download from GitHub
 
-Use CMake to compile the application.
+Clone only the current version. The shallow clone avoids downloading old
+repository history, including the previously bundled Boost headers:
 
-#### Dependencies
-
--   C++11 compliant compiler (eg. GCC 4.9 or higher) is required
-
--   Cmake 3.0 or higher is required
-
--   Bamtools is required.
-
--   Boost headers are required.
-
--   Zlib is required
-
-#### Steps
-
-Suggested steps in Linux
-
-1. Run the bash script 'buildHiCapTools.sh. The compiled executable ’HiCapTools’ is placed inside the ’bin’ directory.
-
-2.  Run the following command on the terminal after replacing the path to the location of HiCapTools.
+```bash
+git clone --depth 1 https://github.com/sahlenlab/HiCapTools.git
+cd HiCapTools
 ```
-$ export LD_LIBRARY_PATH=/path/to/HiCapTools/bamtools/:$LD_LIBRARY_PATH
-```         
 
-Suggested steps in macOS
+To update an existing Git checkout later:
 
-1. Run the bash script 'buildHiCapTools.sh. The compiled executable ’HiCapTools’ is placed inside the ’bin’ directory.
+```bash
+git pull --ff-only
+```
 
-Cluster-specific build and submission instructions are available for
-[Dardel](README_DARDEL.md) and [Pelle](README_PELLE.md).
+### Dependencies
+
+- C++11-compliant compiler (GCC 4.9 or newer)
+- CMake 3.10 or newer
+- BamTools
+- Boost headers (installed or provided as a cluster module)
+- zlib
+
+Boost is intentionally not included in the repository.
+
+### Install on Dardel
+
+From the cloned `HiCapTools` directory, load the Dardel build environment:
+
+```bash
+ml PDC
+ml PrgEnv-gnu
+ml boost
+ml cmake/3.31.3
+```
+
+Build in Release mode with the supplied script:
+
+```bash
+chmod +x scripts/build_dardel.sh
+./scripts/build_dardel.sh
+```
+
+The script uses Dardel's Boost headers and the bundled Linux BamTools library.
+
+### Install on Pelle
+
+If Conda is active, first run `conda deactivate`. From the cloned
+`HiCapTools` directory, load one consistent Pelle module family:
+
+```bash
+module purge
+module load GCC/13.3.0
+module load CMake/3.31.8-GCCcore-13.3.0
+module load Boost/1.85.0-GCC-13.3.0
+```
+
+Configure and compile:
+
+```bash
+cmake -S . -B build-pelle \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DHICAPTOOLS_USE_SYSTEM_BAMTOOLS=OFF \
+    -DBOOST_INCLUDE_DIR="$EBROOTBOOST/include"
+
+cmake --build build-pelle --parallel 4
+```
+
+### Verify the Installation
+
+Both builds write the executable to `bin/HiCapTools`. Confirm that it is a
+Linux executable and that all required shared libraries are available:
+
+```bash
+file bin/HiCapTools
+ldd bin/HiCapTools
+ldd bin/HiCapTools | grep "not found"
+```
+
+The last command should produce no output. Run HiCapTools with:
+
+```
+./bin/HiCapTools <option> [arguments]
+```
+
+Complete build, configuration, and Slurm submission instructions are available
+for [Dardel](README_DARDEL.md) and [Pelle](README_PELLE.md).
 
 ## How to Run HiCapTools?
 
 HiCapTools is run with the following command
 
-``` {fontsize="\small"}
-$ ./HiCapTools <option> [arguments]
+```bash
+./bin/HiCapTools <option> [arguments]
 ```
 
 The options are `ProbeDesigner` and `ProximityDetector`.

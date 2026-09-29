@@ -9,7 +9,7 @@ library.
 Clone the repository and enter it:
 
 ```bash
-git clone https://github.com/sahlenlab/HiCapTools.git
+git clone --depth 1 https://github.com/sahlenlab/HiCapTools.git
 cd HiCapTools
 ```
 

@@ -94,6 +94,9 @@ Suggested steps in macOS
 
 1. Run the bash script 'buildHiCapTools.sh. The compiled executable ’HiCapTools’ is placed inside the ’bin’ directory.
 
+Cluster-specific build and submission instructions are available for
+[Dardel](README_DARDEL.md) and [Pelle](README_PELLE.md).
+
 ## How to Run HiCapTools?
 
 HiCapTools is run with the following command

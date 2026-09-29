@@ -41,8 +41,10 @@ public:
    
 	void ReadProbeCoordinates(std::string, std::map <std::string, std::string>&, int, bool, PrDes::RENFileInfo&);
     
-	int FindOverlaps(std::string, unsigned long int, unsigned long int, std::string);
-    int FindOverlaps_NegCtrls(std::string, unsigned long int, unsigned long int, std::string);
+		int FindOverlaps(std::string, unsigned long int, unsigned long int, std::string);
+	    int FindOverlaps_NegCtrls(std::string, unsigned long int, unsigned long int, std::string);
+	    std::vector<int> FindAllOverlaps(std::string, unsigned long int, unsigned long int, std::string);
+	    std::vector<int> FindAllOverlaps_NegCtrls(std::string, unsigned long int, unsigned long int, std::string);
     
     ProbeSet(OutStream& prlog, int fCount, int fRCount) : prLog (prlog), fileCount(fCount), filesReadCount (fRCount) {}
     

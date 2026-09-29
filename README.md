@@ -67,8 +67,7 @@ Table of Contents
 
 ### Download from GitHub
 
-Clone only the current version. The shallow clone avoids downloading old
-repository history, including the previously bundled Boost headers:
+Clone the current version:
 
 ```bash
 git clone --depth 1 https://github.com/sahlenlab/HiCapTools.git
@@ -86,73 +85,52 @@ git pull --ff-only
 - C++11-compliant compiler (GCC 4.9 or newer)
 - CMake 3.10 or newer
 - BamTools
-- Boost headers (installed or provided as a cluster module)
+- Boost headers (installed as a system package or environment module)
 - zlib
 
 Boost is intentionally not included in the repository.
 
-### Install on Dardel
+### Configure and Build
 
-From the cloned `HiCapTools` directory, load the Dardel build environment:
+Make the compiler, CMake, Boost, and zlib available in your environment, then
+configure a Release build:
 
 ```bash
-ml PDC
-ml PrgEnv-gnu
-ml boost
-ml cmake/3.31.3
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 ```
 
-Build in Release mode with the supplied script:
+Compile using the available CPU cores:
 
 ```bash
-chmod +x scripts/build_dardel.sh
-./scripts/build_dardel.sh
+cmake --build build --parallel
 ```
 
-The script uses Dardel's Boost headers and the bundled Linux BamTools library.
-
-### Install on Pelle
-
-If Conda is active, first run `conda deactivate`. From the cloned
-`HiCapTools` directory, load one consistent Pelle module family:
+HiCapTools first looks for a system BamTools installation and otherwise uses
+the library supplied in `bamtools`. If dependencies are installed in custom
+locations, provide them when configuring:
 
 ```bash
-module purge
-module load GCC/13.3.0
-module load CMake/3.31.8-GCCcore-13.3.0
-module load Boost/1.85.0-GCC-13.3.0
-```
-
-Configure and compile:
-
-```bash
-cmake -S . -B build-pelle \
+cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=Release \
-    -DHICAPTOOLS_USE_SYSTEM_BAMTOOLS=OFF \
-    -DBOOST_INCLUDE_DIR="$EBROOTBOOST/include"
-
-cmake --build build-pelle --parallel 4
+    -DBOOST_INCLUDE_DIR=/path/to/boost/include \
+    -DBAMTOOLS_INCLUDE_DIR=/path/to/bamtools/include \
+    -DBAMTOOLS_LIBRARY=/path/to/libbamtools
 ```
 
 ### Verify the Installation
 
-Both builds write the executable to `bin/HiCapTools`. Confirm that it is a
-Linux executable and that all required shared libraries are available:
+The build writes the executable to `bin/HiCapTools`. No separate installation
+step is required. Display the command-line usage with:
 
 ```bash
-file bin/HiCapTools
-ldd bin/HiCapTools
-ldd bin/HiCapTools | grep "not found"
+./bin/HiCapTools
 ```
 
-The last command should produce no output. Run HiCapTools with:
+Run a module with:
 
-```
+```bash
 ./bin/HiCapTools <option> [arguments]
 ```
-
-Complete build, configuration, and Slurm submission instructions are available
-for [Dardel](README_DARDEL.md) and [Pelle](README_PELLE.md).
 
 ## How to Run HiCapTools?
 

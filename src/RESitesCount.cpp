@@ -152,7 +152,7 @@ bool RESitesClass::GettheREPositions(std::string chr, int pos, int* renums, int&
         upstreamSite = downstreamSite = *(endIter - 1);
     }
     else if(*lower == pos){
-        upstreamSite = (lower == startIter) ? *lower : *(lower - 1);
+        upstreamSite = *lower;
         downstreamSite = (std::next(lower) == endIter) ? *lower : *std::next(lower);
     }
     else{ // *lower > pos

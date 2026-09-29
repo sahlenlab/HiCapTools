@@ -63,7 +63,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		std::string name;
 		std::string designname;
 	};
-	int NOFEXPERIMENTS; // Number of Experiments
+	int NOFEXPERIMENTS = 0; // Number of Experiments
 	int padding = 500; //For Sequence Capture Probes
 	std::string DigestedGenomeFileName;
 	std::string TranscriptListFileName;
@@ -72,7 +72,9 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	std::string ProbeFileName;
 	std::string NegCtrlProbeFileName;
 	std::string ExpFileName;
-	std::string BaseFileName;
+	std::string BaseFileName = "ProxDetect";
+	std::string BlacklistFileName;
+	bool GenerateIntegratedInteractions = true;
     std::vector <Experiment> Experiments; 
 	Experiment Exptemp;
 	std::map <std::string, std::string> probeType;
@@ -87,7 +89,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
     int ReadLen = 80;//ReadLength
     const int ClusterPromoters  = 1200;
     int MinimumJunctionDistance = 1000; // To be entered by the user
-	bool CALCULATE_P_VALUES;
+	bool CALCULATE_P_VALUES = false;
 	int WindowSize = 101; 
 	int WindowSizeProbeProbe = 3; 
 	int BinSize  = 1000; // Only To Calculate Background Interaction Frequencies
@@ -204,6 +206,18 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					else
 						log<<"##Warning## :Window Size for Probe-Probe is empty. Set to default : "<< WindowSizeProbeProbe<<std::endl;
 				}
+				if(line.substr(0, line.find('=')).find("Blacklist File")!=std::string::npos){
+					std::string s;
+					s=line.substr(line.find('=')+1);
+					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
+					BlacklistFileName=s;
+				}
+				if(line.substr(0, line.find('=')).find("Generate Integrated Interactions")!=std::string::npos){
+					std::string s;
+					s=line.substr(line.find('=')+1);
+					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
+					GenerateIntegratedInteractions = (s=="Yes" || s=="yes" || s=="Y" || s=="y" || s.empty());
+				}
 			}
 		}
 	}
@@ -221,12 +235,15 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	//------------------------
 	
 
-	if(statsOption=="ComputeStatsOnly"){
-		if(CALCULATE_P_VALUES){
-			CALCULATE_P_VALUES=false;
-			log << "Calculate p values set to No for computing Stats only"<< std::endl;
-		}		
-	}
+		if(statsOption=="ComputeStatsOnly"){
+			if(CALCULATE_P_VALUES){
+				CALCULATE_P_VALUES=false;
+				log << "Calculate p values set to No for computing Stats only"<< std::endl;
+			}
+		}
+
+		bool printNegCtrlProximities = (statsOption!="ComputeStatsOnly" && (interactiontype=="Neg" || interactiontype=="Both"));
+		bool needsNegCtrls = (CALCULATE_P_VALUES || statsOption=="ComputeStatsOnly" || printNegCtrlProximities);
 
 	log << std::setw(35)<<std::left<<"Min Number of Supporting Pairs" << MinNumberofSupportingPairs << std::endl;
 	log << std::setw(35)<<"Min Junction Distance" << MinimumJunctionDistance << std::endl;
@@ -243,6 +260,9 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	log << std::setw(35)<<"Window Size for Probe-Distal"	<<WindowSize<<std::endl;
 	log << std::setw(35)<<"Bin Size for Probe-Probe"	<<BinSizeProbeProbe<<std::endl;
 	log << std::setw(35)<<"Window Size for Probe-Probe"<<WindowSizeProbeProbe<<std::endl;
+	if(!BlacklistFileName.empty())
+		log << std::setw(35)<<"Blacklist File"<<BlacklistFileName<<std::endl;
+	log << std::setw(35)<<"Generate Integrated Interactions"<<(GenerateIntegratedInteractions ? "Yes" : "No")<<std::endl;
     
     std::ifstream ExpFile(ExpFileName.c_str());
     if(ExpFile.good()){
@@ -263,10 +283,10 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(s.begin(), s.end(), [l](char ch) { return std::isspace(ch, l); }), s.end());
-					if(s.empty() && (CALCULATE_P_VALUES || statsOption=="ComputeStatsOnly")){
-						log<<"!!Error!! : Negative Control Probe File Path is empty when Calculate p_values is Yes or mode is ComputeStatsOnly. It is required!" <<std::endl;
-						emptyErrFlag=true;
-					}
+						if(s.empty() && needsNegCtrls){
+							log<<"!!Error!! : Negative Control Probe File Path is empty when Calculate p_values is Yes, mode is ComputeStatsOnly, or negative control proximities are requested. It is required!" <<std::endl;
+							emptyErrFlag=true;
+						}
 					NegCtrlProbeFileName = s;
 				}
 				if(line.substr(0, line.find('=')).find("Digested Genome File")!=std::string::npos){
@@ -335,10 +355,10 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					std::string s;
 					s=line.substr(line.find('=')+1);
 					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
-					if(s.empty() && (CALCULATE_P_VALUES || statsOption=="ComputeStatsOnly")){
-						log<<"!!Error!! : Negative Control region File Path is empty when Calculate p_values is Yes or mode is ComputeStatsOnly. It is required!" <<std::endl;
-						emptyErrFlag = true;
-					}
+						if(s.empty() && needsNegCtrls){
+							log<<"!!Error!! : Negative Control region File Path is empty when Calculate p_values is Yes, mode is ComputeStatsOnly, or negative control proximities are requested. It is required!" <<std::endl;
+							emptyErrFlag = true;
+						}
 					negCtrlRegFile=s;
 				}
 				if(line.substr(0, line.find('=')).find("Promoters")!=std::string::npos){
@@ -417,10 +437,18 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		log << "Restriction enzyme Motif is required if Genome Restriction Digest file is to be generated!"<< std::endl;
 		emptyErrFlag=true;
 	}
-	if(generateDigest && reFileInfo.genomeAssembly.empty()){
-		log << "Genome Assembly information is required if Genome Restriction Digest file is to be generated!"<< std::endl;
-		emptyErrFlag=true;
-	}
+		if(generateDigest && reFileInfo.genomeAssembly.empty()){
+			log << "Genome Assembly information is required if Genome Restriction Digest file is to be generated!"<< std::endl;
+			emptyErrFlag=true;
+		}
+		if(NOFEXPERIMENTS <= 0){
+			log << "Number of Experiments is missing or invalid"<< std::endl;
+			emptyErrFlag=true;
+		}
+		if(Experiments.empty()){
+			log << "No experiment BAM files were entered"<< std::endl;
+			emptyErrFlag=true;
+		}
 	
 	if(emptyErrFlag){ // a required field is empty
 		log<< " Enter all required fields."<<std::endl;
@@ -435,10 +463,10 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		log<< "!!Error!! : Feature Probe File is not accessible"<<std::endl;
 		return 0;
 	}
-	if(CALCULATE_P_VALUES && !CheckFile(NegCtrlProbeFileName)){
-		log<< "!!Error!! : Negative control Probe File is not accessible"<<std::endl;
-		return 0;
-	}
+		if(needsNegCtrls && !CheckFile(NegCtrlProbeFileName)){
+			log<< "!!Error!! : Negative control Probe File is not accessible"<<std::endl;
+			return 0;
+		}
 	if(!DigestedGenomeFileName.empty() && !CheckFile(DigestedGenomeFileName)){
 		log<< "!!Error!! : Genome Digest File is not accessible"<<std::endl;
 		return 0;
@@ -455,10 +483,10 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		log<<"!!Error!! : SNV List File is not accessible " << std::endl;
 		return 0;
 	}
-	if(CALCULATE_P_VALUES && !CheckFile(negCtrlRegFile)){
-		log<< "!!Error!! : Negative control Regions File is not accessible"<<std::endl;
-		return 0;
-	}
+		if(needsNegCtrls && !CheckFile(negCtrlRegFile)){
+			log<< "!!Error!! : Negative control Regions File is not accessible"<<std::endl;
+			return 0;
+		}
 	
 	
 	
@@ -478,15 +506,15 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	
 	
 	log <<std::setw(35)<< "Feature Probe File"<<ProbeFileName<<std::endl;
-	if(CALCULATE_P_VALUES)
-		log << std::setw(35)<<"Negative Control Probe File"<<NegCtrlProbeFileName<<std::endl;
+		if(needsNegCtrls)
+			log << std::setw(35)<<"Negative Control Probe File"<<NegCtrlProbeFileName<<std::endl;
 	log << std::setw(35)<<"Digested Genome File"<<DigestedGenomeFileName<<std::endl;
 	if(!TranscriptListFileName.empty())
 		log << std::setw(35)<<"Transcript List File"<<TranscriptListFileName<<std::endl;
 	if(!SNPFile.empty())
 		log << std::setw(35)<<"SNV List File"<<SNPFile<<std::endl;
-	if(CALCULATE_P_VALUES)
-		log << std::setw(35)<<"Negative control region File"<<negCtrlRegFile<<std::endl;
+		if(needsNegCtrls)
+			log << std::setw(35)<<"Negative control region File"<<negCtrlRegFile<<std::endl;
 	for(auto i=probeType.begin(); i!=probeType.end();++i){
 		std::string temp =  "Target-"+i->first +":";
 		log << std::setw(35)<<temp<<i->second<<std::endl;
@@ -511,7 +539,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
     
     ProcessBAM bamfile(log);
     //-------------------------------------------------------------------------------------
-    DetectInteractions Interactions(log, MinNumberofSupportingPairs, CALCULATE_P_VALUES, MinimumJunctionDistance);
+    DetectInteractions Interactions(log, MinNumberofSupportingPairs, CALCULATE_P_VALUES, MinimumJunctionDistance, BlacklistFileName);
    //-------------------------------------------------------------------------------------
     
     std::string BAMFILENAME, ExperimentName;
@@ -522,7 +550,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
    
     //-------------------------------------------------------------------------------
 	log << "Reading Feature files and annotating features: Starting!" << std::endl;
-    proms.InitialiseData(ClusterPromoters, countFeatFiles+CALCULATE_P_VALUES, FeatureOverlapCheckPadding);
+	    proms.InitialiseData(ClusterPromoters, countFeatFiles+needsNegCtrls, FeatureOverlapCheckPadding);
     
     switch(featFileCount){
 		case 1:	
@@ -539,17 +567,17 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 			break;
 			
 	}
-	if(CALCULATE_P_VALUES || statsOption == "ComputeStatsOnly")
-		proms.ReadFeatureAnnotation(dpnII, negCtrlRegFile, "neg_ctrl");
+		if(needsNegCtrls)
+			proms.ReadFeatureAnnotation(dpnII, negCtrlRegFile, "neg_ctrl");
 		
 	log << "Reading Feature files and annotating features: Done!" << std::endl;
 
 	//---------------------------------------------------------------------------------
 	
-	ProbeSet ProbeClass(log, (1+CALCULATE_P_VALUES), 0); // 1 for feature probe file, 2 if Neg ctrl probe file.
-    ProbeClass.ReadProbeCoordinates(ProbeFileName, probeType, padding, false, reFileInfo);
-    if(CALCULATE_P_VALUES || statsOption == "ComputeStatsOnly")	
-		ProbeClass.ReadProbeCoordinates(NegCtrlProbeFileName, probeType, padding, true, reFileInfo);
+		ProbeSet ProbeClass(log, (1+needsNegCtrls), 0); // 1 for feature probe file, 2 if Neg ctrl probe file.
+	    ProbeClass.ReadProbeCoordinates(ProbeFileName, probeType, padding, false, reFileInfo);
+	    if(needsNegCtrls)
+			ProbeClass.ReadProbeCoordinates(NegCtrlProbeFileName, probeType, padding, true, reFileInfo);
     
     //---------------------------------------------------------------------------------
     if(statsOption=="ComputeStatsOnly"){
@@ -571,22 +599,26 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		
 		
 		
-		if(CALCULATE_P_VALUES){ //Fill NegCtrl proximities to calculate background interaction frequencies
-			bamfile.ProcessSortedBamFile_NegCtrls(ProbeClass, dpnII, proximities, Exptemp.filepath, ExperimentNo, Exptemp.designname, statsOption, proms);
-		
-			background.push_back(DetermineBackgroundLevels());
-		
-			background.back().CalculateMeanandStdRegress(Exptemp.name, ExperimentNo, Exptemp.designname, background.back().bglevels, BinSize, "ProbeDistal", MinimumJunctionDistance, log, WindowSize);
-			background.back().CalculateMeanandStdRegress(Exptemp.name, ExperimentNo, Exptemp.designname, background.back().bglevelsProbeProbe, BinSizeProbeProbe, "ProbeProbe", MinimumJunctionDistance, log, WindowSizeProbeProbe);
-			
-			log << "Total_Number_of_Pairs" << '\t' << totalNumberofPairs/2 << std::endl;
-			log << "Total_Number_of_Pairs on Probes" << '\t' << NumberofPairs << std::endl;
-			log << "Number_of_Pairs_Both_Reads_on_Probe" << '\t' << NofPairs_Both_on_Probe << std::endl;
-			log << "Number_of_Pairs_One_Read_on_Probe" << '\t' << NofPairs_One_on_Probe << std::endl;
-			log << "Number_of_Pairs_None_on_Probe" << '\t' << NofPairsNoAnn << std::endl;
-			log << "FractionofPairsOnProbe" << '\t' << (NumberofPairs)/double(totalNumberofPairs/2) << std::endl; 	    
-			totalNumberofPairs = 0; NumberofPairs = 0; NofPairs_Both_on_Probe = 0; NofPairs_One_on_Probe = 0; NofPairsNoAnn = 0;
-		}
+			if(CALCULATE_P_VALUES || printNegCtrlProximities){ // Fill NegCtrl proximities for background and/or negative-control output.
+				bamfile.ProcessSortedBamFile_NegCtrls(ProbeClass, dpnII, proximities, Exptemp.filepath, ExperimentNo, Exptemp.designname, statsOption, proms);
+
+				if(CALCULATE_P_VALUES){
+					background.push_back(DetermineBackgroundLevels());
+
+					background.back().CalculateMeanandStdRegress(Exptemp.name, ExperimentNo, Exptemp.designname, background.back().bglevels, BinSize, "ProbeDistal", MinimumJunctionDistance, log, WindowSize);
+					background.back().CalculateMeanandStdRegress(Exptemp.name, ExperimentNo, Exptemp.designname, background.back().bglevelsProbeProbe, BinSizeProbeProbe, "ProbeProbe", MinimumJunctionDistance, log, WindowSizeProbeProbe);
+				}
+
+				log << "Total_Number_of_Pairs" << '\t' << totalNumberofPairs/2 << std::endl;
+				log << "Total_Number_of_Pairs on Probes" << '\t' << NumberofPairs << std::endl;
+				log << "Number_of_Pairs_Both_Reads_on_Probe" << '\t' << NofPairs_Both_on_Probe << std::endl;
+				log << "Number_of_Pairs_One_Read_on_Probe" << '\t' << NofPairs_One_on_Probe << std::endl;
+				log << "Number_of_Pairs_None_on_Probe" << '\t' << NofPairsNoAnn << std::endl;
+				log << "FractionofPairsOnProbe" << '\t' << (NumberofPairs)/double(totalNumberofPairs/2) << std::endl;
+				if(interactiontype!="Neg"){
+					totalNumberofPairs = 0; NumberofPairs = 0; NofPairs_Both_on_Probe = 0; NofPairs_One_on_Probe = 0; NofPairsNoAnn = 0;
+				}
+			}
 		if(interactiontype!="Neg"){
 			bamfile.ProcessSortedBAMFile(ProbeClass, dpnII, proximities, Exptemp.filepath, ExperimentNo, whichchr, Exptemp.designname, statsOption, proms);
          
@@ -614,21 +646,29 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
     
     if(statsOption!="ComputeStatsOnly"){
 		if(interactiontype=="Neg"){
-			
+
 			Interactions.CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo); //Print all same type of interactions
 			Interactions.CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo); //Print all same type of interactions
+			if(GenerateIntegratedInteractions)
+				Interactions.PrintIntegratedInteractions_NegCtrls(BaseFileName, NOFEXPERIMENTS, ExperimentNames, reFileInfo);
 		}
 		else if(interactiontype=="NonNeg"){
-			
+
 			Interactions.CalculatePvalAndPrintInteractionsProbeDistal(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo);//Print all same type of interactions
 			Interactions.CalculatePvalAndPrintInteractionsProbeProbe(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo);//Print all same type of interactions
+			if(GenerateIntegratedInteractions)
+				Interactions.PrintIntegratedInteractions(BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, reFileInfo);
 		}
-		else{	
-	
+		else{
+
 			Interactions.CalculatePvalAndPrintInteractionsProbeDistal(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo);//Print all same type of interactions
 			Interactions.CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo); //Print all same type of interactions
 			Interactions.CalculatePvalAndPrintInteractionsProbeProbe(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo);//Print all same type of interactions
 			Interactions.CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo); //Print all same type of interactions
+			if(GenerateIntegratedInteractions)
+				Interactions.PrintIntegratedInteractions(BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, reFileInfo);
+			if(GenerateIntegratedInteractions)
+				Interactions.PrintIntegratedInteractions_NegCtrls(BaseFileName, NOFEXPERIMENTS, ExperimentNames, reFileInfo);
 		}
 		log<<"Printing Background Values!!"<<std::endl;
 		//Print out background values

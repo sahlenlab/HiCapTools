@@ -129,4 +129,6 @@ std::string bioioMod::GetFasta(std::string regionToGet){
     catch (std::runtime_error& e) {
         bLog << "Error: " << e.what() << std::endl;
     }
+
+    return "Error";
 }

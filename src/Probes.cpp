@@ -155,6 +155,9 @@ void ProbeSet::ProcessProbeLine(std::map< std::string, std::vector < std::string
 		else if(tempprobe.side=="R"){
 			negctrl_probes_interval[tempprobe.name_of_design].push_back(Interval<int>((tempprobe.start -padding),(tempprobe.end),(Design_NegCtrl[tempprobe.name_of_design].Probes.size()-1)));
 		}
+		else{
+			negctrl_probes_interval[tempprobe.name_of_design].push_back(Interval<int>((tempprobe.start -padding),(tempprobe.end +padding),(Design_NegCtrl[tempprobe.name_of_design].Probes.size()-1)));
+		}
     }
     else{
         Design[tempprobe.name_of_design].Probes.push_back(tempprobe);
@@ -164,6 +167,9 @@ void ProbeSet::ProcessProbeLine(std::map< std::string, std::vector < std::string
 		}
 		else if(tempprobe.side=="R"){
 			probes_interval[tempprobe.name_of_design].push_back(Interval<int>((tempprobe.start -padding),(tempprobe.end),(Design[tempprobe.name_of_design].Probes.size()-1)));
+		}
+		else{
+			probes_interval[tempprobe.name_of_design].push_back(Interval<int>((tempprobe.start -padding),(tempprobe.end + padding),(Design[tempprobe.name_of_design].Probes.size()-1)));
 		}
     }
 }
@@ -379,6 +385,19 @@ int ProbeSet::FindOverlaps(std::string chr, unsigned long int readstart, unsigne
         return -1;
 }
 
+std::vector<int> ProbeSet::FindAllOverlaps(std::string chr, unsigned long int readstart, unsigned long int readend, std::string nameofdesign){
+
+    std::vector<Interval< int > > results;
+    std::vector<int> probe_ids;
+
+    Design[nameofdesign].Probe_Tree[chr].findOverlapping(readstart, readend, results);
+
+    for(auto &result : results)
+        probe_ids.push_back(result.value);
+
+    return probe_ids;
+}
+
 int ProbeSet::FindOverlaps_NegCtrls(std::string chr, unsigned long int readstart, unsigned long int readend, std::string nameofdesign){
     
     std::vector<Interval< int > > results;
@@ -392,4 +411,15 @@ int ProbeSet::FindOverlaps_NegCtrls(std::string chr, unsigned long int readstart
         return -1;
 }
 
+std::vector<int> ProbeSet::FindAllOverlaps_NegCtrls(std::string chr, unsigned long int readstart, unsigned long int readend, std::string nameofdesign){
 
+    std::vector<Interval< int > > results;
+    std::vector<int> probe_ids;
+
+    Design_NegCtrl[nameofdesign].Probe_Tree[chr].findOverlapping(readstart, readend, results);
+
+    for(auto &result : results)
+        probe_ids.push_back(result.value);
+
+    return probe_ids;
+}

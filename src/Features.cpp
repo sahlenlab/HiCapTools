@@ -92,6 +92,7 @@ void FeatureClass::GetTrFeats(std::stringstream &trx, temppars &tpars, std::stri
 		tpars.strand="+";
 		tpars.probe_id=tpars.name+"."+start;
 		tpars.tr_id = desc;
+//		pLog << start << "  " << end << " " << desc << std::endl;
 	}
 	
 	if(option=="neg_ctrl"){

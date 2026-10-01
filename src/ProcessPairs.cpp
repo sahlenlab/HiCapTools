@@ -116,6 +116,10 @@ void ProcessBAM::ProcessSortedBamFile_NegCtrls(ProbeSet& ProbeClass, RESitesClas
 			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start- padding;;
 			probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end;
 		}
+		else if(Design_NegCtrl[DesignName].Probes[i].side=="M"){
+			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start - padding;
+			probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end + padding;
+		}
 		
 		reader.SetRegion(probeRegion);
 
@@ -239,6 +243,10 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 		else if(Design[DesignName].Probes[i].side=="R"){
 			probeRegion.LeftPosition =  Design[DesignName].Probes[i].start- padding;;
 			probeRegion.RightPosition =  Design[DesignName].Probes[i].end;
+		}
+		else if(Design[DesignName].Probes[i].side=="M"){
+			probeRegion.LeftPosition =  Design[DesignName].Probes[i].start - padding;
+			probeRegion.RightPosition =  Design[DesignName].Probes[i].end + padding;
 		}
 		
 		reader.SetRegion(probeRegion);
@@ -370,6 +378,10 @@ void ProcessBAM::ProcessSortedBAMFile(ProbeSet& ProbeClass, RESitesClass& dpnII,
 		else if(Design_NegCtrl[DesignName].Probes[i].side=="R"){
 			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start- padding;;
 			probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end;
+		}
+		else if(Design_NegCtrl[DesignName].Probes[i].side=="M"){
+			probeRegion.LeftPosition =  Design_NegCtrl[DesignName].Probes[i].start - padding;
+			probeRegion.RightPosition =  Design_NegCtrl[DesignName].Probes[i].end + padding;
 		}
 		
 		reader.SetRegion(probeRegion);

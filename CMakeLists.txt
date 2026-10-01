@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.5)
 
 project(HiCapTools CXX)
 
@@ -40,12 +40,38 @@ file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/ExterAlg/*.cpp")
   set_property(TARGET HiCapTools PROPERTY CXX_STANDARD_REQUIRED ON)
 
   find_package(ZLIB REQUIRED)
-  add_library(libbamtools STATIC IMPORTED)
+  add_library(libbamtools UNKNOWN IMPORTED)
   if(MAC)
-	set_target_properties(libbamtools PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/bamtools/libbamtools.2.4.1.dylib")	
-  endif()
-  if(UNIX AND NOT MAC)
-	set_target_properties(libbamtools PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/bamtools/libbamtools.so.2.4.1")
+    set(BAMTOOLS_ROOT "" CACHE PATH "Root directory of a BamTools installation")
+    find_path(BAMTOOLS_INCLUDE_DIR
+      NAMES api/BamReader.h
+      HINTS
+        "${BAMTOOLS_ROOT}/include/bamtools"
+        "$ENV{BAMTOOLS_ROOT}/include/bamtools"
+      PATHS
+        /opt/homebrew/include/bamtools
+        /usr/local/include/bamtools
+    )
+    find_library(BAMTOOLS_LIBRARY
+      NAMES bamtools
+      HINTS
+        "${BAMTOOLS_ROOT}/lib"
+        "$ENV{BAMTOOLS_ROOT}/lib"
+      PATHS
+        /opt/homebrew/lib
+        /usr/local/lib
+    )
+    if(NOT BAMTOOLS_INCLUDE_DIR OR NOT BAMTOOLS_LIBRARY)
+      message(FATAL_ERROR
+        "A native BamTools installation is required on macOS. "
+        "Install it with 'brew install bamtools', or set BAMTOOLS_ROOT."
+      )
+    endif()
+    set_target_properties(libbamtools PROPERTIES IMPORTED_LOCATION "${BAMTOOLS_LIBRARY}")
+    target_include_directories(HiCapTools BEFORE PRIVATE "${BAMTOOLS_INCLUDE_DIR}")
+    message(STATUS "Using system BamTools: ${BAMTOOLS_LIBRARY}")
+  elseif(UNIX)
+		set_target_properties(libbamtools PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/bamtools/libbamtools.so.2.4.1")
   endif()
   include_directories( "${CMAKE_SOURCE_DIR}/boost")
   include_directories( "${CMAKE_SOURCE_DIR}/ExterAlg")

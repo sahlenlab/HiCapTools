@@ -272,6 +272,10 @@ To run the HiCapTools `ProximityDetector`, the ’configFile.txt’ file and the
 
 - Window Size for Probe-Probe *(INTEGER: REQUIRED)* :   The window size for probe-probe proximity bins over which the rolling mean and standard deviation are calculated for smoothing. The default value is 3 bins, used if the field is left empty.
 
+- Blacklist File *(STRING: OPTIONAL)* :   Path to a tab-delimited BED file of regions to exclude. An interaction is omitted from the proximity outputs when either reported anchor overlaps a blacklist interval. Leave this field empty to disable filtering.
+
+- Generate Integrated Interactions *(STRING: OPTIONAL)* :   Set to `Yes` to produce an additional file combining probe-distal and probe-probe interactions. The default is `No` when the field is absent or empty.
+
 ##### II. ExperimentFile.txt
 
 - Feature Probe File *(STRING: REQUIRED)* :   The path to the Feature Probe file in gff3 format described in [File Formats](#file-formats) section.
@@ -427,6 +431,7 @@ This file is required as input for the `ProximityDetector`. This should be in th
     1. Probe region 1: Target feature, location in chromosome, type of probe
     2. Probe region 2: Target feature, location in chromosome, type of probe
     3. Proximity : Distance between interacting fragments, and Supporting pairs, p-value and strand combination\* from each input experiment file.
+* AllInteractions files : When `Generate Integrated Interactions = Yes`, these files combine probe-distal and probe-probe rows in one table. Distal interacting intervals separated by at most 150 bases receive the same `MergedInteractorID`; the interactions are not collapsed, so every original row and its supporting-pair and p-value columns remain present. A separate `AllInteractions.NegCtrls` file is produced when negative-control proximity outputs are requested.
    
    \* The strand combination (or orientation) gives the read orientations of the read pairs, that is, if the reads are on the forward or reverse strands. This means that there will be four possible combinations - forward-forward, forward-reverse, reverse-forward and reverse-reverse depending on the orientation of the first and second read pairs respectively. The ProximityDetector output files report the strand combination in the format a_b_c_d, where a gives the number of forward-forward read pair combinations,  b gives the number of forward-reverse, c the reverse-forward and d the reverse-reverse. The sum of a, b, c and d is equal to the total number of supporting pairs, which is also reported separately. The strand combination information may reveal information on how constrained the chromosome conformation is at that location.
         

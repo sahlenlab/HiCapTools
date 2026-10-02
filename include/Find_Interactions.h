@@ -41,18 +41,29 @@ public:
 	
 	void CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(ProbeSet&, std::vector<DetermineBackgroundLevels>, std::string, int, std::vector < std::string >&, std::string, int, PrDes::RENFileInfo&);
 	void CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeSet&, std::vector<DetermineBackgroundLevels>, std::string, int, std::vector < std::string >&, std::string, int, PrDes::RENFileInfo&);
+	void PrintIntegratedInteractions(std::string, int, std::vector < std::string >&, std::string, PrDes::RENFileInfo&);
+	void PrintIntegratedInteractions_NegCtrls(std::string, int, std::vector < std::string >&, PrDes::RENFileInfo&);
 
-	DetectInteractions(OutStream& flog, int minNSuppPair, bool p_val, int minJDist) : fLog (flog), MinNumberofSupportingPairs (minNSuppPair), CALCULATE_P_VALUES(p_val), MinimumJunctionDistance (minJDist) {}
+	DetectInteractions(OutStream& flog, int minNSuppPair, bool p_val, int minJDist, std::string blacklistFile = "") : fLog (flog), MinNumberofSupportingPairs (minNSuppPair), CALCULATE_P_VALUES(p_val), MinimumJunctionDistance (minJDist) { LoadBlacklist(blacklistFile); }
 
 private:
+	typedef struct{
+		int start;
+		int end;
+	} BlacklistRegion;
+
 	int MinNumberofSupportingPairs;
 	bool CALCULATE_P_VALUES;
 	int MinimumJunctionDistance;
+	std::map<std::string, std::vector<BlacklistRegion> > BlacklistRegions;
 	OutStream& fLog;
 	
 	bool CheckSupportingPairs(int*, int);
 	double CalculatepVal(std::map< int, double >,std::map< int, double >, int,int);
-    int FindClosestTranscriptTSS(int, std::vector<int>);
+	    int FindClosestTranscriptTSS(int, std::vector<int>);
+	void LoadBlacklist(std::string);
+	bool IsBlacklisted(std::string, int, int) const;
+	void PrintIntegratedInteractionsFile(std::string, int, std::vector < std::string >&, std::string, PrDes::RENFileInfo&, bool);
 };
 
 typedef struct{

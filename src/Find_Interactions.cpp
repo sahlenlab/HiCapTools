@@ -31,6 +31,9 @@
 #include "Find_Interactions.h"
 #include "Global.h"
 #include <fstream>
+#include <sstream>
+#include <algorithm>
+#include <tuple>
 //ALGLIB PACKAGE HEADERS
 
 #include "alglibmisc.h"
@@ -46,6 +49,124 @@
 #include "integration.h"
 #include "interpolation.h"
 using namespace alglib_impl;
+
+namespace {
+
+const int IntegratedMergeDistance = 150;
+
+typedef std::tuple<std::string, int, int> InteractorIntervalKey;
+
+struct MergedInterval {
+	int start;
+	int end;
+};
+
+std::vector<std::string> SplitTabs(const std::string& line){
+	std::vector<std::string> fields;
+	std::stringstream stream(line);
+	std::string field;
+	while(getline(stream, field, '\t'))
+		fields.push_back(field);
+	return fields;
+}
+
+std::map<InteractorIntervalKey, std::string> BuildMergedInteractorIDs(const std::vector<std::vector<std::string> >& rows){
+	std::map<std::string, std::vector<std::pair<int, int> > > intervalsByChromosome;
+	for(auto row = rows.begin(); row != rows.end(); ++row){
+		int start = std::stoi((*row)[9]);
+		int end = std::stoi((*row)[10]);
+		if(end < start)
+			std::swap(start, end);
+		intervalsByChromosome[(*row)[8]].push_back(std::make_pair(start, end));
+	}
+
+	std::map<InteractorIntervalKey, std::string> mergedIDs;
+	for(auto chromosome = intervalsByChromosome.begin(); chromosome != intervalsByChromosome.end(); ++chromosome){
+		std::vector<std::pair<int, int> >& intervals = chromosome->second;
+		std::sort(intervals.begin(), intervals.end());
+		intervals.erase(std::unique(intervals.begin(), intervals.end()), intervals.end());
+		if(intervals.empty())
+			continue;
+
+		std::vector<MergedInterval> mergedIntervals;
+		MergedInterval current = {intervals[0].first, intervals[0].second};
+		for(size_t i = 1; i < intervals.size(); ++i){
+			if(static_cast<long long>(intervals[i].first) <= static_cast<long long>(current.end) + IntegratedMergeDistance)
+				current.end = std::max(current.end, intervals[i].second);
+			else{
+				mergedIntervals.push_back(current);
+				current = {intervals[i].first, intervals[i].second};
+			}
+		}
+		mergedIntervals.push_back(current);
+
+		size_t mergedIndex = 0;
+		for(auto interval = intervals.begin(); interval != intervals.end(); ++interval){
+			while(mergedIndex + 1 < mergedIntervals.size() && interval->first > mergedIntervals[mergedIndex].end)
+				++mergedIndex;
+			const MergedInterval& merged = mergedIntervals[mergedIndex];
+			mergedIDs[std::make_tuple(chromosome->first, interval->first, interval->second)] =
+				chromosome->first + "_" + std::to_string(merged.start) + "_" + std::to_string(merged.end);
+		}
+	}
+	return mergedIDs;
+}
+
+std::string MergedInteractorID(const std::map<InteractorIntervalKey, std::string>& mergedIDs, const std::vector<std::string>& row){
+	int start = std::stoi(row[9]);
+	int end = std::stoi(row[10]);
+	if(end < start)
+		std::swap(start, end);
+	auto found = mergedIDs.find(std::make_tuple(row[8], start, end));
+	if(found != mergedIDs.end())
+		return found->second;
+	return row[8] + "_" + std::to_string(start) + "_" + std::to_string(end);
+}
+
+}
+
+void DetectInteractions::LoadBlacklist(std::string blacklistFile){
+	if(blacklistFile.empty())
+		return;
+
+	std::ifstream infile(blacklistFile.c_str());
+	std::string line;
+	while(getline(infile, line)){
+		if(line.empty() || line[0] == '#')
+			continue;
+		std::stringstream stream(line);
+		std::string chromosome;
+		BlacklistRegion region;
+		stream >> chromosome >> region.start >> region.end;
+		if(!stream.fail() && region.end > region.start)
+			BlacklistRegions[chromosome].push_back(region);
+	}
+
+	for(auto chromosome = BlacklistRegions.begin(); chromosome != BlacklistRegions.end(); ++chromosome){
+		std::sort(chromosome->second.begin(), chromosome->second.end(), [](const BlacklistRegion& left, const BlacklistRegion& right){
+			return left.start < right.start || (left.start == right.start && left.end < right.end);
+		});
+	}
+	fLog << "Blacklist regions loaded: " << blacklistFile << std::endl;
+}
+
+bool DetectInteractions::IsBlacklisted(std::string chromosome, int start, int end) const{
+	if(end < start)
+		std::swap(start, end);
+	if(end == start)
+		++end;
+
+	auto found = BlacklistRegions.find(chromosome);
+	if(found == BlacklistRegions.end())
+		return false;
+	for(auto region = found->second.begin(); region != found->second.end(); ++region){
+		if(region->start >= end)
+			break;
+		if(start < region->end && end > region->start)
+			return true;
+	}
+	return false;
+}
 
 bool DetectInteractions::CheckSupportingPairs(int* supppairs, int nOfExp){
 	bool recordit = 0;
@@ -141,8 +262,8 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 					}
 				}
             
-            if(it->second.reportit){
-                                             
+	            if(it->second.reportit){
+
                it->second.distance = it->first - featiter->second.start;
                  it->second.p_val.reserve(NumberofExperiments);
                  
@@ -170,9 +291,9 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 					}
 				}
             
-            if(it->second.reportit){
-                                             
-               it->second.distance = it->first - featiter->second.start;
+	            if(it->second.reportit){
+
+	               it->second.distance = it->first - featiter->second.start;
                 
                 int bin;
                 bin = abs(it->second.distance) / BinSize;
@@ -234,9 +355,12 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 					}
 				}
             
-            if(it->second.reportit){
-               
-                outf1 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' 
+	            if(it->second.reportit){
+				if(IsBlacklisted(featiter->second.chr, featiter->second.start, featiter->second.end) ||
+				   IsBlacklisted(featiter->second.chr, it->first, it->second.refragend))
+					continue;
+
+	                outf1 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t'
                       << featiter->second.chr  << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
                       << featiter->second.FeatureType << '\t' << featiter->second.strand << '\t';
                 
@@ -291,7 +415,10 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal(ProbeSet& 
 					
 					enoughpairs = CheckSupportingPairs(itt->second.paircount, NumberofExperiments);
 					if(enoughpairs){
-                    
+						if(IsBlacklisted(featiter->second.chr, featiter->second.start, featiter->second.end) ||
+						   IsBlacklisted(itx->maptochrname, itt->first, itt->second.refragend))
+							continue;
+
 						outf1 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t'
 							<< featiter->second.chr << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
 							<< featiter->second.FeatureType << '\t' <<  featiter->second.strand << '\t';
@@ -415,7 +542,10 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
         for (itff = featiter->second.Inter_feature_ints.begin(); itff != featiter->second.Inter_feature_ints.end(); ++itff){
 			f = itff->interacting_feature_id;
             auto featiter2 = Features.find(f);
-            if((featiter->second.FeatureType != 3 && featiter2->second.FeatureType != 3) && featiter->second.TranscriptName != featiter2->second.TranscriptName && (abs(featiter->second.start - featiter2->second.start) >= MinimumJunctionDistance)){
+	            if((featiter->second.FeatureType != 3 && featiter2->second.FeatureType != 3) && featiter->second.TranscriptName != featiter2->second.TranscriptName && (abs(featiter->second.start - featiter2->second.start) >= MinimumJunctionDistance)){
+				if(IsBlacklisted(featiter->second.chr, featiter->second.start, featiter->second.end) ||
+				   IsBlacklisted(featiter2->second.chr, featiter2->second.start, featiter2->second.end))
+					continue;
 				
 				
 								
@@ -535,6 +665,97 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe(ProbeSet& p
 
 }
 
+void DetectInteractions::PrintIntegratedInteractions(std::string BaseFileName, int NumberofExperiments, std::vector<std::string>& ExperimentNames, std::string whichchr, PrDes::RENFileInfo& reInfo){
+	PrintIntegratedInteractionsFile(BaseFileName, NumberofExperiments, ExperimentNames, whichchr, reInfo, false);
+}
+
+void DetectInteractions::PrintIntegratedInteractions_NegCtrls(std::string BaseFileName, int NumberofExperiments, std::vector<std::string>& ExperimentNames, PrDes::RENFileInfo& reInfo){
+	PrintIntegratedInteractionsFile(BaseFileName, NumberofExperiments, ExperimentNames, "", reInfo, true);
+}
+
+void DetectInteractions::PrintIntegratedInteractionsFile(std::string BaseFileName, int NumberofExperiments, std::vector<std::string>& ExperimentNames, std::string whichchr, PrDes::RENFileInfo& reInfo, bool negativeControls){
+	std::string prefix = BaseFileName + "." + reInfo.genomeAssembly.substr(0, reInfo.genomeAssembly.find_first_of(','));
+	if(!negativeControls)
+		prefix += "." + whichchr;
+
+	const std::string suffix = negativeControls ? ".NegCtrls." : ".";
+	const std::string pdFile = prefix + ".Proximities.Probe_Distal" + suffix + reInfo.currTime + ".txt";
+	const std::string ppFile = prefix + ".Proximities.Probe_Probe" + suffix + reInfo.currTime + ".txt";
+	const std::string outFile = prefix + ".AllInteractions" + suffix + reInfo.currTime + ".txt";
+
+	std::ofstream output(outFile.c_str());
+	if(!output.good()){
+		fLog << "##Warning## : Could not create integrated interaction file: " << outFile << std::endl;
+		return;
+	}
+
+	output << "RefSeqName" << '\t' << "TranscriptName" << '\t' << "Feature_Chr" << '\t' << "Feature_Start" << '\t'
+		   << "Annotation" << '\t' << "Strand" << '\t' << "InteractorName" << '\t' << "InteractorID" << '\t'
+		   << "Interactor_Chr" << '\t' << "Interactor_Start" << '\t' << "Interactor_End" << '\t'
+		   << "InteractorAnnotation" << '\t' << "distance" << '\t' << "InteractionID" << '\t' << "MergedInteractorID";
+	for(int experiment = 0; experiment < NumberofExperiments; ++experiment)
+		output << '\t' << ExperimentNames[experiment] << "_SuppPairs" << '\t' << ExperimentNames[experiment] << "_p_value";
+	output << std::endl;
+
+	std::ifstream pd(pdFile.c_str());
+	std::string line;
+	std::vector<std::vector<std::string> > pdRows;
+	if(pd.good()){
+		getline(pd, line);
+		while(getline(pd, line)){
+			std::vector<std::string> fields = SplitTabs(line);
+			if(fields.size() < static_cast<size_t>(12 + NumberofExperiments * 3))
+				continue;
+			if(std::stoi(fields[10]) - std::stoi(fields[9]) >= 10500)
+				continue;
+			pdRows.push_back(fields);
+		}
+	}
+	else
+		fLog << "##Warning## : Could not open Probe-Distal file for integrated output: " << pdFile << std::endl;
+
+	const std::map<InteractorIntervalKey, std::string> mergedIDs = BuildMergedInteractorIDs(pdRows);
+	for(auto row = pdRows.begin(); row != pdRows.end(); ++row){
+		const std::vector<std::string>& fields = *row;
+		const std::string interactorID = fields[8] + ":" + fields[9] + "-" + fields[10];
+		const std::string interactionID = fields[0] + ";" + interactorID + ";" + fields[11];
+		output << fields[0] << '\t' << fields[1] << '\t' << fields[3] << '\t' << fields[4] << '\t'
+			   << fields[6] << '\t' << fields[7] << '\t' << interactorID << '\t' << interactorID << '\t'
+			   << fields[8] << '\t' << fields[9] << '\t' << fields[10] << '\t' << 4 << '\t'
+			   << fields[11] << '\t' << interactionID << '\t' << MergedInteractorID(mergedIDs, fields);
+		for(int experiment = 0; experiment < NumberofExperiments; ++experiment){
+			const int offset = 12 + experiment * 3;
+			output << '\t' << fields[offset] << '\t' << fields[offset + 1];
+		}
+		output << std::endl;
+	}
+
+	std::ifstream pp(ppFile.c_str());
+	if(pp.good()){
+		getline(pp, line);
+		while(getline(pp, line)){
+			const std::vector<std::string> fields = SplitTabs(line);
+			if(fields.size() < static_cast<size_t>(17 + NumberofExperiments * 3))
+				continue;
+			const std::string interactionID = fields[0] + ";" + fields[8] + ";" + fields[16];
+			output << fields[0] << '\t' << fields[1] << '\t' << fields[3] << '\t' << fields[4] << '\t'
+				   << fields[6] << '\t' << fields[7] << '\t' << fields[8] << '\t' << fields[9] << '\t'
+				   << fields[11] << '\t' << fields[12] << '\t' << fields[12] << '\t' << fields[14] << '\t'
+				   << fields[16] << '\t' << interactionID << '\t' << fields[9];
+			for(int experiment = 0; experiment < NumberofExperiments; ++experiment){
+				const int offset = 17 + experiment * 3;
+				output << '\t' << fields[offset] << '\t' << fields[offset + 1];
+			}
+			output << std::endl;
+		}
+	}
+	else
+		fLog << "##Warning## : Could not open Probe-Probe file for integrated output: " << ppFile << std::endl;
+
+	output.close();
+	fLog << (negativeControls ? "Integrated negative-control interaction file written: " : "Integrated interaction file written: ") << outFile << std::endl;
+}
+
 void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(ProbeSet& prs, std::vector<DetermineBackgroundLevels> background, std::string BaseFileName, int NumberofExperiments, std::vector<std::string>& ExperimentNames, std::string whichchr, int BinSize, PrDes::RENFileInfo& reInfo){
 
     fLog << "will print proximities of NegCtrls" << std::endl; 
@@ -580,8 +801,8 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
 						break;
 					}
 				}
-                if(it->second.reportit){
-                    it->second.p_val.reserve(NumberofExperiments);
+	                if(it->second.reportit){
+	                    it->second.p_val.reserve(NumberofExperiments);
                 }
             }
         }
@@ -664,8 +885,11 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
 					}
 				}
                 
-                if(it->second.reportit){
-                    outf2 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' 
+	                if(it->second.reportit){
+					if(IsBlacklisted(featiter->second.chr, featiter->second.start, featiter->second.end) ||
+					   IsBlacklisted(featiter->second.chr, it->first, it->second.refragend))
+						continue;
+	                    outf2 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t'
                     << featiter->second.chr  << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
                     << featiter->second.FeatureType << '\t' << featiter->second.strand << '\t';
                     
@@ -690,7 +914,10 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(P
             if(featiter->second.FeatureType == 3) {
                 for(itt = itx->junctions_ctx.begin(); itt != itx->junctions_ctx.end(); ++itt){
                     enoughpairs = CheckSupportingPairs(itt->second.paircount, NumberofExperiments);
-                    if(enoughpairs){
+	                    if(enoughpairs){
+						if(IsBlacklisted(featiter->second.chr, featiter->second.start, featiter->second.end) ||
+						   IsBlacklisted(itx->maptochrname, itt->first, itt->second.refragend))
+							continue;
                         outf2 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t' 
                         << featiter->second.chr << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
                         << featiter->second.FeatureType << '\t' <<  featiter->second.strand << '\t';
@@ -753,7 +980,10 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(Pr
         for (auto itff = featiter->second.Inter_feature_ints.begin(); itff != featiter->second.Inter_feature_ints.end(); ++itff){
             f = itff->interacting_feature_id;
             auto featiter2 = Features.find(f);
-            if((featiter->second.FeatureType == 3 || featiter2->second.FeatureType == 3) && featiter->second.TranscriptName != featiter2->second.TranscriptName && (abs(featiter->second.start - featiter2->second.start) >= MinimumJunctionDistance)){
+	            if((featiter->second.FeatureType == 3 || featiter2->second.FeatureType == 3) && featiter->second.TranscriptName != featiter2->second.TranscriptName && (abs(featiter->second.start - featiter2->second.start) >= MinimumJunctionDistance)){
+				if(IsBlacklisted(featiter->second.chr, featiter->second.start, featiter->second.end) ||
+				   IsBlacklisted(featiter2->second.chr, featiter2->second.start, featiter2->second.end))
+					continue;
                 outf4 << featiter->second.Name << '\t' << featiter->second.TranscriptName << '\t' << featiter->first << '\t'
                 << featiter->second.chr << '\t' << featiter->second.start << '\t' << featiter->second.end << '\t'
                 << featiter->second.FeatureType << '\t' <<  featiter->second.strand << '\t';
@@ -766,8 +996,8 @@ void DetectInteractions::CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(Pr
                 bin=0;
                 flag=0;
                 
-                if(featiter->second.chr == featiter2->second.chr){
-                    outf4 << abs(featiter->second.start - featiter2->second.start) << '\t';
+	                if(featiter->second.chr == featiter2->second.chr){
+	                    outf4 << abs(featiter->second.start - featiter2->second.start);
                     bin = abs(featiter->second.start - featiter2->second.start) / BinSizeProbeProbe;   
                     flag=1;
 				}

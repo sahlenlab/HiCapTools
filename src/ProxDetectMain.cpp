@@ -73,6 +73,8 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	std::string NegCtrlProbeFileName;
 	std::string ExpFileName;
 	std::string BaseFileName;
+	std::string BlacklistFileName;
+	bool GenerateIntegratedInteractions = false;
     std::vector <Experiment> Experiments; 
 	Experiment Exptemp;
 	std::map <std::string, std::string> probeType;
@@ -204,6 +206,17 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 					else
 						log<<"##Warning## :Window Size for Probe-Probe is empty. Set to default : "<< WindowSizeProbeProbe<<std::endl;
 				}
+				if(line.substr(0, line.find('=')).find("Blacklist File")!=std::string::npos){
+					std::string s=line.substr(line.find('=')+1);
+					const size_t first=s.find_first_not_of(" \t\r\n");
+					const size_t last=s.find_last_not_of(" \t\r\n");
+					BlacklistFileName = first == std::string::npos ? "" : s.substr(first, last-first+1);
+				}
+				if(line.substr(0, line.find('=')).find("Generate Integrated Interactions")!=std::string::npos){
+					std::string s=line.substr(line.find('=')+1);
+					s.erase(std::remove_if(begin(s), end(s), [l](char ch) { return std::isspace(ch, l); }), end(s));
+					GenerateIntegratedInteractions = (s=="Yes" || s=="yes" || s=="Y" || s=="y");
+				}
 			}
 		}
 	}
@@ -243,6 +256,9 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 	log << std::setw(35)<<"Window Size for Probe-Distal"	<<WindowSize<<std::endl;
 	log << std::setw(35)<<"Bin Size for Probe-Probe"	<<BinSizeProbeProbe<<std::endl;
 	log << std::setw(35)<<"Window Size for Probe-Probe"<<WindowSizeProbeProbe<<std::endl;
+	if(!BlacklistFileName.empty())
+		log << std::setw(35)<<"Blacklist File"<<BlacklistFileName<<std::endl;
+	log << std::setw(35)<<"Generate Integrated Interactions"<<(GenerateIntegratedInteractions ? "Yes" : "No")<<std::endl;
     
     std::ifstream ExpFile(ExpFileName.c_str());
     if(ExpFile.good()){
@@ -435,6 +451,10 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 		log<< "!!Error!! : Feature Probe File is not accessible"<<std::endl;
 		return 0;
 	}
+	if(!BlacklistFileName.empty() && !CheckFile(BlacklistFileName)){
+		log<< "!!Error!! : Blacklist File is not accessible"<<std::endl;
+		return 0;
+	}
 	if(CALCULATE_P_VALUES && !CheckFile(NegCtrlProbeFileName)){
 		log<< "!!Error!! : Negative control Probe File is not accessible"<<std::endl;
 		return 0;
@@ -511,7 +531,7 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
     
     ProcessBAM bamfile(log);
     //-------------------------------------------------------------------------------------
-    DetectInteractions Interactions(log, MinNumberofSupportingPairs, CALCULATE_P_VALUES, MinimumJunctionDistance);
+	    DetectInteractions Interactions(log, MinNumberofSupportingPairs, CALCULATE_P_VALUES, MinimumJunctionDistance, BlacklistFileName);
    //-------------------------------------------------------------------------------------
     
     std::string BAMFILENAME, ExperimentName;
@@ -617,11 +637,15 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 			
 			Interactions.CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo); //Print all same type of interactions
 			Interactions.CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo); //Print all same type of interactions
+			if(GenerateIntegratedInteractions)
+				Interactions.PrintIntegratedInteractions_NegCtrls(BaseFileName, NOFEXPERIMENTS, ExperimentNames, reFileInfo);
 		}
 		else if(interactiontype=="NonNeg"){
 			
 			Interactions.CalculatePvalAndPrintInteractionsProbeDistal(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo);//Print all same type of interactions
 			Interactions.CalculatePvalAndPrintInteractionsProbeProbe(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo);//Print all same type of interactions
+			if(GenerateIntegratedInteractions)
+				Interactions.PrintIntegratedInteractions(BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, reFileInfo);
 		}
 		else{	
 	
@@ -629,6 +653,10 @@ int HiCapTools::ProxDetectMain(std::string whichchr, std::string statsOption, st
 			Interactions.CalculatePvalAndPrintInteractionsProbeDistal_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSize, reFileInfo); //Print all same type of interactions
 			Interactions.CalculatePvalAndPrintInteractionsProbeProbe(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo);//Print all same type of interactions
 			Interactions.CalculatePvalAndPrintInteractionsProbeProbe_NegCtrls(ProbeClass, background, BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, BinSizeProbeProbe, reFileInfo); //Print all same type of interactions
+			if(GenerateIntegratedInteractions){
+				Interactions.PrintIntegratedInteractions(BaseFileName, NOFEXPERIMENTS, ExperimentNames, whichchr, reFileInfo);
+				Interactions.PrintIntegratedInteractions_NegCtrls(BaseFileName, NOFEXPERIMENTS, ExperimentNames, reFileInfo);
+			}
 		}
 		log<<"Printing Background Values!!"<<std::endl;
 		//Print out background values

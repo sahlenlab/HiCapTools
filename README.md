@@ -65,41 +65,79 @@ Table of Contents
 
 ## How to Compile HiCapTools?
 
-#### Recommended
+### Download from GitHub
 
-Use CMake to compile the application.
+Clone the current version:
 
-#### Dependencies
-
--   C++11 compliant compiler (eg. GCC 4.9 or higher) is required
-
--   Cmake 3.0 or higher is required
-
--   Bamtools is required.
-
--   Zlib is required
-
-#### Steps
-
-Suggested steps in Linux
-
-1. Run the bash script 'buildHiCapTools.sh. The compiled executable ’HiCapTools’ is placed inside the ’bin’ directory.
-
-2.  Run the following command on the terminal after replacing the path to the location of HiCapTools.
+```bash
+git clone --depth 1 https://github.com/sahlenlab/HiCapTools.git
+cd HiCapTools
 ```
-$ export LD_LIBRARY_PATH=/path/to/HiCapTools/bamtools/:$LD_LIBRARY_PATH
-```         
 
-Suggested steps in macOS
+To update an existing Git checkout later:
 
-1. Run the bash script 'buildHiCapTools.sh. The compiled executable ’HiCapTools’ is placed inside the ’bin’ directory.
+```bash
+git pull --ff-only
+```
+
+### Dependencies
+
+- C++11-compliant compiler (GCC 4.9 or newer)
+- CMake 3.10 or newer
+- BamTools
+- Boost headers (installed as a system package or environment module)
+- zlib
+
+Boost is intentionally not included in the repository.
+
+### Configure and Build
+
+Make the compiler, CMake, Boost, and zlib available in your environment, then
+configure a Release build:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+```
+
+Compile using the available CPU cores:
+
+```bash
+cmake --build build --parallel
+```
+
+HiCapTools first looks for a system BamTools installation and otherwise uses
+the library supplied in `bamtools`. If dependencies are installed in custom
+locations, provide them when configuring:
+
+```bash
+cmake -S . -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBOOST_INCLUDE_DIR=/path/to/boost/include \
+    -DBAMTOOLS_INCLUDE_DIR=/path/to/bamtools/include \
+    -DBAMTOOLS_LIBRARY=/path/to/libbamtools
+```
+
+### Verify the Installation
+
+The build writes the executable to `bin/HiCapTools`. No separate installation
+step is required. Display the command-line usage with:
+
+```bash
+./bin/HiCapTools
+```
+
+Run a module with:
+
+```bash
+./bin/HiCapTools <option> [arguments]
+```
 
 ## How to Run HiCapTools?
 
 HiCapTools is run with the following command
 
-``` {fontsize="\small"}
-$ ./HiCapTools <option> [arguments]
+```bash
+./bin/HiCapTools <option> [arguments]
 ```
 
 The options are `ProbeDesigner` and `ProximityDetector`.

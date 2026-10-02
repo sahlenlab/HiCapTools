@@ -66,6 +66,7 @@ void ProximityClass::AnnotateDistalInteractor(std::string feature_id, std::strin
             Features[feature_id].proximities_ctx.push_back(SignalStruct_CTX());
             Features[feature_id].proximities_ctx.back().maptochrname.append(interactor_chr);
             Features[feature_id].proximities_ctx.back().junctions_ctx[n].paircount = new int[NOFEXPERIMENTS];
+            Features[feature_id].proximities_ctx.back().junctions_ctx[n].strandcombination = new int[NOFEXPERIMENTS*4];
             for(int z = 0; z < (NOFEXPERIMENTS); ++z)
                 Features[feature_id].proximities_ctx.back().junctions_ctx[n].paircount[z] = 0;
             Features[feature_id].proximities_ctx.back().junctions_ctx[n].strandcombination = new int[((NOFEXPERIMENTS)*4)];
@@ -145,3 +146,4 @@ void ProximityClass::RecordProximities(Alignment pair, std::string feature_id1, 
             AnnotateDistalInteractor(feature_id2, pair.chr2, pair.chr1, pair.resites1, sc_index, ExperimentNo);
     }
 }
+

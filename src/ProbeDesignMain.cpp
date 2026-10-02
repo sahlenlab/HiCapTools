@@ -66,7 +66,7 @@ int HiCapTools::ProbeDesignMain(std::string whichchr, std::string extraConfig, s
     int dforbidIntergen=50000;
     int dforbidProm=50000;
     int dforbidRegReg=50000;
-    int exonNegCtrls = 0, intronNegCtrls = 0, intergenNegCtrls = 0;
+    int exonNegCtrls, intronNegCtrls, intergenNegCtrls;
     std::string ifNeg;
     bool ifRegRegion=false;
     std::string regRegionFile;

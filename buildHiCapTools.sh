@@ -1,31 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-unameOut="$(uname -s)"
+set -euo pipefail
 
-case "${unameOut}" in
-    Linux*)     machine=Linux;;
-    Darwin*)    machine=Mac;;
-    CYGWIN*)    machine=Cygwin;;
-    MINGW*)     machine=MinGw;;
-    *)          machine="UNKNOWN:${unameOut}"
-esac
+source_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+build_dir="${source_dir}/DirCmake"
 
-#if [$machine = "Mac"]
-#	export CC=which gcc-5
-#	export CXX=which g++-5
-#then 
-#fi
+cmake -S "${source_dir}" -B "${build_dir}" -DCMAKE_BUILD_TYPE=Release
+cmake --build "${build_dir}" --parallel
 
-mkdir -p DirCmake
-
-cd DirCmake
-
-cmake ..
-
-wait
-
-make 
-
-wait
-
-cd ../
+echo "Built executable: ${source_dir}/bin/HiCapTools"

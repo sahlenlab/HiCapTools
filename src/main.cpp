@@ -127,11 +127,6 @@ int main(int argc, const char * argv[]) {
 					}
 				}
 				else if(statsOption=="PrintProximities" && (argc == 6 || argc == 8 || argc == 10)){
-					if(printOption!="Neg" && printOption!="NonNeg" && printOption!="Both"){
-						std::cerr<<"!!Error!! mode 'PrintProximities' requires -p/--proximitytype with value 'Neg', 'NonNeg' or 'Both'!"<<std::endl;
-						print_usage();
-						return 1;
-					}
 					if(printOption=="Neg"){
 						if(!whichChr.empty()){
 							std::cerr<<"!!Warning!! proximitytype 'Neg' does not require input chromosome! Negative Control proximities will be generated for all chromosomes"<<std::endl;

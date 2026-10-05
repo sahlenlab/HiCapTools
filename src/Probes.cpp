@@ -36,6 +36,46 @@
 std::map < std::string, Probe_Design > Design;
 std::map < std::string, Probe_Design > Design_NegCtrl;
 
+namespace {
+
+void RegisterOtherFeature(const std::string& name, const CaptureProbes& probe){
+    int featureStart = probe.start + (probe.end - probe.start) / 2;
+    int featureEnd = featureStart;
+
+    const size_t colon = name.rfind(':');
+    const size_t dash = (colon == std::string::npos) ? std::string::npos : name.find('-', colon + 1);
+    if(colon != std::string::npos && dash != std::string::npos && name.substr(0, colon) == probe.chr){
+        try{
+            const int regionStart = std::stoi(name.substr(colon + 1, dash - colon - 1));
+            const int regionEnd = std::stoi(name.substr(dash + 1));
+            if(regionStart <= regionEnd){
+                featureStart = regionStart + (regionEnd - regionStart) / 2;
+                featureEnd = regionEnd;
+            }
+        }
+        catch(const std::exception&){
+            // Non-coordinate names use the probe midpoint as their feature position.
+        }
+    }
+
+    const std::string featureId = name + "_" + std::to_string(featureStart);
+    FeatureStruct feature = {};
+    feature.feature_id = featureId;
+    feature.probe_name = name;
+    feature.probe_target = "other";
+    feature.FeatureType = 4;
+    feature.chr = probe.chr;
+    feature.Name = name;
+    feature.TranscriptName = probe.target_id;
+    feature.start = featureStart;
+    feature.end = featureEnd;
+    feature.strand = ".";
+    Features[featureId] = feature;
+    MetaFeatures[name].push_back(featureId);
+}
+
+}
+
 
 void ProbeSet::GetProbeFeats(std::stringstream& line, CaptureProbes& t, std::string& Name){
     
@@ -162,9 +202,12 @@ void ProbeSet::ProcessProbeLine(std::map< std::string, std::vector < std::string
         if(tempprobe.side=="L"){
 			probes_interval[tempprobe.name_of_design].push_back(Interval<int>((tempprobe.start),(tempprobe.end + padding),(Design[tempprobe.name_of_design].Probes.size()-1)));
 		}
-		else if(tempprobe.side=="R"){
-			probes_interval[tempprobe.name_of_design].push_back(Interval<int>((tempprobe.start -padding),(tempprobe.end),(Design[tempprobe.name_of_design].Probes.size()-1)));
-		}
+        else if(tempprobe.side=="R"){
+            probes_interval[tempprobe.name_of_design].push_back(Interval<int>((tempprobe.start -padding),(tempprobe.end),(Design[tempprobe.name_of_design].Probes.size()-1)));
+        }
+        else if(tempprobe.side=="M"){
+            probes_interval[tempprobe.name_of_design].push_back(Interval<int>((tempprobe.start - padding),(tempprobe.end + padding),(Design[tempprobe.name_of_design].Probes.size()-1)));
+        }
     }
 }
 
@@ -217,6 +260,10 @@ void ProbeSet::ReadProbeCoordinates(std::string ProbeFileName, std::map <std::st
         while(index == 0){
             do{
                 nameit = MetaFeatures.find(Name);
+                if(nameit == MetaFeatures.end() && tempprobe.annotated == 4){
+                    RegisterOtherFeature(Name, tempprobe);
+                    nameit = MetaFeatures.find(Name);
+                }
                 if(nameit != MetaFeatures.end()){
                     ProcessProbeLine(nameit, coords, tempprobe, closest, negctrl_probes_interval, probes_interval, padding);
                     tempprobe.feature_id = "";
@@ -243,6 +290,10 @@ void ProbeSet::ReadProbeCoordinates(std::string ProbeFileName, std::map <std::st
 		chr2 = tempprobe.chr;
         do{
             nameit = MetaFeatures.find(Name);
+            if(nameit == MetaFeatures.end() && tempprobe.annotated == 4){
+                RegisterOtherFeature(Name, tempprobe);
+                nameit = MetaFeatures.find(Name);
+            }
             if(nameit != MetaFeatures.end()){
                 ProcessProbeLine(nameit, coords, tempprobe, closest, negctrl_probes_interval, probes_interval, padding);
                 tempprobe.feature_id = "";
@@ -266,6 +317,10 @@ void ProbeSet::ReadProbeCoordinates(std::string ProbeFileName, std::map <std::st
                 GetProbeFeats(probeline, tempprobe, Name);
                 chr2 = tempprobe.chr;
                 nameit = MetaFeatures.find(Name);
+                if(nameit == MetaFeatures.end() && tempprobe.annotated == 4){
+                    RegisterOtherFeature(Name, tempprobe);
+                    nameit = MetaFeatures.find(Name);
+                }
                 if(nameit != MetaFeatures.end()){
                     ProcessProbeLine(nameit, coords, tempprobe, closest, negctrl_probes_interval, probes_interval, padding);
                     tempprobe.feature_id = "";
@@ -282,6 +337,10 @@ void ProbeSet::ReadProbeCoordinates(std::string ProbeFileName, std::map <std::st
                 GetProbeFeats(probeline, tempprobe, Name);
                 chr2 = tempprobe.chr;
                 nameit = MetaFeatures.find(Name);
+                if(nameit == MetaFeatures.end() && tempprobe.annotated == 4){
+                    RegisterOtherFeature(Name, tempprobe);
+                    nameit = MetaFeatures.find(Name);
+                }
                 if(nameit != MetaFeatures.end()){
                     ProcessProbeLine(nameit, coords, tempprobe, closest, negctrl_probes_interval, probes_interval, padding);
                     tempprobe.feature_id = "";
@@ -391,5 +450,4 @@ int ProbeSet::FindOverlaps_NegCtrls(std::string chr, unsigned long int readstart
     else
         return -1;
 }
-
 
